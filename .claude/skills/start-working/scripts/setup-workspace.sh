@@ -73,11 +73,21 @@ if [ -z "$BASE_BRANCH" ]; then
     echo "Detected base branch: $BASE_BRANCH"
 fi
 
-# Step 3: Create git worktree
+# Step 3: Create git worktree with new branch
 echo "==> Creating git worktree..."
 cd "$REPOSITORY_PATH"
-git worktree add "$WORKING_DIR/$REPOSITORY_NAME" "$BASE_BRANCH"
+
+# Create new branch name based on task info
+if [ -n "$TICKET_ID" ]; then
+    NEW_BRANCH="${TASK_TYPE}/${TICKET_ID}-${DESCRIPTION}"
+else
+    NEW_BRANCH="${TASK_TYPE}/${DESCRIPTION}-${DATE}"
+fi
+
+# Create worktree with a new branch based on the base branch
+git worktree add -b "$NEW_BRANCH" "$WORKING_DIR/$REPOSITORY_NAME" "origin/$BASE_BRANCH"
 echo "Worktree created: $WORKING_DIR/$REPOSITORY_NAME"
+echo "New branch: $NEW_BRANCH (based on origin/$BASE_BRANCH)"
 
 # Step 4: Create README.md
 echo "==> Creating README.md..."
