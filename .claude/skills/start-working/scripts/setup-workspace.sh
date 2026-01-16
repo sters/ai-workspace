@@ -2,24 +2,27 @@
 
 set -e
 
-# Usage: ./setup-workspace.sh <task-type> <description> <repository-name> [base-branch] [ticket-id]
-# Example: ./setup-workspace.sh feature user-auth complex-ai-workspace
-# Example: ./setup-workspace.sh feature user-auth complex-ai-workspace main
-# Example: ./setup-workspace.sh feature user-auth complex-ai-workspace main PROJ-123
+# Usage: ./setup-workspace.sh <task-type> <description> <org/repo-name> [base-branch] [ticket-id]
+# Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
+# Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main
+# Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main PROJ-123
 
 TASK_TYPE="$1"
 DESCRIPTION="$2"
-REPOSITORY_NAME="$3"
+REPOSITORY_PATH_INPUT="$3"
 BASE_BRANCH="$4"
 TICKET_ID="$5"
 
-if [ -z "$TASK_TYPE" ] || [ -z "$DESCRIPTION" ] || [ -z "$REPOSITORY_NAME" ]; then
-    echo "Usage: $0 <task-type> <description> <repository-name> [base-branch] [ticket-id]"
-    echo "Example: $0 feature user-auth complex-ai-workspace"
-    echo "Example: $0 feature user-auth complex-ai-workspace main"
-    echo "Example: $0 feature user-auth complex-ai-workspace main PROJ-123"
+if [ -z "$TASK_TYPE" ] || [ -z "$DESCRIPTION" ] || [ -z "$REPOSITORY_PATH_INPUT" ]; then
+    echo "Usage: $0 <task-type> <description> <org/repo-name> [base-branch] [ticket-id]"
+    echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace"
+    echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace main"
+    echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace main PROJ-123"
     exit 1
 fi
+
+# Extract repository name from path (last component)
+REPOSITORY_NAME=$(basename "$REPOSITORY_PATH_INPUT")
 
 # Get the script directory and workspace root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,7 +39,7 @@ else
 fi
 
 WORKING_DIR="$WORKSPACE_DIR/$WORKING_DIR_NAME"
-REPOSITORY_PATH="$REPOSITORIES_DIR/$REPOSITORY_NAME"
+REPOSITORY_PATH="$REPOSITORIES_DIR/$REPOSITORY_PATH_INPUT"
 
 echo "==> Setting up workspace: $WORKING_DIR_NAME"
 
@@ -46,7 +49,6 @@ mkdir -p "$WORKING_DIR"
 echo "Created: $WORKING_DIR"
 
 # Step 2: Update repository
-cd "$REPOSITORIES_DIR"
 if [ ! -d "$REPOSITORY_PATH" ]; then
     echo "==> Repository not found. Please provide repository URL to clone:"
     read -r REPO_URL
@@ -54,7 +56,9 @@ if [ ! -d "$REPOSITORY_PATH" ]; then
         echo "Error: Repository URL is required"
         exit 1
     fi
-    git clone "$REPO_URL"
+    # Create parent directory structure
+    mkdir -p "$(dirname "$REPOSITORY_PATH")"
+    git clone "$REPO_URL" "$REPOSITORY_PATH"
 else
     echo "==> Updating repository..."
     cd "$REPOSITORY_PATH"
@@ -85,8 +89,11 @@ else
 fi
 
 # Create worktree with a new branch based on the base branch
-git worktree add -b "$NEW_BRANCH" "$WORKING_DIR/$REPOSITORY_NAME" "origin/$BASE_BRANCH"
-echo "Worktree created: $WORKING_DIR/$REPOSITORY_NAME"
+# Preserve the org/repo structure in the workspace
+WORKTREE_PATH="$WORKING_DIR/$REPOSITORY_PATH_INPUT"
+mkdir -p "$(dirname "$WORKTREE_PATH")"
+git worktree add -b "$NEW_BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH"
+echo "Worktree created: $WORKTREE_PATH"
 echo "New branch: $NEW_BRANCH (based on origin/$BASE_BRANCH)"
 
 # Step 4: Create README.md
@@ -211,7 +218,7 @@ echo "Created: $TODO_FILE"
 echo ""
 echo "==> Setup complete!"
 echo "Working directory: $WORKING_DIR"
-echo "Repository worktree: $WORKING_DIR/$REPOSITORY_NAME"
+echo "Repository worktree: $WORKTREE_PATH"
 echo ""
 echo "Next steps:"
 echo "1. Update README.md with task details"

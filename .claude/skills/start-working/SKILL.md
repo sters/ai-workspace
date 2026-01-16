@@ -17,7 +17,7 @@ Before running the setup script, ensure you have:
 
 - Task type (feature, bugfix, research, etc.)
 - Brief description
-- Target repository name
+- Target repository path in org/repo format (e.g., github.com/sters/complex-ai-workspace)
 - Base branch (optional - will be auto-detected if not specified)
 - Ticket ID (optional)
 
@@ -26,26 +26,26 @@ Before running the setup script, ensure you have:
 Execute the setup script with the required parameters:
 
 ```bash
-./.claude/skills/start-working/scripts/setup-workspace.sh <task-type> <description> <repository-name> [base-branch] [ticket-id]
+./.claude/skills/start-working/scripts/setup-workspace.sh <task-type> <description> <org/repo-name> [base-branch] [ticket-id]
 ```
 
 **Examples:**
 
 ```bash
 # Auto-detect base branch
-./.claude/skills/start-working/scripts/setup-workspace.sh feature user-auth complex-ai-workspace
+./.claude/skills/start-working/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
 
 # Specify base branch
-./.claude/skills/start-working/scripts/setup-workspace.sh feature user-auth complex-ai-workspace main
+./.claude/skills/start-working/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main
 
 # With ticket ID
-./.claude/skills/start-working/scripts/setup-workspace.sh feature user-auth complex-ai-workspace main PROJ-123
+./.claude/skills/start-working/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main PROJ-123
 
 # Bug fix with auto-detected branch
-./.claude/skills/start-working/scripts/setup-workspace.sh bugfix login-error complex-ai-workspace
+./.claude/skills/start-working/scripts/setup-workspace.sh bugfix login-error github.com/sters/complex-ai-workspace
 
 # Research task with specific branch
-./.claude/skills/start-working/scripts/setup-workspace.sh research performance-analysis complex-ai-workspace develop
+./.claude/skills/start-working/scripts/setup-workspace.sh research performance-analysis github.com/sters/complex-ai-workspace develop
 ```
 
 The script will automatically:
@@ -97,8 +97,9 @@ Task tool:
   subagent_type: workspace-repo-todo-executor
   prompt: |
     Execute tasks in workspace: workspace/feature-user-auth-20260116
+    Repository path: github.com/sters/complex-ai-workspace
     Repository name: complex-ai-workspace
-    Repository path: workspace/feature-user-auth-20260116/complex-ai-workspace
+    Repository worktree path: workspace/feature-user-auth-20260116/github.com/sters/complex-ai-workspace
 ```
 
 **What the agent does:**
