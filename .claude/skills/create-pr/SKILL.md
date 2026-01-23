@@ -9,6 +9,21 @@ description: Create a pull request following the repository's PR template
 
 This skill creates a pull request while respecting the repository's PR template. It ensures consistent PR formatting across all repositories.
 
+## Prerequisites (Recommended)
+
+Before creating a PR, it's recommended to run a code review:
+
+```
+/review-workspace-changes
+```
+
+This ensures:
+- Code quality issues are identified before PR creation
+- Review feedback can be addressed beforehand
+- The PR is more likely to pass review on first submission
+
+If you haven't run the review yet, consider doing so before proceeding.
+
 ## Steps
 
 ### 1. Check for PR Template
@@ -84,15 +99,6 @@ EOF
 After creating the PR:
 - Confirm the PR URL is returned
 - Verify the PR appears correctly on GitHub
-
-## Usage by Sub-Agents
-
-Sub-agents (like `workspace-repo-todo-executor`) should follow this skill when creating PRs:
-
-1. Before calling `gh pr create`, check for PR templates
-2. Read the template if found
-3. Format the PR body according to the template
-4. Create the PR with properly formatted content
 
 ## Example
 

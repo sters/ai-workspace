@@ -2,22 +2,25 @@
 
 set -e
 
-# Usage: ./setup-workspace.sh <task-type> <description> <org/repo-name> [base-branch] [ticket-id]
+# Usage: ./setup-workspace.sh <task-type> <description> <org/repo-name> [ticket-id]
 # Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
-# Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main
-# Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main PROJ-123
+# Example: ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace PROJ-123
+#
+# Base branch is auto-detected from remote. To override, set BASE_BRANCH environment variable:
+# BASE_BRANCH=develop ./setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
 
 TASK_TYPE="$1"
 DESCRIPTION="$2"
 REPOSITORY_PATH_INPUT="$3"
-BASE_BRANCH="$4"
-TICKET_ID="$5"
+TICKET_ID="$4"
+# BASE_BRANCH can be set via environment variable, otherwise it will be auto-detected
 
 if [ -z "$TASK_TYPE" ] || [ -z "$DESCRIPTION" ] || [ -z "$REPOSITORY_PATH_INPUT" ]; then
-    echo "Usage: $0 <task-type> <description> <org/repo-name> [base-branch] [ticket-id]"
+    echo "Usage: $0 <task-type> <description> <org/repo-name> [ticket-id]"
     echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace"
-    echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace main"
-    echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace main PROJ-123"
+    echo "Example: $0 feature user-auth github.com/sters/complex-ai-workspace PROJ-123"
+    echo ""
+    echo "Base branch is auto-detected. To override: BASE_BRANCH=develop $0 ..."
     exit 1
 fi
 
@@ -59,10 +62,15 @@ if [ ! -d "$REPOSITORY_PATH" ]; then
     # Create parent directory structure
     mkdir -p "$(dirname "$REPOSITORY_PATH")"
     git clone "$REPO_URL" "$REPOSITORY_PATH"
+    cd "$REPOSITORY_PATH"
+    # Ensure origin/HEAD is set after clone
+    git remote set-head origin --auto 2>/dev/null || true
 else
     echo "==> Updating repository..."
     cd "$REPOSITORY_PATH"
     git fetch --all --prune
+    # Set origin/HEAD to track the remote default branch
+    git remote set-head origin --auto 2>/dev/null || true
     echo "Repository updated"
 fi
 
@@ -96,123 +104,38 @@ git worktree add -b "$NEW_BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH"
 echo "Worktree created: $WORKTREE_PATH"
 echo "New branch: $NEW_BRANCH (based on origin/$BASE_BRANCH)"
 
-# Step 4: Create README.md
+# Templates directory
+TEMPLATES_DIR="$SCRIPT_DIR/templates"
+
+# Step 4: Create README.md from template
 echo "==> Creating README.md..."
-cat > "$WORKING_DIR/README.md" << EOF
-# Task: ${DESCRIPTION}
-
-## Overview
-
-**Task Type**: ${TASK_TYPE}
-**Ticket ID**: ${TICKET_ID:-N/A}
-**Date**: $(date +%Y-%m-%d)
-**Target Repository**: ${REPOSITORY_NAME}
-**Base Branch**: ${BASE_BRANCH}
-
-## Objective
-
-<!-- Describe what needs to be accomplished -->
-
-## Context
-
-<!-- Background information and why this task is needed -->
-
-## Requirements
-
-<!-- Specific requirements and acceptance criteria -->
-
-## Related Resources
-
-<!-- Links to issues, documentation, etc. -->
-EOF
+sed -e "s/{{DESCRIPTION}}/${DESCRIPTION}/g" \
+    -e "s/{{TASK_TYPE}}/${TASK_TYPE}/g" \
+    -e "s/{{TICKET_ID}}/${TICKET_ID:-N\/A}/g" \
+    -e "s/{{DATE}}/$(date +%Y-%m-%d)/g" \
+    -e "s/{{REPOSITORY_NAME}}/${REPOSITORY_NAME}/g" \
+    -e "s/{{BASE_BRANCH}}/${BASE_BRANCH}/g" \
+    "$TEMPLATES_DIR/README.md" > "$WORKING_DIR/README.md"
 echo "Created: $WORKING_DIR/README.md"
 
-# Step 5: Create TODO-<repository-name>.md based on task type
+# Step 5: Create TODO-<repository-name>.md from template based on task type
 TODO_FILE="$WORKING_DIR/TODO-${REPOSITORY_NAME}.md"
 echo "==> Creating TODO-${REPOSITORY_NAME}.md..."
 case "$TASK_TYPE" in
     feature|implementation)
-        cat > "$TODO_FILE" << EOF
-# TODO: ${REPOSITORY_NAME}
-
-## Implementation Tasks
-
-- [ ] Create feature/fix branch from base branch
-- [ ] Implement code changes
-- [ ] Write/update unit tests
-- [ ] Run tests locally and verify all pass
-- [ ] Run linter and fix any issues
-- [ ] Update documentation if needed
-- [ ] Review past commit messages with \`git log\` for reference
-- [ ] Commit changes with descriptive message following repository conventions
-- [ ] Push branch to remote
-- [ ] Address review comments
-
-## Notes
-
-<!-- Add any notes, blockers, or additional tasks here -->
-EOF
+        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-feature.md"
         ;;
     research)
-        cat > "$TODO_FILE" << EOF
-# TODO: ${REPOSITORY_NAME}
-
-## Research Tasks
-
-- [ ] Define research questions
-- [ ] Identify information sources
-- [ ] Conduct research and document findings
-- [ ] Summarize conclusions and recommendations
-- [ ] Review and validate results
-
-**Note**: Branch creation, commits, and pushes are typically NOT needed for research tasks.
-
-## Notes
-
-<!-- Add any notes, blockers, or additional tasks here -->
-EOF
+        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-research.md"
         ;;
     bugfix|bug)
-        cat > "$TODO_FILE" << EOF
-# TODO: ${REPOSITORY_NAME}
-
-## Bug Fix Tasks
-
-- [ ] Reproduce the bug locally
-- [ ] Create bugfix branch from base branch
-- [ ] Identify root cause
-- [ ] Implement fix
-- [ ] Add regression test
-- [ ] Verify bug is fixed
-- [ ] Run all related tests
-- [ ] Run linter
-- [ ] Review past commit messages with \`git log\` for reference
-- [ ] Commit changes with descriptive message following repository conventions
-- [ ] Push branch to remote
-- [ ] Address review comments
-
-## Notes
-
-<!-- Add any notes, blockers, or additional tasks here -->
-EOF
+        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-bugfix.md"
         ;;
     *)
-        cat > "$TODO_FILE" << EOF
-# TODO: ${REPOSITORY_NAME}
-
-## Tasks
-
-- [ ] Define task requirements
-- [ ] Create implementation plan
-- [ ] Execute work
-- [ ] Verify completion
-
-## Notes
-
-<!-- Add any notes, blockers, or additional tasks here -->
-EOF
+        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-default.md"
         ;;
 esac
+sed -e "s/{{REPOSITORY_NAME}}/${REPOSITORY_NAME}/g" "$TEMPLATE_FILE" > "$TODO_FILE"
 echo "Created: $TODO_FILE"
 
 echo ""

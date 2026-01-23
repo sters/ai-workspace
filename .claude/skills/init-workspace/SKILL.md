@@ -20,34 +20,32 @@ Before running the setup script, ensure you have:
 - Task type (feature, bugfix, research, etc.)
 - Brief description
 - Target repository path in org/repo format (e.g., github.com/sters/complex-ai-workspace)
-- Base branch (optional - will be auto-detected if not specified)
 - Ticket ID (optional)
+
+**Note:** Base branch is automatically detected from the remote default (main/master). You don't need to specify it.
 
 ### 2. Run Setup Script
 
 Execute the setup script with the required parameters:
 
 ```bash
-./.claude/skills/init-workspace/scripts/setup-workspace.sh <task-type> <description> <org/repo-name> [base-branch] [ticket-id]
+./.claude/skills/init-workspace/scripts/setup-workspace.sh <task-type> <description> <org/repo-name> [ticket-id]
 ```
 
 **Examples:**
 
 ```bash
-# Auto-detect base branch
+# Basic usage - base branch is auto-detected
 ./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
 
-# Specify base branch
-./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main
-
 # With ticket ID
-./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace main PROJ-123
+./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace PROJ-123
 
-# Bug fix with auto-detected branch
+# Bug fix
 ./.claude/skills/init-workspace/scripts/setup-workspace.sh bugfix login-error github.com/sters/complex-ai-workspace
 
-# Research task with specific branch
-./.claude/skills/init-workspace/scripts/setup-workspace.sh research performance-analysis github.com/sters/complex-ai-workspace develop
+# Research task
+./.claude/skills/init-workspace/scripts/setup-workspace.sh research performance-analysis github.com/sters/complex-ai-workspace
 ```
 
 The script will automatically:

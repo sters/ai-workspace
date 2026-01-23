@@ -39,10 +39,18 @@ When invoked, you will receive:
    - Read `README.md` in the workspace directory to understand the task
    - Read `TODO-<repository-name>.md` to see what needs to be done for that repository
 
-2. **Understand the repository**:
+2. **Understand the repository** (read documentation first):
    - Navigate to the repository worktree
+   - **Read repository documentation**:
+     - `README.md` - project overview, setup instructions, development workflow
+     - `CLAUDE.md` - AI-specific instructions, build/test/lint commands, coding conventions (if exists)
+     - `CONTRIBUTING.md` - contribution guidelines (if exists)
    - Check current git branch and status (worktree is already on base branch)
-   - Understand the project structure (package.json, go.mod, Makefile, etc.)
+
+3. **Understand project structure and tooling**:
+   - Check for `Makefile` and identify available targets (test, lint, build, etc.) - **Makefile targets take priority**
+   - Check for `package.json`, `go.mod`, `pyproject.toml`, etc. to understand the tech stack
+   - Identify the correct commands for build, test, and lint based on documentation read in step 2
 
 ## Execution Guidelines
 
@@ -63,16 +71,30 @@ When invoked, you will receive:
    - Verify no conflicts with concurrent modifications
    - Document the blocker in the Notes section of the TODO file
    - Move to the next item if possible, or report the blocker
+5. If you discover new TODOs during work:
+   - Add them to the TODO file under a "## Discovered Tasks" section
+   - Do not work on them immediately - complete the current TODO list first
+   - If the new TODO is a blocker for the current task, note it and proceed with other items
 
 ### Code Changes
 
 When implementing code changes:
 
-1. **Understand before modifying**: Read relevant files before making changes
-2. **Small, focused commits**: Make commits after completing logical units of work
-3. **Run tests**: Execute the project's test suite after changes
-4. **Run linter**: Execute the project's linter and fix issues
-5. **Follow conventions**: Match existing code style and commit message patterns
+1. **Check repository's development methodology first**:
+   - Look in CLAUDE.md, CONTRIBUTING.md, or README.md for development guidelines
+   - If a specific methodology is documented (e.g., TDD, BDD, specific workflow), follow it exactly
+
+2. **If no methodology is specified, use TDD (Test-Driven Development)**:
+   - **Red**: Write a failing test first that describes the expected behavior
+   - **Green**: Write the minimum code to make the test pass
+   - **Refactor**: Clean up the code while keeping tests green
+   - Repeat for each small increment of functionality
+
+3. **Understand before modifying**: Read relevant files before making changes
+4. **Small, focused commits**: Make commits after completing logical units of work
+5. **Run tests**: Execute the project's test suite after changes
+6. **Run linter**: Execute the project's linter and fix issues
+7. **Follow conventions**: Match existing code style and commit message patterns
 
 ### Git Workflow
 
@@ -95,55 +117,49 @@ git commit -m "descriptive message"
 git log --oneline -5  # Review commits
 ```
 
-### Testing
+#### Commit Message Format
 
-Always run tests appropriate for the repository:
+1. **Check repository conventions first**:
+   - Look in CONTRIBUTING.md, CLAUDE.md, or README.md for commit message guidelines
+   - Check `git log` to see existing commit message patterns in the repository
+2. **If a format is specified**, follow it exactly (e.g., Conventional Commits, Angular style, etc.)
+3. **If no format is specified**, use a clear, descriptive message:
+   - Start with a verb (Add, Fix, Update, Remove, Refactor, etc.)
+   - Keep the first line under 50 characters if possible
+   - Add details in the body if needed
 
-- **Node.js**: `npm test` or `pnpm test` or `yarn test`
-- **Go**: `go test ./...`
-- **Python**: `pytest` or `python -m pytest`
-- **General**: Check `Makefile`, `package.json`, or CI config for test commands
+### Testing and Linting
 
-### Linting
+**Follow this priority order:**
 
-Run linters before completing:
+1. **Repository documentation** (README.md, CLAUDE.md) - if commands are specified, use them
+2. **Makefile targets** - if no documentation, check for `make test`, `make lint`, etc.
+3. **Language-specific defaults** - only if neither of the above exists
 
-- **Node.js**: `npm run lint` or `eslint`
-- **Go**: `go vet ./...` and `golangci-lint run`
-- **Python**: `flake8` or `ruff`
-- **General**: Check project configuration for lint commands
+#### If documented in README.md or CLAUDE.md
+
+Use exactly the commands specified in the repository's documentation. These were written by the maintainers and reflect the correct way to run tests and linters for that project.
+
+#### If not documented, check Makefile
+
+```bash
+# Look for test/lint targets
+grep -E '^(test|lint|check|verify|fmt|format)' Makefile 2>/dev/null
+```
+
+Use available targets: `make test`, `make lint`, `make check`, etc.
+
+#### If no Makefile, use language defaults
+
+| Language | Test | Lint |
+|----------|------|------|
+| Node.js | `npm test` | `npm run lint` |
+| Go | `go test ./...` | `go vet ./...` |
+| Python | `pytest` | `ruff check` or `flake8` |
 
 ### Creating Pull Requests
 
-When a TODO item requires creating a PR, follow the `/create-pr` skill guidelines:
-
-1. **Check for PR template** in the repository:
-   ```bash
-   find . -iname "*pull_request_template*" -type f 2>/dev/null
-   ```
-   Common locations: `.github/PULL_REQUEST_TEMPLATE.md`, `.github/pull_request_template.md`
-
-2. **Read and follow the template** if one exists
-
-3. **Create the PR** using `gh pr create` with proper formatting:
-   ```bash
-   gh pr create --title "Title" --body "$(cat <<'EOF'
-   <Fill in template sections or use default format>
-   EOF
-   )"
-   ```
-
-4. **Default format** (if no template):
-   ```markdown
-   ## Summary
-   <bullet points>
-
-   ## Test plan
-   <how tested>
-
-   ## Related issues
-   <links or N/A>
-   ```
+When a TODO item requires creating a PR, use the `/create-pr` skill. Do not create PRs manually.
 
 ## Scope Boundaries
 
