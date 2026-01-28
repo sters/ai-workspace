@@ -23,19 +23,7 @@ First, determine which workspace to review:
 ls -d workspace/*/
 ```
 
-### 2. Understand the Task Context
-
-Read the workspace README.md to understand:
-- Task name and type
-- Task description
-- Target repositories
-- Base branches for each repository
-
-```bash
-cat workspace/{workspace-name}/README.md
-```
-
-### 3. Identify Repositories to Review
+### 2. Identify Repositories to Review
 
 Find all repository worktrees in the workspace:
 
@@ -54,16 +42,17 @@ For each repository directory:
 2. Determine the base branch (from README.md or ask user)
 3. Prepare parameters for the review agent
 
-### 4. Create Reviews Directory
+### 3. Create Reviews Directory
 
-Create a directory for storing review results. **Important**: Capture the timestamp once and reuse it for all parallel agents to ensure consistency.
+Run the script to create a timestamped review directory. **Important**: Capture the output path and reuse it for all parallel agents to ensure consistency.
 
 ```bash
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-mkdir -p workspace/{workspace-name}/reviews/${TIMESTAMP}
+REVIEW_DIR=$(.claude/skills/review-workspace-changes/scripts/prepare-review-dir.sh {workspace-name})
 ```
 
-### 5. Delegate to Review Agent for Each Repository
+The script outputs the created directory path (e.g., `workspace/{workspace-name}/reviews/20260116-103045`).
+
+### 4. Delegate to Review Agent for Each Repository
 
 For each repository in the workspace, use the Task tool to launch the `review-workspace-repo-changes` agent:
 
@@ -87,117 +76,30 @@ Task tool:
 
 **Important**: Launch review agents in parallel if there are multiple repositories to review efficiently. Pass the same `{timestamp}` value to all agents.
 
-### 6. Collect Review Results
+### 5. Collect Review Results and Create Summary Report
 
-After all review agents complete, read each review document:
+After all review agents complete, use the Task tool to launch the `collect-review-results` agent:
 
-```bash
-ls workspace/{workspace-name}/reviews/{timestamp}/*.md
+```yaml
+Task tool:
+  subagent_type: collect-review-results
+  prompt: |
+    Collect review results from the review directory.
+
+    Review Directory: {review-dir}
+    Workspace Name: {workspace-name}
 ```
 
-For each review file, extract:
-- Overall assessment
-- Critical issues count
-- Warnings count
-- Suggestions count
-- Key recommendations
+The agent will:
+1. Read all review files and extract statistics
+2. Create `SUMMARY.md` in the review directory
+3. Return aggregated results for presenting to the user
 
-### 7. Create Summary Report
+### 6. Present Summary to User
 
-Create a consolidated summary at `workspace/{workspace-name}/reviews/{timestamp}/SUMMARY.md`:
+Display a concise summary to the user.
 
-```markdown
-# Workspace Review Summary
-
-**Workspace**: {workspace-name}
-**Review Date**: {timestamp}
-**Repositories Reviewed**: {count}
-
-## Overview
-
-{Brief overview of the workspace task and what was reviewed}
-
-## Summary by Repository
-
-### {Repository 1 Name}
-
-- **Review File**: [{org}_{repo-name}.md](./{org}_{repo-name}.md)
-- **Overall Assessment**: {assessment}
-- **Critical Issues**: {count}
-- **Warnings**: {count}
-- **Suggestions**: {count}
-- **Key Points**: {1-2 sentence summary}
-
-### {Repository 2 Name}
-
-...
-
-## Aggregate Statistics
-
-- **Total Critical Issues**: {sum across all repos}
-- **Total Warnings**: {sum across all repos}
-- **Total Suggestions**: {sum across all repos}
-- **Files Reviewed**: {sum across all repos}
-
-## Top Priority Issues
-
-{List the most critical issues across all repositories}
-
-1. **{Repository}**: {Critical issue description}
-2. **{Repository}**: {Critical issue description}
-...
-
-## Overall Recommendations
-
-{Consolidated recommendations across all repositories}
-
-1. {Recommendation 1}
-2. {Recommendation 2}
-...
-
-## Next Steps
-
-{Suggested actions based on the review findings}
-
-- [ ] Address critical issues in {repository}
-- [ ] Review and fix warnings
-- [ ] Consider suggestions for code quality improvements
-- [ ] Update tests as recommended
-- [ ] Update documentation as needed
-
-## Conclusion
-
-{Final assessment of the workspace changes}
-```
-
-### 8. Present Summary to User
-
-Display a concise summary to the user:
-
-```
-## Review Complete
-
-Reviewed {count} repositories in workspace/{workspace-name}
-
-**Results Summary**:
-- Critical Issues: {total}
-- Warnings: {total}
-- Suggestions: {total}
-
-**Reports Generated**:
-- Summary: workspace/{workspace-name}/reviews/{timestamp}/SUMMARY.md
-- Individual Reviews:
-  - {org}_{repo1}.md
-  - {org}_{repo2}.md
-  ...
-
-**Top Priorities**:
-1. {Most critical issue}
-2. {Second most critical issue}
-...
-
-**Recommendation**: {High-level recommendation about merge readiness}
-```
+Refer to `.claude/skills/review-workspace-changes/templates/user-summary.md` for the format and fill in the placeholders with the collected results.
 
 ## Example Usage
 
@@ -206,7 +108,7 @@ Reviewed {count} repositories in workspace/{workspace-name}
 ```
 User: Review the changes in my current workspace
 Assistant: Let me review the workspace. First, I'll identify which workspace you're working in...
-[Reads README.md, identifies repositories, launches review agents]
+[Identifies repositories, launches review agents]
 [After completion]
 Review complete! I found 2 critical issues and 5 warnings across 3 repositories.
 Summary: workspace/feature-user-auth-20260116/reviews/20260116-103045/SUMMARY.md
@@ -222,18 +124,12 @@ Assistant: I'll review the workspace/feature-login-fix-20260115 workspace...
 Review complete! All changes look good with 0 critical issues and 3 suggestions.
 ```
 
-## Tips
-
-- **Parallel Execution**: Launch all repository review agents in parallel for faster execution
-- **Error Handling**: If a repository review fails, continue with others and report which failed. Include a "Failed Reviews" section in the summary with the repository name and error message for debugging.
-- **User Confirmation**: If unsure about base branches, ask the user before proceeding
-- **Comprehensive Output**: Always generate both individual reviews and a summary report
-- **Relative Paths**: Use relative paths in the summary to make markdown links work correctly
-- **Filename Format**: Always replace slashes (`/`) in repository paths with underscores (`_`) when generating filenames
-
 ## Notes
 
 - The skill delegates actual review work to the `review-workspace-repo-changes` agent
 - Each repository is reviewed independently and in parallel
 - Review results are timestamped to avoid overwriting previous reviews
 - The summary provides a high-level view while individual reports contain detailed findings
+- Launch all repository review agents in parallel for faster execution
+- If a repository review fails, continue with others and report which failed
+- Always replace slashes (`/`) in repository paths with underscores (`_`) when generating filenames

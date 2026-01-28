@@ -7,73 +7,92 @@ description: Execute tasks in an initialized workspace by working through TODO i
 
 ## Overview
 
-This skill helps you execute work in an already initialized workspace. It works through TODO items, delegates to sub-agents, and verifies completion.
+This skill executes work in an initialized workspace by delegating to the `workspace-repo-todo-executor` agent for each repository. It works through TODO items, runs tests/linters, and commits changes.
 
 **Prerequisites:** The workspace must be initialized first using `/init-workspace`.
 
 ## Steps
 
-### 1. Execute Work According to TODO
+### 1. Identify the Workspace
 
-- Work through `TODO-<repository-name>.md` checklist items sequentially
-- Check off items as you complete them
-- Update the TODO file if you discover additional tasks
-- Add notes or blockers under each item if needed
-- If you encounter issues, document them in the TODO file
-- Regularly save and commit your progress
-- Do not proceed to next items if current item has blockers
+- If the user specifies a workspace directory, use that
+- If not specified, ask the user which workspace they want to execute
+- List available workspaces if needed:
 
-**Handling User Requests During Execution:**
+```bash
+ls -d workspace/*/
+```
 
-When the user provides additional requirements or requests changes during execution, the **main orchestrating agent** (not the sub-agent) should:
+### 2. Identify Repositories
 
-- Read the corresponding `TODO-<repository-name>.md` file
-- Add new TODO items or update existing ones to reflect the new requirements
-- Update the README.md if the task scope or objectives has changed
-- Either continue execution directly or re-delegate to the workspace-repo-todo-executor sub-agent with updated context
+Find all repository worktrees in the workspace:
 
-Note: The sub-agent operates autonomously on the TODO list and does not handle interactive user requests. User interactions should be handled by the main agent before delegation.
+```bash
+ls -d workspace/{workspace-name}/*/
+```
 
-### 2. Delegate to workspace-repo-todo-executor SubAgent
+For each repository directory, extract:
+- Repository path (e.g., `github.com/sters/complex-ai-workspace`)
+- Repository name (e.g., `complex-ai-workspace`)
 
-Use the `workspace-repo-todo-executor` sub-agent to autonomously execute TODO items, run tests/linters, and commit changes.
+### 3. Delegate to workspace-repo-todo-executor Agent
 
-**How to invoke:**
-
-Use the Task tool to launch the workspace-repo-todo-executor agent:
+For each repository in the workspace, use the Task tool to launch the `workspace-repo-todo-executor` agent:
 
 ```yaml
 Task tool:
   subagent_type: workspace-repo-todo-executor
   prompt: |
-    Execute tasks in workspace: workspace/feature-user-auth-20260116
-    Repository path: github.com/sters/complex-ai-workspace
-    Repository name: complex-ai-workspace
-    Repository worktree path: workspace/feature-user-auth-20260116/github.com/sters/complex-ai-workspace
+    Execute tasks in workspace: workspace/{workspace-name}
+    Repository path: {org/repo-path}
+    Repository name: {repo-name}
+    Repository worktree path: workspace/{workspace-name}/{org}/{repo}
 ```
 
 **What the agent does:**
 
-- Reads README.md and `TODO-<repository-name>.md` to understand the task
+- Reads README.md and `TODO-{repository-name}.md` to understand the task
 - Executes TODO items sequentially
 - Updates the TODO file as items are completed
 - Runs tests and linters
 - Makes commits with descriptive messages
 - Reports completion summary
 
-**When to use SubAgent delegation:**
+**Important**: Launch agents in parallel if there are multiple repositories.
 
-- Task has 5+ TODO items
-- Task requires research and implementation
-- Task is self-contained and well-defined
-- You need to maintain focus on high-level coordination
+### 4. Report Results
 
-### 3. Verification Before Completion
+After all agents complete, report the execution summary to the user:
 
-Before considering the task complete:
+- Completed TODO items count
+- Remaining TODO items (if any)
+- Test/lint status
+- Commits made
 
-- [ ] All TODO items are checked off (or all phases completed)
-- [ ] All tests pass
-- [ ] No linter errors
-- [ ] Documentation is updated
-- [ ] Changes are committed and pushed (if applicable)
+## Example Usage
+
+### Example 1: Execute Current Workspace
+
+```
+User: Execute the tasks in my workspace
+Assistant: Let me identify the workspace and execute the TODO items...
+[Identifies repositories, launches executor agents]
+[After completion]
+Execution complete! Completed 8 TODO items across 2 repositories.
+```
+
+### Example 2: Execute Specific Workspace
+
+```
+User: Execute workspace/feature-user-auth-20260116
+Assistant: I'll execute the tasks in workspace/feature-user-auth-20260116...
+[Launches executor agent for each repository]
+[After completion]
+All TODO items completed. Tests passing, no lint errors.
+```
+
+## Notes
+
+- The skill delegates actual work to the `workspace-repo-todo-executor` agent
+- Each repository is processed by its own agent instance
+- The agent handles test execution, linting, and commits autonomously

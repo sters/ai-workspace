@@ -46,6 +46,9 @@ Execute the setup script with the required parameters:
 
 # Research task
 ./.claude/skills/init-workspace/scripts/setup-workspace.sh research performance-analysis github.com/sters/complex-ai-workspace
+
+# Override base branch - use when the user explicitly specifies a branch
+BASE_BRANCH=develop ./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
 ```
 
 The script will automatically:
@@ -63,6 +66,31 @@ After setup completes:
 - Open the generated `README.md` and fill in task details
 - Review and customize `TODO-<repository-name>.md` checklist as needed
 
+## Example Usage
+
+### Example 1: Basic Feature
+
+```
+User: Initialize a workspace for user authentication feature in github.com/org/repo
+Assistant: [Runs setup script with task-type=feature, description=user-auth]
+Workspace created: workspace/feature-user-auth-20260116
+```
+
+### Example 2: Bug Fix with Ticket
+
+```
+User: Create a workspace to fix login bug, ticket PROJ-123, in github.com/org/repo
+Assistant: [Runs setup script with task-type=bugfix, ticket-id=PROJ-123]
+Workspace created: workspace/bugfix-PROJ-123-login-fix-20260116
+```
+
+### Example 3: With Specific Branch
+
+```
+User: Initialize workspace for feature X based on develop branch
+Assistant: [Runs setup script with BASE_BRANCH=develop]
+```
+
 ## Next Steps
 
 After initialization is complete, use `/execute-workspace` to:
@@ -70,3 +98,9 @@ After initialization is complete, use `/execute-workspace` to:
 - Delegate to workspace-repo-todo-executor agent
 - Run tests and linters
 - Verify completion
+
+## Notes
+
+- Base branch is auto-detected from remote default unless explicitly specified
+- The setup script creates both README.md and TODO file from templates
+- Workspace naming convention: `{task-type}-{ticket-id}-{description}-{date}` or `{task-type}-{description}-{date}`

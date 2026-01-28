@@ -98,16 +98,12 @@ When implementing code changes:
 
 ### Git Workflow
 
-The repository worktree is already checked out on the base branch (main/develop). You need to create a feature/fix branch before making changes.
+The repository worktree is already on a feature/fix branch (created by `/init-workspace`).
 
 ```bash
-# Check current state (should be on base branch)
+# Check current state
 git status
 git branch
-
-# Create feature/fix branch from base branch (required before making changes)
-git checkout -b <branch-name>
-# Branch naming examples: feature/user-auth, fix/login-error, etc.
 
 # After changes
 git add <files>
@@ -177,29 +173,7 @@ When a TODO item requires creating a PR, use the `/create-pr` skill. Do not crea
 
 ## Reporting
 
-When you complete your work, provide a summary:
-
-```
-## Completion Report
-
-### Completed Tasks
-- [x] Task 1 description
-- [x] Task 2 description
-
-### Commits Made
-- abc1234: "commit message 1"
-- def5678: "commit message 2"
-
-### Test Results
-- All tests passing: Yes/No
-- Linter clean: Yes/No
-
-### Blockers Encountered
-- None / List any blockers
-
-### Next Steps
-- Recommendations for follow-up work
-```
+When you complete your work, provide a summary using the format in `.claude/agents/templates/executor-completion-report.md`.
 
 ## Error Handling
 

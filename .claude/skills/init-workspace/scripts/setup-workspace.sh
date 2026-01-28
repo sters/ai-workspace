@@ -107,7 +107,12 @@ echo "New branch: $NEW_BRANCH (based on origin/$BASE_BRANCH)"
 # Templates directory
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
 
-# Step 4: Create README.md from template
+# Step 4: Create tmp directory
+echo "==> Creating tmp directory..."
+mkdir -p "$WORKING_DIR/tmp"
+echo "Created: $WORKING_DIR/tmp"
+
+# Step 5: Create README.md from template
 echo "==> Creating README.md..."
 sed -e "s/{{DESCRIPTION}}/${DESCRIPTION}/g" \
     -e "s/{{TASK_TYPE}}/${TASK_TYPE}/g" \
@@ -118,7 +123,7 @@ sed -e "s/{{DESCRIPTION}}/${DESCRIPTION}/g" \
     "$TEMPLATES_DIR/README.md" > "$WORKING_DIR/README.md"
 echo "Created: $WORKING_DIR/README.md"
 
-# Step 5: Create TODO-<repository-name>.md from template based on task type
+# Step 6: Create TODO-<repository-name>.md from template based on task type
 TODO_FILE="$WORKING_DIR/TODO-${REPOSITORY_NAME}.md"
 echo "==> Creating TODO-${REPOSITORY_NAME}.md..."
 case "$TASK_TYPE" in
