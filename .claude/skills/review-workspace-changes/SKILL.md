@@ -59,6 +59,7 @@ For each repository in the workspace, use the Task tool to launch the `review-wo
 ```yaml
 Task tool:
   subagent_type: review-workspace-repo-changes
+  run_in_background: true
   prompt: |
     Review changes for repository in workspace.
 
@@ -83,6 +84,7 @@ After all review agents complete, use the Task tool to launch the `collect-revie
 ```yaml
 Task tool:
   subagent_type: collect-review-results
+  run_in_background: true
   prompt: |
     Collect review results from the review directory.
 

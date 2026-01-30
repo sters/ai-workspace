@@ -46,6 +46,7 @@ For each repository in the workspace, use the Task tool to launch the `create-pr
 ```yaml
 Task tool:
   subagent_type: create-pr
+  run_in_background: true
   prompt: |
     Create a pull request for the repository.
 

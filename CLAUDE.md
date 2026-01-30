@@ -119,12 +119,13 @@ BASE_BRANCH=develop ./.claude/skills/init-workspace/scripts/setup-workspace.sh f
 
 ## Sub-Agent Invocation
 
-When delegating to sub-agents, use the Task tool:
+When delegating to sub-agents, use the Task tool. **IMPORTANT: Always run agents in background** using `run_in_background: true`.
 
 ```yaml
 # Execute TODO items
 Task tool:
   subagent_type: workspace-repo-todo-executor
+  run_in_background: true
   prompt: |
     Execute tasks in workspace: workspace/{workspace-name}
     Repository path: {org/repo-path}
@@ -134,6 +135,7 @@ Task tool:
 # Review changes
 Task tool:
   subagent_type: review-workspace-repo-changes
+  run_in_background: true
   prompt: |
     Review changes for repository in workspace.
     Task Name: {task-name}
@@ -164,6 +166,7 @@ Task tool:
 - Re-read TODO files before updating (detect concurrent modifications)
 - Run tests and linters before completing work
 - Follow repository-specified methodology (TDD if not specified)
+- **Always run sub-agents in background** (`run_in_background: true`)
 
 ## Language Policy
 

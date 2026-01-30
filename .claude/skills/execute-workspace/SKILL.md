@@ -42,6 +42,7 @@ For each repository in the workspace, use the Task tool to launch the `workspace
 ```yaml
 Task tool:
   subagent_type: workspace-repo-todo-executor
+  run_in_background: true
   prompt: |
     Execute tasks in workspace: workspace/{workspace-name}
     Repository path: {org/repo-path}
