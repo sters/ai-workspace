@@ -11,7 +11,7 @@ This skill reviews code changes across all repositories in a workspace by delega
 
 ## Steps
 
-### 1. Workspace and Repositories
+### 1. Workspace
 
 **Required**: User must specify the workspace.
 
@@ -19,7 +19,9 @@ This skill reviews code changes across all repositories in a workspace by delega
   > Please specify a workspace. Example: `/workspace-review-changes workspace/feature-user-auth-20260116`
 - Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
-Find repositories in the workspace:
+### 2. Find Repositories
+
+Find all repository worktrees in the workspace:
 
 ```bash
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
@@ -30,7 +32,7 @@ For each repository:
 2. Determine the base branch (from README.md)
 3. Prepare parameters for the review agent
 
-### 2. Create Reviews Directory
+### 3. Create Reviews Directory
 
 Run the script to create a timestamped review directory. **Important**: Capture the output path and reuse it for all parallel agents to ensure consistency.
 
@@ -40,7 +42,7 @@ REVIEW_DIR=$(.claude/skills/workspace-review-changes/scripts/prepare-review-dir.
 
 The script outputs the created directory path (e.g., `workspace/{workspace-name}/reviews/20260116-103045`).
 
-### 3. Delegate to Review Agent for Each Repository
+### 4. Delegate to Review Agent for Each Repository
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-review-changes` agent:
 
@@ -65,7 +67,7 @@ Task tool:
 
 **Important**: Launch review agents in parallel if there are multiple repositories to review efficiently. Pass the same `{timestamp}` value to all agents.
 
-### 4. Collect Review Results and Create Summary Report
+### 5. Collect Review Results and Create Summary Report
 
 After all review agents complete, use the Task tool to launch the `workspace-collect-reviews` agent:
 
@@ -85,7 +87,7 @@ The agent will:
 2. Create `SUMMARY.md` in the review directory
 3. Return aggregated results for presenting to the user
 
-### 5. Commit Workspace Snapshot
+### 6. Commit Workspace Snapshot
 
 After all reviews complete, commit the workspace changes (including review results):
 
@@ -93,7 +95,7 @@ After all reviews complete, commit the workspace changes (including review resul
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 6. Present Summary to User
+### 7. Present Summary to User
 
 Display a concise summary to the user.
 

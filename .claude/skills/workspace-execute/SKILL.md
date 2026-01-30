@@ -13,7 +13,7 @@ This skill executes work in an initialized workspace by delegating to the `works
 
 ## Steps
 
-### 1. Workspace and Repositories
+### 1. Workspace
 
 **Required**: User must specify the workspace.
 
@@ -21,7 +21,9 @@ This skill executes work in an initialized workspace by delegating to the `works
   > Please specify a workspace. Example: `/workspace-execute workspace/feature-user-auth-20260116`
 - Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
-Find repositories in the workspace:
+### 2. Find Repositories
+
+Find all repository worktrees in the workspace:
 
 ```bash
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
@@ -31,7 +33,7 @@ For each repository, extract:
 - Repository path (e.g., `github.com/sters/complex-ai-workspace`)
 - Repository name (e.g., `complex-ai-workspace`)
 
-### 2. Delegate to workspace-repo-todo-executor Agent
+### 3. Delegate to workspace-repo-todo-executor Agent
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-todo-executor` agent:
 
@@ -57,7 +59,7 @@ Task tool:
 
 **Important**: Launch agents in parallel if there are multiple repositories.
 
-### 3. Commit Workspace Snapshot
+### 4. Commit Workspace Snapshot
 
 After all agents complete, commit the workspace changes:
 
@@ -65,7 +67,7 @@ After all agents complete, commit the workspace changes:
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 4. Report Results
+### 5. Report Results
 
 After all agents complete, report the execution summary to the user:
 

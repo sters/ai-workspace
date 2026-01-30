@@ -13,7 +13,7 @@ This skill creates pull requests for all repositories in a workspace by delegati
 
 ## Steps
 
-### 1. Workspace and Repositories
+### 1. Workspace
 
 **Required**: User must specify the workspace.
 
@@ -21,13 +21,15 @@ This skill creates pull requests for all repositories in a workspace by delegati
   > Please specify a workspace. Example: `/workspace-create-pr workspace/feature-user-auth-20260116`
 - Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
-Find repositories in the workspace:
+### 2. Find Repositories
+
+Find all repository worktrees in the workspace:
 
 ```bash
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
 ```
 
-### 2. Delegate to workspace-repo-create-pr Agent for Each Repository
+### 3. Delegate to workspace-repo-create-pr Agent for Each Repository
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-create-pr` agent:
 
@@ -46,7 +48,7 @@ Task tool:
 
 **Important**: Launch agents in parallel if there are multiple repositories.
 
-### 3. Report Results
+### 4. Report Results
 
 After all agents complete, report the created PR URLs to the user.
 
