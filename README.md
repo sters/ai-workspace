@@ -70,6 +70,51 @@ Agents are autonomous workers that perform specific tasks. They are invoked via 
 - **Completion reports**: Always report results in a structured format
 - **No nesting**: Agents cannot invoke other agents (use skills for orchestration)
 
+**Prompt Structure (`{agent-name}.md`):**
+```markdown
+---
+name: {agent-name}
+description: |
+  Use this agent to {what it does}.
+  Delegate to this agent when you need to:
+  - {use case 1}
+  - {use case 2}
+tools:
+  - Read
+  - Write
+  - ...
+---
+
+# {Agent Title}
+
+{Role description - "You are a specialized agent for..."}
+
+## Initial Context
+
+When invoked, you will receive:
+- **{Parameter}**: {description}
+
+## Execution Steps
+
+### 1. {Step Name}
+{Instructions}
+
+### 2. {Step Name}
+{Instructions}
+
+## Output
+
+{What the agent produces and where}
+
+## Guidelines
+
+{Important rules and constraints}
+
+## Communication
+
+{Completion report format, reference to templates/{agent-name}/}
+```
+
 ### Skills
 
 Skills are user-facing commands (`/skill-name`) that orchestrate agents and scripts.
@@ -95,6 +140,47 @@ Skills are user-facing commands (`/skill-name`) that orchestrate agents and scri
 - **Script preference**: Simple tasks use scripts directly, complex tasks delegate to agents
 - **Confirmation prompts**: Destructive actions require user confirmation
 - **Next step guidance**: After completion, suggest logical next steps
+
+**Prompt Structure (`SKILL.md`):**
+```markdown
+---
+name: {skill-name}
+description: {Short description}
+---
+
+# {skill-name}
+
+## Overview
+
+{What this skill does, when to use it}
+
+**After completion:** {Suggested next skill}
+
+## Execution Flow (for complex skills)
+
+{ASCII diagram showing orchestration flow}
+
+## Steps
+
+### 1. {Step Name}
+{Instructions, script calls, or agent delegation}
+
+### 2. {Step Name}
+{Instructions}
+
+## Example Usage
+
+### Example 1: {Scenario}
+{User/Assistant interaction example}
+
+## Next Steps - Ask User to Proceed
+
+{AskUserQuestion tool example for suggesting next actions}
+
+## Notes
+
+{Additional information, constraints}
+```
 
 **Shared Scripts:**
 Scripts used across multiple skills/agents are placed in `.claude/scripts/`:
