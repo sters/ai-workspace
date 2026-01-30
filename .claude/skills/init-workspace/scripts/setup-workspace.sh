@@ -102,8 +102,8 @@ git worktree add -b "$NEW_BRANCH" "$WORKTREE_PATH" "origin/$BASE_BRANCH"
 echo "Worktree created: $WORKTREE_PATH"
 echo "New branch: $NEW_BRANCH (based on origin/$BASE_BRANCH)"
 
-# Templates directory
-TEMPLATES_DIR="$SCRIPT_DIR/templates"
+# Templates directory (one level up from scripts/)
+TEMPLATES_DIR="$SCRIPT_DIR/../templates"
 
 # Step 4: Create tmp directory
 echo "==> Creating tmp directory..."
@@ -141,30 +141,11 @@ sed -e "s/{{DESCRIPTION}}/${DESCRIPTION}/g" \
     "$TEMPLATES_DIR/README.md" > "$WORKING_DIR/README.md"
 echo "Created: $WORKING_DIR/README.md"
 
-# Step 7: Create TODO-<repository-name>.md from template based on task type
-TODO_FILE="$WORKING_DIR/TODO-${REPOSITORY_NAME}.md"
-echo "==> Creating TODO-${REPOSITORY_NAME}.md..."
-case "$TASK_TYPE" in
-    feature|implementation)
-        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-feature.md"
-        ;;
-    research)
-        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-research.md"
-        ;;
-    bugfix|bug)
-        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-bugfix.md"
-        ;;
-    *)
-        TEMPLATE_FILE="$TEMPLATES_DIR/TODO-default.md"
-        ;;
-esac
-sed -e "s/{{REPOSITORY_NAME}}/${REPOSITORY_NAME}/g" "$TEMPLATE_FILE" > "$TODO_FILE"
-echo "Created: $TODO_FILE"
-
-# Step 8: Create initial git commit for workspace tracking
+# Step 7: Create initial git commit for workspace tracking
+# Note: TODO files are created by workspace-repo-todo-planner agent, not by this script
 echo "==> Creating initial git commit..."
 cd "$WORKING_DIR"
-git add .gitignore README.md "TODO-${REPOSITORY_NAME}.md"
+git add .gitignore README.md
 git commit --quiet -m "Initial: $WORKING_DIR_NAME workspace created"
 echo "Initial commit created"
 
@@ -175,5 +156,5 @@ echo "Repository worktree: $WORKTREE_PATH"
 echo ""
 echo "Next steps:"
 echo "1. Update README.md with task details"
-echo "2. Review and customize TODO-${REPOSITORY_NAME}.md"
-echo "3. Start working through the TODO items"
+echo "2. Run workspace-repo-todo-planner to create TODO items"
+echo "3. Run workspace-todo-coordinator to optimize for parallel execution"

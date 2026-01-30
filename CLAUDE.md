@@ -9,7 +9,7 @@ This is a multi-repository workspace manager for Claude Code. It enables complex
 ## Quick Start
 
 ```bash
-# 1. Initialize workspace (creates worktree, README, TODO files)
+# 1. Initialize workspace (creates worktree, README, plans TODO items via agents)
 /init-workspace feature user-auth github.com/org/repo
 
 # 2. Execute TODO items (delegates to workspace-repo-todo-executor agent)
@@ -46,11 +46,11 @@ This is a multi-repository workspace manager for Claude Code. It enables complex
 /init-workspace {task-description}
 ```
 
-Runs the setup script which:
-- Creates `workspace/{task-type}-{description}-{date}/` directory
-- Clones or updates target repositories
-- Creates git worktrees for isolated work (branch auto-created from base)
-- Generates `README.md` and `TODO-{repo-name}.md` templates
+Orchestrates workspace setup:
+1. Runs setup script: Creates directory, worktrees, `README.md` template
+2. Fills in `README.md` with task details
+3. Calls `workspace-repo-todo-planner` for each repository (parallel) → Creates `TODO-{repo}.md`
+4. Calls `workspace-todo-coordinator` → Optimizes TODOs for parallel execution
 
 ### 2. Execute Tasks
 
@@ -120,17 +120,36 @@ Each workspace is a git repository that tracks README.md, TODO-*.md, and reviews
 BASE_BRANCH=develop ./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/org/repo
 ```
 
-**Task types** (determines TODO template):
-- `feature` / `implementation` - Uses feature TODO template
-- `bugfix` / `bug` - Uses bugfix TODO template
-- `research` - Uses research TODO template
-- Other - Uses default TODO template
+**Task types** (used for workspace naming and branch naming):
+- `feature` / `implementation` - New functionality
+- `bugfix` / `bug` - Bug fixes
+- `research` - Investigation tasks
+- Other - Generic tasks
 
 ## Sub-Agent Invocation
 
 When delegating to sub-agents, use the Task tool. **IMPORTANT: Always run agents in background** using `run_in_background: true`.
 
 ```yaml
+# Plan TODO items for a repository
+Task tool:
+  subagent_type: workspace-repo-todo-planner
+  run_in_background: true
+  prompt: |
+    Create TODO items for repository in workspace.
+    Workspace Directory: workspace/{workspace-name}
+    Repository Path: {org/repo-path}
+    Repository Name: {repo-name}
+    Repository Worktree Path: workspace/{workspace-name}/{org}/{repo}
+
+# Coordinate TODOs across repositories
+Task tool:
+  subagent_type: workspace-todo-coordinator
+  run_in_background: true
+  prompt: |
+    Coordinate TODO items across repositories in workspace.
+    Workspace Directory: workspace/{workspace-name}
+
 # Execute TODO items
 Task tool:
   subagent_type: workspace-repo-todo-executor

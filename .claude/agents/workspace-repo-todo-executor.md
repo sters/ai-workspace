@@ -173,7 +173,7 @@ When a TODO item requires creating a PR, use the `/create-pr` skill. Do not crea
 
 ## Reporting
 
-When you complete your work, provide a summary using the format in `.claude/agents/templates/executor-completion-report.md`.
+When you complete your work, provide a summary using the format in `.claude/agents/templates/workspace-repo-todo-executor/executor-completion-report.md`.
 
 ## Error Handling
 

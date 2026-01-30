@@ -28,17 +28,17 @@ When invoked, you will receive:
 Run the script to find and read the PR template:
 
 ```bash
-.claude/agents/scripts/read-pr-template.sh <repository-worktree-path>
+.claude/agents/scripts/create-pr/read-pr-template.sh <repository-worktree-path>
 ```
 
-The script searches for repository PR templates. If none found, it returns the default template from `.claude/agents/templates/default-pr-template.md`.
+The script searches for repository PR templates. If none found, it returns the default template from `.claude/agents/templates/create-pr/default-pr-template.md`.
 
 ### 2. Gather Change Information
 
 Run the script to gather commit and file change information:
 
 ```bash
-.claude/agents/scripts/get-repo-changes.sh <repository-worktree-path> <base-branch>
+.claude/agents/scripts/review-workspace-repo-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
 ```
 
 Output includes:
@@ -64,17 +64,17 @@ Run the script to create the PR:
 
 ```bash
 # Draft PR (default)
-.claude/agents/scripts/create-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md
+.claude/agents/scripts/create-pr/create-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md
 
 # Non-draft PR (only if explicitly requested)
-.claude/agents/scripts/create-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md --no-draft
+.claude/agents/scripts/create-pr/create-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md --no-draft
 ```
 
 ### 6. Return Results
 
 Return the PR URL and a brief summary.
 
-Refer to `.claude/agents/templates/pr-created.md` for the format and fill in all placeholders.
+Refer to `.claude/agents/templates/create-pr/pr-created.md` for the format and fill in all placeholders.
 
 ## Guidelines
 

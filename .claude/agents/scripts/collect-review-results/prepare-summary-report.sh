@@ -19,7 +19,7 @@ if [ ! -d "$REVIEW_DIR" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TEMPLATE="${SCRIPT_DIR}/../templates/summary-report.md"
+TEMPLATE="${SCRIPT_DIR}/../../templates/collect-review-results/summary-report.md"
 SUMMARY_FILE="${REVIEW_DIR}/SUMMARY.md"
 
 if [ ! -f "$TEMPLATE" ]; then

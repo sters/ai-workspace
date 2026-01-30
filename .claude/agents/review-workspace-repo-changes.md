@@ -36,7 +36,7 @@ When invoked, you will receive:
 Prepare the review report file from template:
 
 ```bash
-REVIEW_FILE=$(.claude/agents/scripts/prepare-review-report.sh {review-directory} {repository-path})
+REVIEW_FILE=$(.claude/agents/scripts/review-workspace-repo-changes/prepare-review-report.sh {review-directory} {repository-path})
 ```
 
 The script:
@@ -49,7 +49,7 @@ The script:
 Run the script to gather repository changes:
 
 ```bash
-.claude/agents/scripts/get-repo-changes.sh <repository-worktree-path> <base-branch>
+.claude/agents/scripts/review-workspace-repo-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
 ```
 
 Then understand the context:
@@ -104,7 +104,7 @@ Categorize findings:
 
 Edit the prepared review file (`$REVIEW_FILE`) to fill in all placeholders with the review results.
 
-Then report back using the format in `.claude/agents/templates/review-completion.md`.
+Then report back using the format in `.claude/agents/templates/review-workspace-repo-changes/review-completion.md`.
 
 ## Review Guidelines
 

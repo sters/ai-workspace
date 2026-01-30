@@ -20,7 +20,7 @@ if [ ! -d "$REVIEW_DIR" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TEMPLATE="${SCRIPT_DIR}/../templates/review-report.md"
+TEMPLATE="${SCRIPT_DIR}/../../templates/review-workspace-repo-changes/review-report.md"
 
 # Convert slashes to underscores for filename
 FILENAME=$(echo "$REPO_PATH" | tr '/' '_')

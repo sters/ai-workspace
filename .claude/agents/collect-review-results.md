@@ -57,7 +57,7 @@ Calculate totals across all repositories:
 Run the script to prepare the summary report from template:
 
 ```bash
-SUMMARY_FILE=$(.claude/agents/scripts/prepare-summary-report.sh {review-directory})
+SUMMARY_FILE=$(.claude/agents/scripts/collect-review-results/prepare-summary-report.sh {review-directory})
 ```
 
 The script copies the template to `{review-directory}/SUMMARY.md` and outputs the path.
@@ -68,7 +68,7 @@ Then edit the file to fill in all placeholders with the collected results.
 
 Return a structured summary for the parent skill to present to the user.
 
-Refer to `.claude/agents/templates/collection-complete.md` for the format and fill in all placeholders.
+Refer to `.claude/agents/templates/collect-review-results/collection-complete.md` for the format and fill in all placeholders.
 
 ## Guidelines
 
