@@ -1,3 +1,17 @@
+# .claude Directory
+
+This directory contains Claude Code configuration for the multi-repository workspace manager.
+
+## Directory Structure
+
+```
+.claude/
+├── agents/          # Sub-agent definitions (invoked via Task tool)
+├── skills/          # User-facing skills (/slash-commands)
+├── scripts/         # Shared shell scripts
+└── settings.local.json
+```
+
 ## Implementation Policies for Agents
 
 Agents are autonomous workers that perform specific tasks. They are invoked via the `Task` tool with `run_in_background: true`.
