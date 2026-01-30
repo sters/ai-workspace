@@ -3,7 +3,7 @@ name: workspace-delete
 description: Delete a workspace after confirming with the user
 ---
 
-# delete-workspace
+# workspace-delete
 
 ## Overview
 

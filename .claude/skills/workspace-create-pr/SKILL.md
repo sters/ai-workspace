@@ -3,21 +3,13 @@ name: workspace-create-pr
 description: Create pull requests for all repositories in a workspace
 ---
 
-# create-pr-workspace
+# workspace-create-pr
 
 ## Overview
 
 This skill creates pull requests for all repositories in a workspace by delegating to the `workspace-repo-create-pr` agent for each repository.
 
 **Default behavior**: PRs are created as **draft** unless explicitly requested otherwise.
-
-## Prerequisites (Recommended)
-
-Before creating PRs, it's recommended to run a code review:
-
-```
-/workspace-review-changes
-```
 
 ## Steps
 

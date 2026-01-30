@@ -84,30 +84,11 @@ Edit the copied TODO file to add specific details based on your analysis.
 - Breaking down "Implement code changes" into concrete, actionable steps
 - Adding task-specific details from the workspace README.md
 
-**TODO Item Guidelines:**
-
-1. **Be specific**: Each TODO should describe a concrete action
-   - Bad: "Implement the feature"
-   - Good: "Add `CreateUser` method to `UserService` in `services/user.go`"
-
-2. **Include context**: Reference specific files, functions, or patterns
-   - "Follow the pattern used in `CreateOrder` for error handling"
-   - "Add tests similar to `user_test.go` structure"
-
-3. **Consider dependencies**: Order items logically
-   - Infrastructure changes first (types, interfaces)
-   - Implementation second
-   - Tests and validation last
-
-4. **Include verification steps**: Testing and linting
-   - "Run `make test` to verify changes"
-   - "Run `make lint` and fix any issues"
-
 ## Output
 
-The TODO file should be at `{workspace-directory}/TODO-{repository-name}.md` (created in Step 2, enhanced in Step 4).
+- `{workspace-directory}/TODO-{repository-name}.md` - Detailed TODO file for this repository
 
-## Important Guidelines
+## Guidelines
 
 1. **Focus on this repository only**: Do not plan work for other repositories
 2. **Be actionable**: Each TODO should be something the executor can act on
@@ -119,7 +100,26 @@ The TODO file should be at `{workspace-directory}/TODO-{repository-name}.md` (cr
 5. **Include commands**: Specify exact build/test/lint commands from documentation
 6. **Match repository conventions**: Follow the coding style and patterns found in the repo
 
-## Example TODO Item Quality
+### TODO Item Quality
+
+**Be specific**: Each TODO should describe a concrete action
+- Bad: "Implement the feature"
+- Good: "Add `CreateUser` method to `UserService` in `services/user.go`"
+
+**Include context**: Reference specific files, functions, or patterns
+- "Follow the pattern used in `CreateOrder` for error handling"
+- "Add tests similar to `user_test.go` structure"
+
+**Consider dependencies**: Order items logically
+- Infrastructure changes first (types, interfaces)
+- Implementation second
+- Tests and validation last
+
+**Include verification steps**: Testing and linting
+- "Run `make test` to verify changes"
+- "Run `make lint` and fix any issues"
+
+### Example
 
 **Too vague:**
 ```markdown

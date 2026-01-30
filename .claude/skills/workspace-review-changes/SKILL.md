@@ -3,7 +3,7 @@ name: workspace-review-changes
 description: Review code changes across all repositories in a workspace
 ---
 
-# review-workspace-changes
+# workspace-review-changes
 
 ## Overview
 

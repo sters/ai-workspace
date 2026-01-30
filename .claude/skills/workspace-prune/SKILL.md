@@ -3,7 +3,7 @@ name: workspace-prune
 description: Delete multiple stale workspaces that have not been modified recently
 ---
 
-# prune-workspaces
+# workspace-prune
 
 ## Overview
 

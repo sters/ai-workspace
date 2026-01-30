@@ -3,7 +3,7 @@ name: workspace-show-history
 description: Show git history of a workspace (README/TODO changes over time)
 ---
 
-# show-workspace-history
+# workspace-show-history
 
 ## Overview
 
@@ -34,19 +34,7 @@ For detailed diff output, add `--full`:
 
 Display the script output as-is. No additional commentary unless the user asks for explanation.
 
-## Output Format
-
-```
-=== Workspace History: feature-auth-20260130 ===
-
---- Current Status ---
-TODO-repo.md: 5/8 completed
-
---- Commit History ---
-a1b2c3d 2026-01-30 | Snapshot: 5/8 TODO items completed
-e4f5g6h 2026-01-30 | Snapshot: 3/8 TODO items completed | reviews updated
-i7j8k9l 2026-01-30 | Initial: feature-auth-20260130 workspace created
-```
+Refer to `.claude/skills/workspace-show-history/templates/output.md` for the output format.
 
 ## Notes
 

@@ -13,7 +13,7 @@ tools:
 
 You are a specialized agent for creating a pull request for a single repository.
 
-## Initial Context Check
+## Initial Context
 
 When invoked, you will receive:
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
@@ -21,7 +21,7 @@ When invoked, you will receive:
 - **Base Branch**: The base branch for the PR (e.g., `main`, `develop`)
 - **Draft**: Whether to create as draft (default: true)
 
-## Procedure
+## Execution Steps
 
 ### 1. Read PR Template
 
@@ -70,11 +70,9 @@ Run the script to create the PR:
 .claude/agents/scripts/workspace-repo-create-pr/create-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md --no-draft
 ```
 
-### 6. Return Results
+## Output
 
-Return the PR URL and a brief summary.
-
-Refer to `.claude/agents/templates/workspace-repo-create-pr/pr-created.md` for the format and fill in all placeholders.
+The PR URL and creation status.
 
 ## Guidelines
 
@@ -82,3 +80,7 @@ Refer to `.claude/agents/templates/workspace-repo-create-pr/pr-created.md` for t
 - Follow the repository's PR template exactly if one exists
 - Keep the PR title concise (under 70 characters)
 - Include all commits in the summary, not just the latest one
+
+## Communication
+
+After completion, report using the format in `.claude/agents/templates/workspace-repo-create-pr/pr-created.md`.

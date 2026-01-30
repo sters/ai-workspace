@@ -156,10 +156,6 @@ description: {Short description}
 
 **After completion:** {Suggested next skill}
 
-## Execution Flow (for complex skills)
-
-{ASCII diagram showing orchestration flow}
-
 ## Steps
 
 ### 1. {Step Name}
@@ -168,14 +164,15 @@ description: {Short description}
 ### 2. {Step Name}
 {Instructions}
 
-## Example Usage
+## Example Usage (optional)
 
 ### Example 1: {Scenario}
 {User/Assistant interaction example}
 
-## Next Steps - Ask User to Proceed
+## Next Steps - Ask User to Proceed (optional)
 
 {AskUserQuestion tool example for suggesting next actions}
+{Can be omitted for simple skills like list/show commands}
 
 ## Notes
 

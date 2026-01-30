@@ -3,7 +3,7 @@ name: workspace-execute
 description: Execute tasks in an initialized workspace by working through TODO items
 ---
 
-# execute-workspace
+# workspace-execute
 
 ## Overview
 

@@ -3,7 +3,7 @@ name: workspace-show-status
 description: Show TODO progress and background agent status for the current workspace
 ---
 
-# show-current-status
+# workspace-show-status
 
 ## Overview
 

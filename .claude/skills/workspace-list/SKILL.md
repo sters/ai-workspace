@@ -3,7 +3,7 @@ name: workspace-list
 description: List all workspaces in the workspace directory
 ---
 
-# show-workspaces
+# workspace-list
 
 ## Overview
 
@@ -23,21 +23,7 @@ Execute the following script:
 
 Display the script output as-is. No commentary, suggestions, or follow-up questions.
 
-## Output Format
-
-If workspaces exist:
-
-```
-workspace/feature-auth-20260130/
-workspace/bugfix-login-20260129/
-workspace/research-api-20260128/
-```
-
-If no workspaces exist:
-
-```
-No workspaces found
-```
+Refer to `.claude/skills/workspace-list/templates/output.md` for the output format.
 
 ## Notes
 

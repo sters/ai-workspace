@@ -3,7 +3,7 @@ name: workspace-update-todo
 description: Update TODO items in a workspace repository
 ---
 
-# update-workspace-todo
+# workspace-update-todo
 
 ## Overview
 

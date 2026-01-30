@@ -14,13 +14,13 @@ tools:
 
 You are a specialized agent for collecting review results from a workspace review directory and generating a summary report.
 
-## Initial Context Check
+## Initial Context
 
 When invoked, you will receive:
 - **Review Directory**: Path to the review directory (e.g., `workspace/feature-user-auth-20260116/reviews/20260116-103045`)
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
 
-## Procedure
+## Execution Steps
 
 ### 1. List Review Files
 
@@ -64,11 +64,9 @@ The script copies the template to `{review-directory}/SUMMARY.md` and outputs th
 
 Then edit the file to fill in all placeholders with the collected results.
 
-### 5. Return Results
+## Output
 
-Return a structured summary for the parent skill to present to the user.
-
-Refer to `.claude/agents/templates/workspace-collect-reviews/collection-complete.md` for the format and fill in all placeholders.
+- `{review-directory}/SUMMARY.md` - Aggregated summary report
 
 ## Guidelines
 
@@ -77,3 +75,7 @@ Refer to `.claude/agents/templates/workspace-collect-reviews/collection-complete
 - If counts are not explicitly stated, count the bullet points under each section
 - Prioritize critical issues when listing top priority issues
 - Use relative paths in SUMMARY.md to make markdown links work correctly
+
+## Communication
+
+After completion, report using the format in `.claude/agents/templates/workspace-collect-reviews/collection-complete.md`.

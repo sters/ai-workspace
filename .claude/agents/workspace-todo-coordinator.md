@@ -156,7 +156,7 @@ repo-B (api) ────> repo-C (frontend)
    git commit -m "Coordinate TODOs across repositories for parallel execution"
    ```
 
-## Important Guidelines
+## Guidelines
 
 1. **Maximize parallelism**: The goal is to keep all repos working, not to serialize work
 2. **Be explicit about dependencies**: Every dependent item should clearly state what it waits for
@@ -164,7 +164,7 @@ repo-B (api) ────> repo-C (frontend)
 4. **Keep it practical**: Don't over-engineer the coordination
 5. **Preserve original intent**: Don't change WHAT needs to be done, only HOW items are organized
 
-## Example Transformation
+### Example Transformation
 
 **Before (in repo-B TODO):**
 ```markdown

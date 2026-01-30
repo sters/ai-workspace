@@ -3,7 +3,7 @@ name: workspace-init
 description: Initialize a working directory for development tasks
 ---
 
-# init-workspace
+# workspace-init
 
 ## Overview
 
@@ -14,27 +14,6 @@ This skill initializes a working environment for development tasks. It orchestra
 4. Cross-repository coordination (via workspace-todo-coordinator agent)
 
 **After initialization:** Use `/workspace-execute` to work through TODO items and complete the task.
-
-## Execution Flow
-
-```
-init-workspace (this skill - orchestrator)
-    │
-    ├─ 1. Run setup-workspace.sh
-    │      └── Creates directory, worktree, README.md template
-    │
-    ├─ 2. Fill in README.md with task details
-    │
-    ├─ 3. For each repository, call workspace-repo-todo-planner (parallel)
-    │      ├── repo-A → TODO-repo-A.md
-    │      ├── repo-B → TODO-repo-B.md
-    │      └── repo-C → TODO-repo-C.md
-    │
-    ├─ 4. Call workspace-todo-coordinator
-    │      └── Optimize TODOs for parallel execution, resolve dependencies
-    │
-    └─ 5. Done - ask user about next steps
-```
 
 ## Steps
 

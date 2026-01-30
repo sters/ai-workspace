@@ -3,7 +3,7 @@ name: workspace-show-current
 description: Show the workspace currently focused in this conversation
 ---
 
-# show-current-workspace
+# workspace-show-current
 
 ## Overview
 
@@ -23,19 +23,7 @@ Review the current conversation to determine which workspace is being worked on.
 
 Display only the current workspace path. No commentary, suggestions, or follow-up questions.
 
-## Output Format
-
-If a workspace is focused:
-
-```
-workspace/feature-example-20260130/
-```
-
-If no workspace is focused in this conversation:
-
-```
-No workspace focused
-```
+Refer to `.claude/skills/workspace-show-current/templates/output.md` for the output format.
 
 ## Notes
 
