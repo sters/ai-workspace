@@ -44,4 +44,4 @@ See [CLAUDE.md](./CLAUDE.md) for detailed documentation.
 
 ## Policies
 
-See [.claude/POLICIES.md](./.claude/POLICIES.md) for agents and skills design guidelines.
+See [.claude/README.md](./.claude/README.md) for implementation policies for agents and skills.

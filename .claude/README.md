@@ -1,6 +1,4 @@
-# Policies
-
-## Agents
+## Implementation Policies for Agents
 
 Agents are autonomous workers that perform specific tasks. They are invoked via the `Task` tool with `run_in_background: true`.
 
@@ -71,7 +69,7 @@ When invoked, you will receive:
 {Completion report format, reference to templates/{agent-name}/}
 ```
 
-## Skills
+## Implementation Policies for Skills
 
 Skills are user-facing commands (`/skill-name`) that orchestrate agents and scripts.
 
