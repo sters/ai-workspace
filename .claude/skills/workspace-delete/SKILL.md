@@ -11,14 +11,13 @@ This skill safely deletes a workspace by first showing its status and confirming
 
 ## Steps
 
-### 1. Identify the Workspace
+### 1. Workspace
 
-- If the user specifies a workspace, use that
-- If not specified, list available workspaces and ask:
+**Required**: User must specify the workspace.
 
-```bash
-./.claude/scripts/list-workspaces.sh
-```
+- If workspace is **not specified**, abort with message:
+  > Please specify a workspace. Example: `/workspace-delete workspace/feature-user-auth-20260116`
+- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
 ### 2. Check Workspace Status
 

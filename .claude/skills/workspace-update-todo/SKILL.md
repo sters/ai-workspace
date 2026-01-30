@@ -11,18 +11,14 @@ This skill updates TODO items in a workspace's TODO file. It supports adding, re
 
 ## Steps
 
-### 1. Identify the Workspace and Repository
+### 1. Workspace and TODO File
 
-- If the user specifies a workspace and repository, use those
-- If not specified, ask the user or list available options:
+**Required**: User must specify the workspace and TODO file (or repository name).
 
-```bash
-# List workspaces
-./.claude/scripts/list-workspaces.sh
-
-# List TODO files in a workspace
-./.claude/scripts/list-workspace-todos.sh {workspace-name}
-```
+- If workspace or TODO file is **not specified**, abort with message:
+  > Please specify a workspace and TODO file. Example: `/workspace-update-todo workspace/feature-user-auth-20260116 TODO-auth-service.md`
+- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
+- TODO file format: `TODO-{repository-name}.md` or just `{repository-name}`
 
 ### 2. Understand the Update Request
 

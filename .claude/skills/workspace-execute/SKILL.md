@@ -13,29 +13,25 @@ This skill executes work in an initialized workspace by delegating to the `works
 
 ## Steps
 
-### 1. Identify the Workspace
+### 1. Workspace and Repositories
 
-- If the user specifies a workspace directory, use that
-- If not specified, ask the user which workspace they want to execute
-- List available workspaces if needed:
+**Required**: User must specify the workspace.
 
-```bash
-./.claude/scripts/list-workspaces.sh
-```
+- If workspace is **not specified**, abort with message:
+  > Please specify a workspace. Example: `/workspace-execute workspace/feature-user-auth-20260116`
+- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
-### 2. Identify Repositories
-
-Find all repository worktrees in the workspace:
+Find repositories in the workspace:
 
 ```bash
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
 ```
 
-For each repository directory, extract:
+For each repository, extract:
 - Repository path (e.g., `github.com/sters/complex-ai-workspace`)
 - Repository name (e.g., `complex-ai-workspace`)
 
-### 3. Delegate to workspace-repo-todo-executor Agent
+### 2. Delegate to workspace-repo-todo-executor Agent
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-todo-executor` agent:
 
@@ -61,7 +57,7 @@ Task tool:
 
 **Important**: Launch agents in parallel if there are multiple repositories.
 
-### 4. Commit Workspace Snapshot
+### 3. Commit Workspace Snapshot
 
 After all agents complete, commit the workspace changes:
 
@@ -69,7 +65,7 @@ After all agents complete, commit the workspace changes:
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 5. Report Results
+### 4. Report Results
 
 After all agents complete, report the execution summary to the user:
 

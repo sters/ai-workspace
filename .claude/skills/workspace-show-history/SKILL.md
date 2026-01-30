@@ -11,10 +11,13 @@ This skill shows the git commit history of a workspace, displaying how README an
 
 ## Steps
 
-### 1. Identify the Workspace
+### 1. Workspace
 
-- If the user specifies a workspace, use that
-- If not specified, use the current workspace context or ask the user
+**Required**: User must specify the workspace.
+
+- If workspace is **not specified**, abort with message:
+  > Please specify a workspace. Example: `/workspace-show-history workspace/feature-user-auth-20260116`
+- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
 ### 2. Run the History Script
 

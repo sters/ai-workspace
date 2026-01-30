@@ -11,37 +11,26 @@ This skill reviews code changes across all repositories in a workspace by delega
 
 ## Steps
 
-### 1. Identify the Workspace
+### 1. Workspace and Repositories
 
-First, determine which workspace to review:
+**Required**: User must specify the workspace.
 
-- If the user specifies a workspace directory (e.g., `workspace/feature-user-auth-20260116`), use that
-- If not specified, ask the user which workspace they want to review
-- List available workspaces if needed:
+- If workspace is **not specified**, abort with message:
+  > Please specify a workspace. Example: `/workspace-review-changes workspace/feature-user-auth-20260116`
+- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
 
-```bash
-./.claude/scripts/list-workspaces.sh
-```
-
-### 2. Identify Repositories to Review
-
-Find all repository worktrees in the workspace:
+Find repositories in the workspace:
 
 ```bash
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
 ```
 
-Common patterns:
-- Repository directories are typically named: `{repo-name}` or `{org}_{repo-name}`
-- Each repository should have a corresponding `TODO-{repo-name}.md` file
-- Repositories are git worktrees
-
-For each repository directory:
+For each repository:
 1. Extract the repository name
-2. Determine the base branch (from README.md or ask user)
+2. Determine the base branch (from README.md)
 3. Prepare parameters for the review agent
 
-### 3. Create Reviews Directory
+### 2. Create Reviews Directory
 
 Run the script to create a timestamped review directory. **Important**: Capture the output path and reuse it for all parallel agents to ensure consistency.
 
@@ -51,7 +40,7 @@ REVIEW_DIR=$(.claude/skills/workspace-review-changes/scripts/prepare-review-dir.
 
 The script outputs the created directory path (e.g., `workspace/{workspace-name}/reviews/20260116-103045`).
 
-### 4. Delegate to Review Agent for Each Repository
+### 3. Delegate to Review Agent for Each Repository
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-review-changes` agent:
 
@@ -76,7 +65,7 @@ Task tool:
 
 **Important**: Launch review agents in parallel if there are multiple repositories to review efficiently. Pass the same `{timestamp}` value to all agents.
 
-### 5. Collect Review Results and Create Summary Report
+### 4. Collect Review Results and Create Summary Report
 
 After all review agents complete, use the Task tool to launch the `workspace-collect-reviews` agent:
 
@@ -96,7 +85,7 @@ The agent will:
 2. Create `SUMMARY.md` in the review directory
 3. Return aggregated results for presenting to the user
 
-### 6. Commit Workspace Snapshot
+### 5. Commit Workspace Snapshot
 
 After all reviews complete, commit the workspace changes (including review results):
 
@@ -104,7 +93,7 @@ After all reviews complete, commit the workspace changes (including review resul
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 7. Present Summary to User
+### 6. Present Summary to User
 
 Display a concise summary to the user.
 
