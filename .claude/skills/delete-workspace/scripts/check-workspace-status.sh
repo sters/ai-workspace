@@ -22,7 +22,7 @@ fi
 
 echo "=== LAST ACTIVITY ==="
 # Find most recently modified file (macOS compatible)
-LAST_MODIFIED=$(find "$WORKSPACE_DIR" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | sort -rn | head -1)
+LAST_MODIFIED=$(find "$WORKSPACE_DIR" -type f -not -path "*/.git/*" -print0 2>/dev/null | xargs -0 stat -f "%m %N" 2>/dev/null | sort -rn | head -1)
 if [ -n "$LAST_MODIFIED" ]; then
     TIMESTAMP=$(echo "$LAST_MODIFIED" | awk '{print $1}')
     FILEPATH=$(echo "$LAST_MODIFIED" | cut -d' ' -f2-)
@@ -40,22 +40,21 @@ echo "=== TODO STATUS ==="
 for TODO_FILE in "$WORKSPACE_DIR"/TODO-*.md; do
     if [ -f "$TODO_FILE" ]; then
         FILENAME=$(basename "$TODO_FILE")
-        COMPLETED=$(grep -c '^\s*- \[x\]' "$TODO_FILE" 2>/dev/null || echo "0")
-        INCOMPLETE=$(grep -c '^\s*- \[ \]' "$TODO_FILE" 2>/dev/null || echo "0")
-
         echo "File: $FILENAME"
-        echo "Completed: $COMPLETED"
-        echo "Incomplete: $INCOMPLETE"
-
-        if [ "$INCOMPLETE" -gt 0 ]; then
-            echo "Incomplete items:"
-            if [ "$INCOMPLETE" -le 5 ]; then
-                grep '^\s*- \[ \]' "$TODO_FILE" 2>/dev/null || true
-            else
-                grep '^\s*- \[ \]' "$TODO_FILE" 2>/dev/null | head -5 || true
-                echo "  ... and $((INCOMPLETE - 5)) more items"
-            fi
-        fi
+        awk '
+            /^[[:space:]]*- \[x\]/ { completed++ }
+            /^[[:space:]]*- \[ \]/ { incomplete++; if (incomplete <= 5) items[incomplete] = $0 }
+            END {
+                print "Completed:", completed+0
+                print "Incomplete:", incomplete+0
+                if (incomplete > 0) {
+                    print "Incomplete items:"
+                    limit = (incomplete < 5) ? incomplete : 5
+                    for (i = 1; i <= limit; i++) print items[i]
+                    if (incomplete > 5) print "  ... and " (incomplete - 5) " more items"
+                }
+            }
+        ' "$TODO_FILE"
         echo ""
     fi
 done
