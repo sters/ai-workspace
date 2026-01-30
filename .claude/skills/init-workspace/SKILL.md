@@ -138,7 +138,7 @@ The coordinator will:
 After coordination completes, commit the TODO files:
 
 ```bash
-./.claude/skills/init-workspace/scripts/commit-workspace-todos.sh workspace/{workspace-name}
+./.claude/scripts/commit-workspace-snapshot.sh {workspace-name} "Add TODO items for all repositories"
 ```
 
 ## Example Usage
