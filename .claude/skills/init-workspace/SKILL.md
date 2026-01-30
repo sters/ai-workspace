@@ -138,9 +138,7 @@ The coordinator will:
 After coordination completes, commit the TODO files:
 
 ```bash
-cd workspace/{workspace-name}
-git add TODO-*.md README.md
-git commit -m "Add TODO items for all repositories"
+./.claude/skills/init-workspace/scripts/commit-workspace-todos.sh workspace/{workspace-name}
 ```
 
 ## Example Usage
