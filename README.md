@@ -38,6 +38,7 @@ Tasks are executed in isolated directories (`./workspace/{task-name}-{date}/`) u
 | `/workspace-show-status` | Show TODO progress and background agent status |
 | `/workspace-delete` | Delete a workspace after confirmation |
 | `/workspace-prune` | Delete stale workspaces not modified recently |
+| `/workspace-show-history` | Show git history of a workspace (README/TODO changes) |
 
 See [CLAUDE.md](./CLAUDE.md) for detailed documentation.
 
@@ -49,8 +50,7 @@ Agents are autonomous workers that perform specific tasks. They are invoked via 
 
 **Naming Convention:**
 - `workspace-repo-{action}` - Operates on a single repository within a workspace
-- `workspace-{action}` - Operates on the entire workspace
-- `{action}` - General purpose (e.g., `create-pr`)
+- `workspace-{action}` - Operates on the entire workspace (e.g., `workspace-todo-coordinator`)
 
 **Directory Structure:**
 ```
@@ -75,9 +75,9 @@ Agents are autonomous workers that perform specific tasks. They are invoked via 
 Skills are user-facing commands (`/skill-name`) that orchestrate agents and scripts.
 
 **Naming Convention:**
-- `{action}-workspace` - Actions on workspaces (e.g., `init-workspace`, `execute-workspace`)
-- `show-{target}` - Display information (e.g., `show-workspaces`, `show-current-status`)
-- `{action}-workspace-{target}` - Specific actions (e.g., `update-workspace-todo`)
+- `workspace-{action}` - Actions on workspaces (e.g., `workspace-init`, `workspace-execute`)
+- `workspace-show-{target}` - Display information (e.g., `workspace-list`, `workspace-show-status`)
+- `workspace-{action}-{target}` - Specific actions (e.g., `workspace-update-todo`)
 
 **Directory Structure:**
 ```
