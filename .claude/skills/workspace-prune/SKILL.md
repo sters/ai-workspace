@@ -1,5 +1,5 @@
 ---
-name: prune-workspaces
+name: workspace-prune
 description: Delete multiple stale workspaces that have not been modified recently
 ---
 
@@ -16,10 +16,10 @@ This skill identifies workspaces that have not been modified within a specified 
 Run the script to find stale workspaces:
 
 ```bash
-./.claude/skills/prune-workspaces/scripts/list-stale-workspaces.sh [days]
+./.claude/skills/workspace-prune/scripts/list-stale-workspaces.sh [days]
 ```
 
-Default threshold is 7 days. The user can specify a different threshold (e.g., `/prune-workspaces 14` for 14 days).
+Default threshold is 7 days. The user can specify a different threshold (e.g., `/workspace-prune 14` for 14 days).
 
 ### 2. Display Stale Workspaces
 
@@ -42,7 +42,7 @@ Use AskUserQuestion to confirm:
 For each workspace to delete, run:
 
 ```bash
-./.claude/skills/delete-workspace/scripts/delete-workspace.sh {workspace-name}
+./.claude/skills/workspace-delete/scripts/workspace-delete.sh {workspace-name}
 ```
 
 ### 5. Report Results

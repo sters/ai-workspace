@@ -1,5 +1,5 @@
 ---
-name: show-workspaces
+name: workspace-list
 description: List all workspaces in the workspace directory
 ---
 
@@ -16,7 +16,7 @@ This skill lists all existing workspaces in the `workspace/` directory using a s
 Execute the following script:
 
 ```bash
-./.claude/skills/show-workspaces/scripts/list-workspaces.sh
+./.claude/skills/workspace-list/scripts/list-workspaces.sh
 ```
 
 ### 2. Output

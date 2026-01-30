@@ -2,9 +2,9 @@
 
 set -e
 
-# Usage: ./show-workspace-history.sh <workspace-name> [--full]
-# Example: ./show-workspace-history.sh feature-auth-20260130
-# Example: ./show-workspace-history.sh feature-auth-20260130 --full
+# Usage: ./workspace-show-history.sh <workspace-name> [--full]
+# Example: ./workspace-show-history.sh feature-auth-20260130
+# Example: ./workspace-show-history.sh feature-auth-20260130 --full
 #
 # Shows git history of the workspace (README/TODO changes over time).
 # Use --full to show detailed diff for each commit.

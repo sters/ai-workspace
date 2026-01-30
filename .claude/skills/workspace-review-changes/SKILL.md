@@ -1,5 +1,5 @@
 ---
-name: review-workspace-changes
+name: workspace-review-changes
 description: Review code changes across all repositories in a workspace
 ---
 
@@ -7,7 +7,7 @@ description: Review code changes across all repositories in a workspace
 
 ## Overview
 
-This skill reviews code changes across all repositories in a workspace by delegating to the `review-workspace-repo-changes` agent for each repository. It collects all review results and provides a comprehensive summary.
+This skill reviews code changes across all repositories in a workspace by delegating to the `workspace-repo-review-changes` agent for each repository. It collects all review results and provides a comprehensive summary.
 
 ## Steps
 
@@ -47,18 +47,18 @@ For each repository directory:
 Run the script to create a timestamped review directory. **Important**: Capture the output path and reuse it for all parallel agents to ensure consistency.
 
 ```bash
-REVIEW_DIR=$(.claude/skills/review-workspace-changes/scripts/prepare-review-dir.sh {workspace-name})
+REVIEW_DIR=$(.claude/skills/workspace-review-changes/scripts/prepare-review-dir.sh {workspace-name})
 ```
 
 The script outputs the created directory path (e.g., `workspace/{workspace-name}/reviews/20260116-103045`).
 
 ### 4. Delegate to Review Agent for Each Repository
 
-For each repository in the workspace, use the Task tool to launch the `review-workspace-repo-changes` agent:
+For each repository in the workspace, use the Task tool to launch the `workspace-repo-review-changes` agent:
 
 ```yaml
 Task tool:
-  subagent_type: review-workspace-repo-changes
+  subagent_type: workspace-repo-review-changes
   run_in_background: true
   prompt: |
     Review changes for repository in workspace.
@@ -79,11 +79,11 @@ Task tool:
 
 ### 5. Collect Review Results and Create Summary Report
 
-After all review agents complete, use the Task tool to launch the `collect-review-results` agent:
+After all review agents complete, use the Task tool to launch the `workspace-collect-reviews` agent:
 
 ```yaml
 Task tool:
-  subagent_type: collect-review-results
+  subagent_type: workspace-collect-reviews
   run_in_background: true
   prompt: |
     Collect review results from the review directory.
@@ -109,7 +109,7 @@ After all reviews complete, commit the workspace changes (including review resul
 
 Display a concise summary to the user.
 
-Refer to `.claude/skills/review-workspace-changes/templates/user-summary.md` for the format and fill in the placeholders with the collected results.
+Refer to `.claude/skills/workspace-review-changes/templates/user-summary.md` for the format and fill in the placeholders with the collected results.
 
 ## Example Usage
 
@@ -146,7 +146,7 @@ AskUserQuestion tool:
       multiSelect: false
       options:
         - label: "Create PRs (draft)"
-          description: "Run /create-pr-workspace to create draft pull requests"
+          description: "Run /workspace-create-pr to create draft pull requests"
         - label: "Create PRs (ready for review)"
           description: "Create non-draft pull requests immediately"
         - label: "Fix issues first"
@@ -154,13 +154,13 @@ AskUserQuestion tool:
 ```
 
 Based on the user's selection:
-- "Create PRs (draft)" → Invoke the `/create-pr-workspace` skill using the Skill tool (default draft mode)
-- "Create PRs (ready for review)" → Invoke the `/create-pr-workspace` skill with non-draft option
+- "Create PRs (draft)" → Invoke the `/workspace-create-pr` skill using the Skill tool (default draft mode)
+- "Create PRs (ready for review)" → Invoke the `/workspace-create-pr` skill with non-draft option
 - "Fix issues first" → End the workflow so user can address review findings
 
 ## Notes
 
-- The skill delegates actual review work to the `review-workspace-repo-changes` agent
+- The skill delegates actual review work to the `workspace-repo-review-changes` agent
 - Each repository is reviewed independently and in parallel
 - Review results are timestamped to avoid overwriting previous reviews
 - The summary provides a high-level view while individual reports contain detailed findings

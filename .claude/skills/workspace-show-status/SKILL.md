@@ -1,5 +1,5 @@
 ---
-name: show-current-status
+name: workspace-show-status
 description: Show TODO progress and background agent status for the current workspace
 ---
 
@@ -15,8 +15,8 @@ This skill displays the current workspace status including TODO progress and bac
 
 Review the current conversation to determine which workspace is being worked on. Look for:
 
-- Workspace initialized via `/init-workspace`
-- Workspace specified in `/execute-workspace`, `/review-workspace-changes`, or `/create-pr-workspace`
+- Workspace initialized via `/workspace-init`
+- Workspace specified in `/workspace-execute`, `/workspace-review-changes`, or `/workspace-create-pr`
 - Any explicit workspace directory mentioned by the user
 
 If no workspace is focused, output "No workspace focused" and stop.
@@ -26,7 +26,7 @@ If no workspace is focused, output "No workspace focused" and stop.
 Run the status check script:
 
 ```bash
-.claude/skills/show-current-status/scripts/check-status.sh {workspace-name}
+.claude/skills/workspace-show-status/scripts/check-status.sh {workspace-name}
 ```
 
 ### 3. Check Background Agents
@@ -53,7 +53,7 @@ Incomplete items:
 
 ## Background Agents
 - workspace-repo-todo-executor: running / completed / not started
-- review-workspace-repo-changes: running / completed / not started
+- workspace-repo-review-changes: running / completed / not started
 ```
 
 ## Notes

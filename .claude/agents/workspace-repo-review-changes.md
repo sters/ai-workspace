@@ -1,5 +1,5 @@
 ---
-name: review-workspace-repo-changes
+name: workspace-repo-review-changes
 description: |
   Use this agent to review code changes in a specific repository within a workspace.
   This agent compares the current branch against the remote base branch and performs a thorough code review.
@@ -36,7 +36,7 @@ When invoked, you will receive:
 Prepare the review report file from template:
 
 ```bash
-REVIEW_FILE=$(.claude/agents/scripts/review-workspace-repo-changes/prepare-review-report.sh {review-directory} {repository-path})
+REVIEW_FILE=$(.claude/agents/scripts/workspace-repo-review-changes/prepare-review-report.sh {review-directory} {repository-path})
 ```
 
 The script:
@@ -49,7 +49,7 @@ The script:
 Run the script to gather repository changes:
 
 ```bash
-.claude/agents/scripts/review-workspace-repo-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
+.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
 ```
 
 Then understand the context:
@@ -104,7 +104,7 @@ Categorize findings:
 
 Edit the prepared review file (`$REVIEW_FILE`) to fill in all placeholders with the review results.
 
-Then report back using the format in `.claude/agents/templates/review-workspace-repo-changes/review-completion.md`.
+Then report back using the format in `.claude/agents/templates/workspace-repo-review-changes/review-completion.md`.
 
 ## Review Guidelines
 

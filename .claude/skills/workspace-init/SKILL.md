@@ -1,5 +1,5 @@
 ---
-name: init-workspace
+name: workspace-init
 description: Initialize a working directory for development tasks
 ---
 
@@ -13,7 +13,7 @@ This skill initializes a working environment for development tasks. It orchestra
 3. TODO planning for each repository (via workspace-repo-todo-planner agent)
 4. Cross-repository coordination (via workspace-todo-coordinator agent)
 
-**After initialization:** Use `/execute-workspace` to work through TODO items and complete the task.
+**After initialization:** Use `/workspace-execute` to work through TODO items and complete the task.
 
 ## Execution Flow
 
@@ -54,23 +54,23 @@ Before running the setup script, ensure you have:
 Execute the setup script with the required parameters:
 
 ```bash
-./.claude/skills/init-workspace/scripts/setup-workspace.sh <task-type> <description> <org/repo-name> [ticket-id]
+./.claude/skills/workspace-init/scripts/setup-workspace.sh <task-type> <description> <org/repo-name> [ticket-id]
 ```
 
 **Examples:**
 
 ```bash
 # Basic usage - base branch is auto-detected
-./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
+./.claude/skills/workspace-init/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
 
 # With ticket ID
-./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace PROJ-123
+./.claude/skills/workspace-init/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace PROJ-123
 
 # Bug fix
-./.claude/skills/init-workspace/scripts/setup-workspace.sh bugfix login-error github.com/sters/complex-ai-workspace
+./.claude/skills/workspace-init/scripts/setup-workspace.sh bugfix login-error github.com/sters/complex-ai-workspace
 
 # Override base branch - use when the user explicitly specifies a branch
-BASE_BRANCH=develop ./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
+BASE_BRANCH=develop ./.claude/skills/workspace-init/scripts/setup-workspace.sh feature user-auth github.com/sters/complex-ai-workspace
 ```
 
 The script will automatically:
@@ -187,12 +187,12 @@ AskUserQuestion tool:
       multiSelect: false
       options:
         - label: "Execute now"
-          description: "Run /execute-workspace to work through TODO items immediately"
+          description: "Run /workspace-execute to work through TODO items immediately"
         - label: "Skip for now"
           description: "I'll review the workspace files first and execute later"
 ```
 
-If the user selects "Execute now", invoke the `/execute-workspace` skill using the Skill tool.
+If the user selects "Execute now", invoke the `/workspace-execute` skill using the Skill tool.
 
 ## Notes
 

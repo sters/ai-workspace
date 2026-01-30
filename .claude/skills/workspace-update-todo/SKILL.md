@@ -1,5 +1,5 @@
 ---
-name: update-workspace-todo
+name: workspace-update-todo
 description: Update TODO items in a workspace repository
 ---
 
@@ -95,7 +95,7 @@ After updating the TODO file, commit the changes:
 If `workspace-repo-todo-executor` is not currently running, suggest executing the workspace:
 
 ```
-**Next step**: Run `/execute-workspace` to work through the updated TODO items.
+**Next step**: Run `/workspace-execute` to work through the updated TODO items.
 ```
 
 ## Example Usage

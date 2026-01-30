@@ -1,5 +1,5 @@
 ---
-name: create-pr-workspace
+name: workspace-create-pr
 description: Create pull requests for all repositories in a workspace
 ---
 
@@ -16,7 +16,7 @@ This skill creates pull requests for all repositories in a workspace by delegati
 Before creating PRs, it's recommended to run a code review:
 
 ```
-/review-workspace-changes
+/workspace-review-changes
 ```
 
 ## Steps

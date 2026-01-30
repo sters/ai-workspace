@@ -1,5 +1,5 @@
 ---
-name: show-current-workspace
+name: workspace-show-current
 description: Show the workspace currently focused in this conversation
 ---
 
@@ -15,8 +15,8 @@ This skill displays which workspace is currently being focused in this conversat
 
 Review the current conversation to determine which workspace is being worked on. Look for:
 
-- Workspace initialized via `/init-workspace`
-- Workspace specified in `/execute-workspace`, `/review-workspace-changes`, or `/create-pr-workspace`
+- Workspace initialized via `/workspace-init`
+- Workspace specified in `/workspace-execute`, `/workspace-review-changes`, or `/workspace-create-pr`
 - Any explicit workspace directory mentioned by the user
 
 ### 2. Output

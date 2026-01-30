@@ -10,40 +10,40 @@ This is a multi-repository workspace manager for Claude Code. It enables complex
 
 ```bash
 # 1. Initialize workspace (creates worktree, README, plans TODO items via agents)
-/init-workspace feature user-auth github.com/org/repo
+/workspace-init feature user-auth github.com/org/repo
 
 # 2. Execute TODO items (delegates to workspace-repo-todo-executor agent)
-/execute-workspace
+/workspace-execute
 
 # 3. Review changes before PR (optional but recommended)
-/review-workspace-changes
+/workspace-review-changes
 
 # 4. Create pull request
-/create-pr-workspace
+/workspace-create-pr
 ```
 
 ## Available Skills
 
 | Skill | Description |
 |-------|-------------|
-| `/init-workspace` | Initialize workspace with worktree, README, and TODO files |
-| `/execute-workspace` | Execute TODO items via workspace-repo-todo-executor agent |
-| `/review-workspace-changes` | Review code changes via review-workspace-repo-changes agent |
-| `/create-pr-workspace` | Create PRs for all repositories (draft by default) |
-| `/update-workspace-todo` | Update TODO items in a workspace repository |
-| `/show-current-workspace` | Show the currently focused workspace |
-| `/show-workspaces` | List all workspaces in the workspace directory |
-| `/show-current-status` | Show TODO progress and background agent status |
-| `/delete-workspace` | Delete a workspace after confirmation |
-| `/prune-workspaces` | Delete stale workspaces not modified recently |
-| `/show-workspace-history` | Show git history of a workspace (README/TODO changes) |
+| `/workspace-init` | Initialize workspace with worktree, README, and TODO files |
+| `/workspace-execute` | Execute TODO items via workspace-repo-todo-executor agent |
+| `/workspace-review-changes` | Review code changes via workspace-repo-review-changes agent |
+| `/workspace-create-pr` | Create PRs for all repositories (draft by default) |
+| `/workspace-update-todo` | Update TODO items in a workspace repository |
+| `/workspace-show-current` | Show the currently focused workspace |
+| `/workspace-list` | List all workspaces in the workspace directory |
+| `/workspace-show-status` | Show TODO progress and background agent status |
+| `/workspace-delete` | Delete a workspace after confirmation |
+| `/workspace-prune` | Delete stale workspaces not modified recently |
+| `/workspace-show-history` | Show git history of a workspace (README/TODO changes) |
 
 ## Primary Workflow
 
 ### 1. Initialize Workspace
 
 ```
-/init-workspace {task-description}
+/workspace-init {task-description}
 ```
 
 Orchestrates workspace setup:
@@ -55,7 +55,7 @@ Orchestrates workspace setup:
 ### 2. Execute Tasks
 
 ```
-/execute-workspace
+/workspace-execute
 ```
 
 Delegates to `workspace-repo-todo-executor` agent which:
@@ -68,10 +68,10 @@ Delegates to `workspace-repo-todo-executor` agent which:
 ### 3. Review Changes (Recommended)
 
 ```
-/review-workspace-changes
+/workspace-review-changes
 ```
 
-Launches `review-workspace-repo-changes` agent for each repository:
+Launches `workspace-repo-review-changes` agent for each repository:
 - Compares current branch against remote base branch
 - Reviews for security, performance, and code quality issues
 - Generates review reports in `workspace/{task}/reviews/{timestamp}/`
@@ -79,7 +79,7 @@ Launches `review-workspace-repo-changes` agent for each repository:
 ### 4. Create Pull Request
 
 ```
-/create-pr-workspace
+/workspace-create-pr
 ```
 
 - Finds and follows the repository's PR template
@@ -91,7 +91,7 @@ Launches `review-workspace-repo-changes` agent for each repository:
 ```
 .
 ├── .claude/
-│   ├── agents/                 # Sub-agent definitions (workspace-repo-todo-executor, review-workspace-repo-changes, etc.)
+│   ├── agents/                 # Sub-agent definitions (workspace-repo-todo-executor, workspace-repo-review-changes, etc.)
 │   ├── skills/                 # User-invokable skills
 │   └── settings.local.json     # Allowed bash commands
 ├── repositories/               # Cloned repos (git data source)
@@ -105,19 +105,19 @@ Launches `review-workspace-repo-changes` agent for each repository:
         └── {org}/{repo}/       # Git worktree (excluded from workspace git)
 ```
 
-Each workspace is a git repository that tracks README.md, TODO-*.md, and reviews/ changes. Use `/show-workspace-history` to view the history.
+Each workspace is a git repository that tracks README.md, TODO-*.md, and reviews/ changes. Use `/workspace-show-history` to view the history.
 
 ## Setup Script
 
 ```bash
-./.claude/skills/init-workspace/scripts/setup-workspace.sh <task-type> <description> <org/repo> [ticket-id]
+./.claude/skills/workspace-init/scripts/setup-workspace.sh <task-type> <description> <org/repo> [ticket-id]
 
 # Examples:
-./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/org/repo
-./.claude/skills/init-workspace/scripts/setup-workspace.sh bugfix login-error github.com/org/repo PROJ-123
+./.claude/skills/workspace-init/scripts/setup-workspace.sh feature user-auth github.com/org/repo
+./.claude/skills/workspace-init/scripts/setup-workspace.sh bugfix login-error github.com/org/repo PROJ-123
 
 # Override auto-detected base branch:
-BASE_BRANCH=develop ./.claude/skills/init-workspace/scripts/setup-workspace.sh feature user-auth github.com/org/repo
+BASE_BRANCH=develop ./.claude/skills/workspace-init/scripts/setup-workspace.sh feature user-auth github.com/org/repo
 ```
 
 **Task types** (used for workspace naming and branch naming):
@@ -162,7 +162,7 @@ Task tool:
 
 # Review changes
 Task tool:
-  subagent_type: review-workspace-repo-changes
+  subagent_type: workspace-repo-review-changes
   run_in_background: true
   prompt: |
     Review changes for repository in workspace.

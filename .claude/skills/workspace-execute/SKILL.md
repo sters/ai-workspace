@@ -1,5 +1,5 @@
 ---
-name: execute-workspace
+name: workspace-execute
 description: Execute tasks in an initialized workspace by working through TODO items
 ---
 
@@ -9,7 +9,7 @@ description: Execute tasks in an initialized workspace by working through TODO i
 
 This skill executes work in an initialized workspace by delegating to the `workspace-repo-todo-executor` agent for each repository. It works through TODO items, runs tests/linters, and commits changes.
 
-**Prerequisites:** The workspace must be initialized first using `/init-workspace`.
+**Prerequisites:** The workspace must be initialized first using `/workspace-init`.
 
 ## Steps
 
@@ -112,16 +112,16 @@ AskUserQuestion tool:
       multiSelect: false
       options:
         - label: "Review changes (Recommended)"
-          description: "Run /review-workspace-changes to check for issues before PR"
+          description: "Run /workspace-review-changes to check for issues before PR"
         - label: "Skip review, create PR"
-          description: "Proceed directly to /create-pr-workspace"
+          description: "Proceed directly to /workspace-create-pr"
         - label: "Done for now"
           description: "I'll continue manually later"
 ```
 
 Based on the user's selection:
-- "Review changes" → Invoke the `/review-workspace-changes` skill using the Skill tool
-- "Skip review, create PR" → Invoke the `/create-pr-workspace` skill using the Skill tool
+- "Review changes" → Invoke the `/workspace-review-changes` skill using the Skill tool
+- "Skip review, create PR" → Invoke the `/workspace-create-pr` skill using the Skill tool
 - "Done for now" → End the workflow
 
 ## Notes

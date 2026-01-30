@@ -98,7 +98,7 @@ When implementing code changes:
 
 ### Git Workflow
 
-The repository worktree is already on a feature/fix branch (created by `/init-workspace`).
+The repository worktree is already on a feature/fix branch (created by `/workspace-init`).
 
 ```bash
 # Check current state

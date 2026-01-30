@@ -1,5 +1,5 @@
 ---
-name: delete-workspace
+name: workspace-delete
 description: Delete a workspace after confirming with the user
 ---
 
@@ -25,7 +25,7 @@ ls -d workspace/*/
 Run the script to gather workspace status:
 
 ```bash
-.claude/skills/delete-workspace/scripts/check-workspace-status.sh {workspace-name}
+.claude/skills/workspace-delete/scripts/check-workspace-status.sh {workspace-name}
 ```
 
 The script outputs:
@@ -43,7 +43,7 @@ cat workspace/{workspace-name}/README.md
 
 ### 4. Display Status to User
 
-Refer to `.claude/skills/delete-workspace/templates/workspace-status.md` for the format.
+Refer to `.claude/skills/workspace-delete/templates/workspace-status.md` for the format.
 
 Fill in the placeholders with the collected information.
 
@@ -66,7 +66,7 @@ Ask the user for confirmation using the AskUserQuestion tool:
 If the user confirms, run the deletion script:
 
 ```bash
-.claude/skills/delete-workspace/scripts/delete-workspace.sh {workspace-name}
+.claude/skills/workspace-delete/scripts/workspace-delete.sh {workspace-name}
 ```
 
 The script:
@@ -77,7 +77,7 @@ The script:
 
 Report the result to the user.
 
-Refer to `.claude/skills/delete-workspace/templates/deletion-confirmed.md` for the format.
+Refer to `.claude/skills/workspace-delete/templates/deletion-confirmed.md` for the format.
 
 ## Example Usage
 

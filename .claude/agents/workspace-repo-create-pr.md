@@ -38,7 +38,7 @@ The script searches for repository PR templates. If none found, it returns the d
 Run the script to gather commit and file change information:
 
 ```bash
-.claude/agents/scripts/review-workspace-repo-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
+.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
 ```
 
 Output includes:
