@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(workspace/**)",
+      "Write(workspace/**)",
+      "Bash(cd workspace/**:*)",
+      "Bash(./.claude/scripts/*:*)",
+      "Bash(./.claude/skills/*/scripts/*:*)",
+      "Bash(./.claude/agents/scripts/*:*)",
+      "Bash(git branch:*)",
+      "Bash(git clone:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(git show:*)",
+      "Bash(git worktree:*)",
+      "Bash(git worktree add:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(go vet:*)",
+      "Bash(make:*)",
+      "Bash(npm ci:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pip install:*)",
+      "Bash(pytest:*)",
+      "Bash(python3:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh run view:*)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}
