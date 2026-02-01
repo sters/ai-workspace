@@ -20,8 +20,6 @@ When invoked, you will receive:
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
-Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
-For file operations, the review directory is `workspace/{workspace-name}/reviews/{review-timestamp}`.
 
 ## Execution Steps
 

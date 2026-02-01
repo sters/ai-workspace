@@ -27,8 +27,6 @@ When invoked, you will receive:
 - **Repository Name**: The name of the repository (e.g., `repo`)
 - **Update Request**: What the user wants to change (add, remove, or modify items)
 
-Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
-For file operations, the workspace directory is `workspace/{workspace-name}`.
 
 ## Execution Steps
 

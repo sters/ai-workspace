@@ -28,7 +28,6 @@ When invoked, you will receive:
 - **Base Branch**: The base branch to compare against (e.g., `main`, `develop`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
-Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
 
 ## Execution Steps
 

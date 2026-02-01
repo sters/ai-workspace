@@ -22,8 +22,6 @@ When invoked, you will receive:
 - **Base Branch**: The base branch for the PR (e.g., `main`, `develop`)
 - **Draft**: Whether to create as draft (default: true)
 
-Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
-For file operations, the repository worktree is `workspace/{workspace-name}/{repository-path}`.
 
 ## Execution Steps
 
