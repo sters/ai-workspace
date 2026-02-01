@@ -39,7 +39,7 @@ Task tool:
   run_in_background: true
   prompt: |
     Update TODO items in workspace repository.
-    Workspace Directory: workspace/{workspace-name}
+    Workspace Name: {workspace-name}
     Repository Name: {repository-name}
     Update Request: {what the user wants to change}
 ```

@@ -41,7 +41,8 @@ Task tool:
     Create a pull request for the repository.
 
     Workspace Name: {workspace-name}
-    Repository Worktree Path: workspace/{workspace-name}/{repo-directory}
+    Repository Path: {org/repo-path}
+    Repository Name: {repo-name}
     Base Branch: {base-branch}
     Draft: true (unless user requested non-draft)
 ```

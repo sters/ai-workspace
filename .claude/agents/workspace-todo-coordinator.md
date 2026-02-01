@@ -22,7 +22,7 @@ You are a specialized agent for coordinating TODO items across multiple reposito
 ## Initial Context
 
 When invoked, you will receive:
-- **Workspace Directory**: The path to the workspace (e.g., `workspace/feature-user-auth-20260116`)
+- **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 
 ## Execution Steps
 

@@ -23,7 +23,7 @@ You are a specialized agent for updating TODO items in a workspace repository. Y
 ## Initial Context
 
 When invoked, you will receive:
-- **Workspace Directory**: The path to the workspace (e.g., `workspace/feature-user-auth-20260116`)
+- **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Name**: The name of the repository (e.g., `repo`)
 - **Update Request**: What the user wants to change (add, remove, or modify items)
 

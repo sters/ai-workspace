@@ -54,13 +54,11 @@ Task tool:
     Review changes for repository in workspace.
 
     Task Name: {task-name}
-    Workspace Directory: workspace/{workspace-name}
+    Workspace Name: {workspace-name}
     Repository Path: {org/repo-path}
     Repository Name: {repo-name}
-    Repository Worktree Path: workspace/{workspace-name}/{repo-directory}
     Base Branch: {base-branch}
-
-    Save review to: workspace/{workspace-name}/reviews/{timestamp}/{org}_{repo-name}.md
+    Review Timestamp: {timestamp}
 ```
 
 **Example**: For repository `github.com/sters/complex-ai-workspace`, the filename would be `github.com_sters_complex-ai-workspace.md` (slashes replaced with underscores).

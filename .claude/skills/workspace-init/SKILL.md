@@ -137,10 +137,9 @@ Task tool:
   run_in_background: true
   prompt: |
     Create TODO items for repository in workspace.
-    Workspace Directory: workspace/{workspace-name}
+    Workspace Name: {workspace-name}
     Repository Path: {org/repo-path}
     Repository Name: {repo-name}
-    Repository Worktree Path: workspace/{workspace-name}/{org}/{repo}
 ```
 
 **Run multiple planners in parallel** if there are multiple repositories.
@@ -160,7 +159,7 @@ Task tool:
   run_in_background: true
   prompt: |
     Coordinate TODO items across repositories in workspace.
-    Workspace Directory: workspace/{workspace-name}
+    Workspace Name: {workspace-name}
 ```
 
 The coordinator will:

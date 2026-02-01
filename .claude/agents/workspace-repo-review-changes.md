@@ -4,7 +4,7 @@ description: |
   Use this agent to review code changes in a specific repository within a workspace.
   This agent compares the current branch against the remote base branch and performs a thorough code review.
   It reads relevant files and related implementations to provide comprehensive feedback.
-  The review results are saved to workspace/{task_name}/reviews/{timestamp}/{org_name}_{repo_name}.md
+  The review results are saved to {workspace_name}/reviews/{timestamp}/{org_name}_{repo_name}.md
 tools:
   - Read
   - Write
@@ -22,12 +22,12 @@ You are a specialized agent for reviewing code changes in a repository within a 
 
 When invoked, you will receive:
 - **Task Name**: The workspace task name (e.g., `feature-user-auth-20260116`)
-- **Workspace Directory**: The path to the workspace (e.g., `workspace/feature-user-auth-20260116`)
+- **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Path**: The org/repo path (e.g., `github.com/sters/complex-ai-workspace`)
 - **Repository Name**: The name of the repository (e.g., `complex-ai-workspace`)
 - **Repository Worktree Path**: The path to the repository worktree within the workspace
 - **Base Branch**: The base branch to compare against (e.g., `main`, `develop`)
-- **Review Directory**: The path to save the review (e.g., `workspace/.../reviews/20260116-103045`)
+- **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
 ## Execution Steps
 

@@ -17,7 +17,7 @@ You are a specialized agent for collecting review results from a workspace revie
 ## Initial Context
 
 When invoked, you will receive:
-- **Review Directory**: Path to the review directory (e.g., `workspace/feature-user-auth-20260116/reviews/20260116-103045`)
+- **Review Directory**: Path to the review directory (e.g., `feature-user-auth-20260116/reviews/20260116-103045`)
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
 
 ## Execution Steps

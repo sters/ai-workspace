@@ -42,10 +42,9 @@ Task tool:
   subagent_type: workspace-repo-todo-executor
   run_in_background: true
   prompt: |
-    Execute tasks in workspace: workspace/{workspace-name}
+    Execute tasks in workspace: {workspace-name}
     Repository path: {org/repo-path}
     Repository name: {repo-name}
-    Repository worktree path: workspace/{workspace-name}/{org}/{repo}
 ```
 
 **What the agent does:**
