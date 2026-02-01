@@ -25,9 +25,12 @@ When invoked, you will receive:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Path**: The org/repo path (e.g., `github.com/sters/complex-ai-workspace`)
 - **Repository Name**: The name of the repository (e.g., `complex-ai-workspace`)
-- **Repository Worktree Path**: The path to the repository worktree within the workspace
 - **Base Branch**: The base branch to compare against (e.g., `main`, `develop`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
+
+From these, derive the following paths:
+- **Repository Worktree Path**: `workspace/{workspace-name}/{repository-path}`
+- **Review Directory**: `workspace/{workspace-name}/reviews/{review-timestamp}`
 
 ## Execution Steps
 
@@ -36,7 +39,7 @@ When invoked, you will receive:
 Prepare the review report file from template:
 
 ```bash
-REVIEW_FILE=$(.claude/agents/scripts/workspace-repo-review-changes/prepare-review-report.sh {review-directory} {repository-path})
+REVIEW_FILE=$(.claude/agents/scripts/workspace-repo-review-changes/prepare-review-report.sh workspace/{workspace-name}/reviews/{review-timestamp} {repository-path})
 ```
 
 The script:
@@ -49,7 +52,7 @@ The script:
 Run the script to gather repository changes:
 
 ```bash
-.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
+.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh workspace/{workspace-name}/{repository-path} {base-branch}
 ```
 
 Then understand the context:
@@ -106,7 +109,7 @@ Edit the prepared review file (`$REVIEW_FILE`) to fill in all placeholders with 
 
 ## Output
 
-- `{review-directory}/{org}_{repo}.md` - Detailed review report for this repository
+- `workspace/{workspace-name}/reviews/{review-timestamp}/{org}_{repo}.md` - Detailed review report for this repository
 
 ## Guidelines
 
