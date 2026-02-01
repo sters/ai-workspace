@@ -1,12 +1,12 @@
 ---
 name: workspace-repo-todo-executor
 description: |
-  Use this agent to execute TODO items for a specific repository within a workspace.
+  Use this agent to execute TODO items for a specific repository within a workspace directory (workspace/*).
   This agent focuses on consuming and completing TODO tasks defined in TODO-<repository-name>.md files.
   It implements features, fixes bugs, runs tests/linters, and commits changes to the repository worktree.
   Repositories are organized as repositories/org/repo_name (e.g., repositories/github.com/sters/complex-ai-workspace).
   Delegate to this agent when you need to:
-  - Work through TODO items defined in {workspace-name}/TODO-<repository-name>.md
+  - Work through TODO items defined in workspace/{workspace-name}/TODO-<repository-name>.md
   - Implement code changes in a repository worktree based on TODO specifications
   - Run tests and linters for changes made to the repository
   The agent works autonomously, consuming TODOs sequentially within the repository scope.
