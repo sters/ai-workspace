@@ -24,12 +24,15 @@ You are a specialized agent for coordinating TODO items across multiple reposito
 When invoked, you will receive:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 
+From this, derive the following path:
+- **Workspace Directory**: `workspace/{workspace-name}`
+
 ## Execution Steps
 
 ### 1. Read Workspace Context
 
-1. Read `README.md` in the workspace directory to understand the overall task
-2. List all `TODO-*.md` files in the workspace
+1. Read `workspace/{workspace-name}/README.md` to understand the overall task
+2. List all `workspace/{workspace-name}/TODO-*.md` files
 3. Read each TODO file completely
 
 ### 2. Analyze Dependencies

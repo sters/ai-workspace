@@ -27,13 +27,16 @@ When invoked, you will receive:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Path**: The org/repo path (e.g., `github.com/org/repo`)
 - **Repository Name**: The name of the repository (e.g., `repo`)
-- **Repository Worktree Path**: The path to the repository worktree within the workspace
+
+From these, derive the following paths:
+- **Workspace Directory**: `workspace/{workspace-name}`
+- **Repository Worktree Path**: `workspace/{workspace-name}/{repository-path}`
 
 ## Execution Steps
 
 ### 1. Read Workspace Context
 
-Read `README.md` in the workspace directory to understand:
+Read `workspace/{workspace-name}/README.md` to understand:
 - What task needs to be accomplished
 - **Task type** (feature, bugfix, research, etc.) - this determines the template to use
 - Requirements and acceptance criteria
@@ -51,7 +54,7 @@ Based on the task type from README.md, copy the appropriate template to the work
 | Other | `.claude/agents/templates/workspace-repo-todo-planner/TODO-default.md` |
 
 1. Read the selected template file
-2. Copy it to `{workspace-directory}/TODO-{repository-name}.md`
+2. Copy it to `workspace/{workspace-name}/TODO-{repository-name}.md`
 3. Replace `{{REPOSITORY_NAME}}` with the actual repository name
 
 ### 3. Analyze the Repository
@@ -86,7 +89,7 @@ Edit the copied TODO file to add specific details based on your analysis.
 
 ## Output
 
-- `{workspace-directory}/TODO-{repository-name}.md` - Detailed TODO file for this repository
+- `workspace/{workspace-name}/TODO-{repository-name}.md` - Detailed TODO file for this repository
 
 ## Guidelines
 

@@ -31,15 +31,18 @@ When invoked, you will receive:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Path**: The org/repo path (e.g., `github.com/sters/complex-ai-workspace`)
 - **Repository Name**: The name of the repository (e.g., `complex-ai-workspace` - extracted from repository path)
-- **Repository Worktree Path**: The path to the repository worktree within the workspace
+
+From these, derive the following paths:
+- **Workspace Directory**: `workspace/{workspace-name}`
+- **Repository Worktree Path**: `workspace/{workspace-name}/{repository-path}`
 
 ## Execution Steps
 
 ### 1. Startup
 
 1. **Read workspace context**:
-   - Read `README.md` in the workspace directory to understand the task
-   - Read `TODO-<repository-name>.md` to see what needs to be done for that repository
+   - Read `workspace/{workspace-name}/README.md` to understand the task
+   - Read `workspace/{workspace-name}/TODO-{repository-name}.md` to see what needs to be done
 
 2. **Understand the repository** (read documentation first):
    - Navigate to the repository worktree

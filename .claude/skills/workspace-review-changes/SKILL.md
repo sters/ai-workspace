@@ -76,8 +76,8 @@ Task tool:
   prompt: |
     Collect review results from the review directory.
 
-    Review Directory: {review-dir}
     Workspace Name: {workspace-name}
+    Review Timestamp: {timestamp}
 ```
 
 The agent will:

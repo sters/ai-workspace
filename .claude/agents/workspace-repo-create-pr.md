@@ -17,9 +17,13 @@ You are a specialized agent for creating a pull request for a single repository.
 
 When invoked, you will receive:
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
-- **Repository Worktree Path**: Path to the repository worktree
+- **Repository Path**: The org/repo path (e.g., `github.com/org/repo`)
+- **Repository Name**: The name of the repository (e.g., `repo`)
 - **Base Branch**: The base branch for the PR (e.g., `main`, `develop`)
 - **Draft**: Whether to create as draft (default: true)
+
+From these, derive the following path:
+- **Repository Worktree Path**: `workspace/{workspace-name}/{repository-path}`
 
 ## Execution Steps
 
@@ -28,7 +32,7 @@ When invoked, you will receive:
 Run the script to find and read the PR template:
 
 ```bash
-.claude/agents/scripts/workspace-repo-create-pr/read-pr-template.sh <repository-worktree-path>
+.claude/agents/scripts/workspace-repo-create-pr/read-pr-template.sh workspace/{workspace-name}/{repository-path}
 ```
 
 The script searches for repository PR templates. If none found, it returns the default template from `.claude/agents/templates/workspace-repo-create-pr/default-pr-template.md`.
@@ -38,7 +42,7 @@ The script searches for repository PR templates. If none found, it returns the d
 Run the script to gather commit and file change information:
 
 ```bash
-.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh <repository-worktree-path> <base-branch>
+.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh workspace/{workspace-name}/{repository-path} {base-branch}
 ```
 
 Output includes:
@@ -64,10 +68,10 @@ Run the script to create or update the PR:
 
 ```bash
 # Draft PR (default)
-.claude/agents/scripts/workspace-repo-create-pr/create-or-update-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md
+.claude/agents/scripts/workspace-repo-create-pr/create-or-update-pr.sh workspace/{workspace-name}/{repository-path} "<title>" workspace/{workspace-name}/tmp/pr-body-{repository-name}.md
 
 # Non-draft PR (only if explicitly requested)
-.claude/agents/scripts/workspace-repo-create-pr/create-or-update-pr.sh <repository-worktree-path> "<title>" workspace/{workspace-name}/tmp/pr-body-{repo-name}.md --no-draft
+.claude/agents/scripts/workspace-repo-create-pr/create-or-update-pr.sh workspace/{workspace-name}/{repository-path} "<title>" workspace/{workspace-name}/tmp/pr-body-{repository-name}.md --no-draft
 ```
 
 Output:

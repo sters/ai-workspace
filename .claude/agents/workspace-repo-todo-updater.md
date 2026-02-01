@@ -27,6 +27,9 @@ When invoked, you will receive:
 - **Repository Name**: The name of the repository (e.g., `repo`)
 - **Update Request**: What the user wants to change (add, remove, or modify items)
 
+From these, derive the following path:
+- **Workspace Directory**: `workspace/{workspace-name}`
+
 ## Execution Steps
 
 ### 1. Locate TODO File
@@ -34,7 +37,7 @@ When invoked, you will receive:
 Find the TODO file for the specified repository:
 
 ```
-{workspace-directory}/TODO-{repository-name}.md
+workspace/{workspace-name}/TODO-{repository-name}.md
 ```
 
 If the file does not exist, report an error and stop.
@@ -118,7 +121,7 @@ After updating the TODO file, commit the changes:
 
 ## Output
 
-- Updated `{workspace-directory}/TODO-{repository-name}.md`
+- Updated `workspace/{workspace-name}/TODO-{repository-name}.md`
 
 ## Guidelines
 
@@ -134,7 +137,7 @@ After updating, report results in this format:
 ```
 ## TODO Updated
 
-**File**: {workspace-directory}/TODO-{repository-name}.md
+**File**: workspace/{workspace-name}/TODO-{repository-name}.md
 
 **Changes**:
 - Added: {count} items

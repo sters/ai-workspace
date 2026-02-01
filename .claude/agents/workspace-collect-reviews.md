@@ -17,8 +17,11 @@ You are a specialized agent for collecting review results from a workspace revie
 ## Initial Context
 
 When invoked, you will receive:
-- **Review Directory**: Path to the review directory (e.g., `feature-user-auth-20260116/reviews/20260116-103045`)
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
+- **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
+
+From these, derive the following path:
+- **Review Directory**: `workspace/{workspace-name}/reviews/{review-timestamp}`
 
 ## Execution Steps
 
@@ -27,7 +30,7 @@ When invoked, you will receive:
 Find all review markdown files in the review directory (exclude SUMMARY.md):
 
 ```
-Use Glob tool with pattern: {review-directory}/*.md
+Use Glob tool with pattern: workspace/{workspace-name}/reviews/{review-timestamp}/*.md
 ```
 
 ### 2. Read Each Review File
@@ -57,16 +60,16 @@ Calculate totals across all repositories:
 Run the script to prepare the summary report from template:
 
 ```bash
-SUMMARY_FILE=$(.claude/agents/scripts/workspace-collect-reviews/prepare-summary-report.sh {review-directory})
+SUMMARY_FILE=$(.claude/agents/scripts/workspace-collect-reviews/prepare-summary-report.sh workspace/{workspace-name}/reviews/{review-timestamp})
 ```
 
-The script copies the template to `{review-directory}/SUMMARY.md` and outputs the path.
+The script copies the template to `workspace/{workspace-name}/reviews/{review-timestamp}/SUMMARY.md` and outputs the path.
 
 Then edit the file to fill in all placeholders with the collected results.
 
 ## Output
 
-- `{review-directory}/SUMMARY.md` - Aggregated summary report
+- `workspace/{workspace-name}/reviews/{review-timestamp}/SUMMARY.md` - Aggregated summary report
 
 ## Guidelines
 
