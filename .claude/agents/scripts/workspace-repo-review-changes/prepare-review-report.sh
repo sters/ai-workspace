@@ -1,18 +1,21 @@
 #!/bin/bash
 # Prepare review report from template
-# Usage: prepare-review-report.sh <review-directory> <repository-path>
+# Usage: prepare-review-report.sh <workspace-name> <timestamp> <repository-path>
 # Output: Path to the created review file
 
 set -e
 
-REVIEW_DIR="$1"
-REPO_PATH="$2"
+WORKSPACE_NAME="$1"
+TIMESTAMP="$2"
+REPO_PATH="$3"
 
-if [ -z "$REVIEW_DIR" ] || [ -z "$REPO_PATH" ]; then
-    echo "Error: Review directory and repository path are required" >&2
-    echo "Usage: $0 <review-directory> <repository-path>" >&2
+if [ -z "$WORKSPACE_NAME" ] || [ -z "$TIMESTAMP" ] || [ -z "$REPO_PATH" ]; then
+    echo "Error: Workspace name, timestamp, and repository path are required" >&2
+    echo "Usage: $0 <workspace-name> <timestamp> <repository-path>" >&2
     exit 1
 fi
+
+REVIEW_DIR="workspace/${WORKSPACE_NAME}/reviews/${TIMESTAMP}"
 
 if [ ! -d "$REVIEW_DIR" ]; then
     echo "Error: Review directory not found: $REVIEW_DIR" >&2

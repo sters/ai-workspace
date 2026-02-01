@@ -1,25 +1,28 @@
 #!/bin/bash
 # Read PR template from repository
-# Usage: read-pr-template.sh <repo-path>
+# Usage: read-pr-template.sh <workspace-name> <repository-path>
 # Output: Template content if found, empty if not found
 # Exit code: 0 if found, 1 if not found
 
 set -e
 
-REPO_PATH="$1"
+WORKSPACE_NAME="$1"
+REPO_PATH="$2"
 
-if [ -z "$REPO_PATH" ]; then
-    echo "Error: Repository path is required" >&2
-    echo "Usage: $0 <repo-path>" >&2
+if [ -z "$WORKSPACE_NAME" ] || [ -z "$REPO_PATH" ]; then
+    echo "Error: Workspace name and repository path are required" >&2
+    echo "Usage: $0 <workspace-name> <repository-path>" >&2
     exit 2
 fi
 
-if [ ! -d "$REPO_PATH" ]; then
-    echo "Error: Repository path not found: $REPO_PATH" >&2
+WORKTREE_PATH="workspace/${WORKSPACE_NAME}/${REPO_PATH}"
+
+if [ ! -d "$WORKTREE_PATH" ]; then
+    echo "Error: Repository worktree not found: $WORKTREE_PATH" >&2
     exit 2
 fi
 
-cd "$REPO_PATH"
+cd "$WORKTREE_PATH"
 
 # Search for PR template (direct file check is faster than find)
 # Priority: .github > docs > root

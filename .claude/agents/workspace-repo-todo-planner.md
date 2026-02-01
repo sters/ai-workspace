@@ -28,9 +28,8 @@ When invoked, you will receive:
 - **Repository Path**: The org/repo path (e.g., `github.com/org/repo`)
 - **Repository Name**: The name of the repository (e.g., `repo`)
 
-From these, derive the following paths:
-- **Workspace Directory**: `workspace/{workspace-name}`
-- **Repository Worktree Path**: `workspace/{workspace-name}/{repository-path}`
+Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
+For file operations, the workspace directory is `workspace/{workspace-name}` and repository worktree is `workspace/{workspace-name}/{repository-path}`.
 
 ## Execution Steps
 

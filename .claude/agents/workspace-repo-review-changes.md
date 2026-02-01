@@ -28,9 +28,7 @@ When invoked, you will receive:
 - **Base Branch**: The base branch to compare against (e.g., `main`, `develop`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
-From these, derive the following paths:
-- **Repository Worktree Path**: `workspace/{workspace-name}/{repository-path}`
-- **Review Directory**: `workspace/{workspace-name}/reviews/{review-timestamp}`
+Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
 
 ## Execution Steps
 
@@ -39,7 +37,7 @@ From these, derive the following paths:
 Prepare the review report file from template:
 
 ```bash
-REVIEW_FILE=$(.claude/agents/scripts/workspace-repo-review-changes/prepare-review-report.sh workspace/{workspace-name}/reviews/{review-timestamp} {repository-path})
+REVIEW_FILE=$(.claude/agents/scripts/workspace-repo-review-changes/prepare-review-report.sh {workspace-name} {review-timestamp} {repository-path})
 ```
 
 The script:
@@ -52,7 +50,7 @@ The script:
 Run the script to gather repository changes:
 
 ```bash
-.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh workspace/{workspace-name}/{repository-path} {base-branch}
+.claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh {workspace-name} {repository-path} {base-branch}
 ```
 
 Then understand the context:

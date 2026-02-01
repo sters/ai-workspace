@@ -20,8 +20,8 @@ When invoked, you will receive:
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
-From these, derive the following path:
-- **Review Directory**: `workspace/{workspace-name}/reviews/{review-timestamp}`
+Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
+For file operations, the review directory is `workspace/{workspace-name}/reviews/{review-timestamp}`.
 
 ## Execution Steps
 
@@ -60,7 +60,7 @@ Calculate totals across all repositories:
 Run the script to prepare the summary report from template:
 
 ```bash
-SUMMARY_FILE=$(.claude/agents/scripts/workspace-collect-reviews/prepare-summary-report.sh workspace/{workspace-name}/reviews/{review-timestamp})
+SUMMARY_FILE=$(.claude/agents/scripts/workspace-collect-reviews/prepare-summary-report.sh {workspace-name} {review-timestamp})
 ```
 
 The script copies the template to `workspace/{workspace-name}/reviews/{review-timestamp}/SUMMARY.md` and outputs the path.

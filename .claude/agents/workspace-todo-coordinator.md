@@ -24,8 +24,8 @@ You are a specialized agent for coordinating TODO items across multiple reposito
 When invoked, you will receive:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 
-From this, derive the following path:
-- **Workspace Directory**: `workspace/{workspace-name}`
+Scripts automatically add `workspace/` prefix, so use workspace-name directly in script calls.
+For file operations, the workspace directory is `workspace/{workspace-name}`.
 
 ## Execution Steps
 
