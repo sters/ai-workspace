@@ -20,24 +20,17 @@ if [ ! -d "$WORKSPACE_DIR" ]; then
     exit 1
 fi
 
-echo "=== REMOVING WORKTREES ==="
+echo "=== COLLECTING REPOSITORY PATHS ==="
 
-# Find and remove git worktrees
+# Collect repository paths that have worktrees in this workspace
+REPO_PATHS=()
 for REPO_DIR in "$WORKSPACE_DIR"/*/*; do
     if [ -d "$REPO_DIR/.git" ] || [ -f "$REPO_DIR/.git" ]; then
-        # Extract the repository path from worktree
-        # Worktree path: workspace/{name}/{org}/{repo}
-        # Repository path: repositories/{org}/{repo}
         REL_PATH=${REPO_DIR#"$WORKSPACE_DIR/"}
         REPO_PATH="repositories/${REL_PATH}"
-
         if [ -d "$REPO_PATH" ]; then
-            echo "Removing worktree: $REPO_DIR"
-            git -C "$REPO_PATH" worktree remove "$REPO_DIR" --force 2>/dev/null || {
-                echo "Warning: Could not remove worktree via git, will delete directory directly"
-            }
-        else
-            echo "Warning: Repository not found: $REPO_PATH"
+            REPO_PATHS+=("$REPO_PATH")
+            echo "Found worktree: $REPO_DIR"
         fi
     fi
 done
@@ -46,6 +39,14 @@ echo ""
 echo "=== REMOVING WORKSPACE DIRECTORY ==="
 rm -rf "$WORKSPACE_DIR"
 echo "Deleted: $WORKSPACE_DIR"
+
+echo ""
+echo "=== PRUNING WORKTREE REFERENCES ==="
+# Prune stale worktree references in batch (much faster than individual worktree remove)
+for REPO_PATH in "${REPO_PATHS[@]}"; do
+    git -C "$REPO_PATH" worktree prune 2>/dev/null || true
+    echo "Pruned: $REPO_PATH"
+done
 
 echo ""
 echo "=== DELETION COMPLETE ==="

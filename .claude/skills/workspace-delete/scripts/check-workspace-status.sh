@@ -21,15 +21,25 @@ if [ ! -d "$WORKSPACE_DIR" ]; then
 fi
 
 echo "=== LAST ACTIVITY ==="
-# Find most recently modified file (macOS compatible)
-LAST_MODIFIED=$(find "$WORKSPACE_DIR" -type f -not -path "*/.git/*" -print0 2>/dev/null | xargs -0 stat -f "%m %N" 2>/dev/null | sort -rn | head -1)
-if [ -n "$LAST_MODIFIED" ]; then
-    TIMESTAMP=$(echo "$LAST_MODIFIED" | awk '{print $1}')
-    FILEPATH=$(echo "$LAST_MODIFIED" | cut -d' ' -f2-)
-    # Convert timestamp to readable date (macOS)
-    LAST_DATE=$(date -r "$TIMESTAMP" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || date -d "@$TIMESTAMP" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || echo "Unknown")
+# Check only workspace metadata files (README, TODO, reviews) - much faster than scanning all files
+LAST_TIMESTAMP=0
+LAST_FILE=""
+
+for FILE in "$WORKSPACE_DIR"/README.md "$WORKSPACE_DIR"/TODO-*.md "$WORKSPACE_DIR"/reviews/*/*.md; do
+    if [ -f "$FILE" ]; then
+        # macOS uses -f "%m", Linux uses -c "%Y"
+        TIMESTAMP=$(stat -f "%m" "$FILE" 2>/dev/null || stat -c "%Y" "$FILE" 2>/dev/null)
+        if [ -n "$TIMESTAMP" ] && [ "$TIMESTAMP" -gt "$LAST_TIMESTAMP" ]; then
+            LAST_TIMESTAMP=$TIMESTAMP
+            LAST_FILE=$FILE
+        fi
+    fi
+done
+
+if [ "$LAST_TIMESTAMP" -gt 0 ]; then
+    LAST_DATE=$(date -r "$LAST_TIMESTAMP" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || date -d "@$LAST_TIMESTAMP" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || echo "Unknown")
     echo "Date: $LAST_DATE"
-    echo "File: $FILEPATH"
+    echo "File: $LAST_FILE"
 else
     echo "Date: Unknown"
     echo "File: None"
