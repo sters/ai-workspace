@@ -9,6 +9,15 @@ description: Show TODO progress and background agent status for the current work
 
 This skill displays the current workspace status including TODO progress and background agent status.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/TODO-*.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+
 ## Steps
 
 ### 1. Workspace

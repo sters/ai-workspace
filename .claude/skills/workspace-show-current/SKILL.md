@@ -9,6 +9,10 @@ description: Show the workspace currently focused in this conversation
 
 This skill displays which workspace is currently being focused in this conversation context. No additional responses or actions.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
 ## Steps
 
 ### 1. Workspace

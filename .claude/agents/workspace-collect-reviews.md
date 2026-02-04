@@ -26,6 +26,15 @@ When invoked, you will receive:
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/reviews/{timestamp}/*.md`
+- `workspace/{workspace-name}/reviews/{timestamp}/SUMMARY.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

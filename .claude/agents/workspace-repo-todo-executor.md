@@ -36,6 +36,17 @@ When invoked, you will receive:
 - **Repository Path**: The org/repo path (e.g., `github.com/sters/complex-ai-workspace`)
 - **Repository Name**: The name of the repository (e.g., `complex-ai-workspace` - extracted from repository path)
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files (README.md, TODO files), use paths like:
+- `workspace/{workspace-name}/README.md`
+- `workspace/{workspace-name}/TODO-{repository-name}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+
+Even when your working directory is inside a repository worktree (`workspace/{workspace-name}/{org}/{repo}/`), always specify paths from the project root for Edit/Write operations on workspace files.
 
 ## Execution Steps
 

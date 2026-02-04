@@ -9,6 +9,10 @@ description: List all workspaces in the workspace directory
 
 This skill lists all existing workspaces in the `workspace/` directory using a shell script. Output only the list, no additional responses or actions.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
 ## Steps
 
 ### 1. Run the List Script

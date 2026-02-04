@@ -11,6 +11,15 @@ This skill creates pull requests for all repositories in a workspace by delegati
 
 **Default behavior**: PRs are created as **draft** unless explicitly requested otherwise.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/tmp/pr-body-{repo-name}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+
 ## Steps
 
 ### 1. Workspace

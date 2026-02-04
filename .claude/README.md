@@ -12,6 +12,26 @@ This directory contains Claude Code configuration for the multi-repository works
 └── settings.local.json
 ```
 
+## File Path Rules (CRITICAL)
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+This is a permission requirement. The permission system in `settings.local.json` uses patterns like `Edit(workspace/**)` and `Write(workspace/**)`. These patterns only match **relative paths from the project root**.
+
+**Correct:**
+```
+workspace/{workspace-name}/README.md
+workspace/{workspace-name}/TODO-{repo}.md
+```
+
+**Incorrect (will be denied):**
+```
+/Users/sters/go/src/github.com/.../workspace/{workspace-name}/README.md
+../../TODO-{repo}.md
+```
+
+This applies to all agents and skills that read/write workspace files, especially when the working directory is inside a repository worktree (`workspace/{workspace-name}/{org}/{repo}/`).
+
 ## Implementation Policies for Agents
 
 Agents are autonomous workers that perform specific tasks. They are invoked via the `Task` tool with `run_in_background: true`.

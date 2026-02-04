@@ -11,6 +11,15 @@ This skill updates TODO items in a workspace's TODO file. It delegates the actua
 
 **After completion:** Use `/workspace-execute` to work through the updated TODO items.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/TODO-{repository-name}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+
 ## Steps
 
 ### 1. Validate Workspace and Repository

@@ -9,6 +9,15 @@ description: Review code changes across all repositories in a workspace
 
 This skill reviews code changes across all repositories in a workspace by delegating to the `workspace-repo-review-changes` agent for each repository. It collects all review results and provides a comprehensive summary.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/reviews/{timestamp}/*.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+
 ## Steps
 
 ### 1. Workspace

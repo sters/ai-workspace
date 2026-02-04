@@ -9,6 +9,10 @@ description: Show git history of a workspace (README/TODO changes over time)
 
 This skill shows the git commit history of a workspace, displaying how README and TODO files have changed over time.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
 ## Steps
 
 ### 1. Workspace

@@ -28,6 +28,14 @@ When invoked, you will receive:
 - **Base Branch**: The base branch for the PR (e.g., `main`, `develop`)
 - **Draft**: Whether to create as draft (default: true)
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/tmp/pr-body-{repo-name}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

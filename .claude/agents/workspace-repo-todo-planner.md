@@ -35,6 +35,15 @@ When invoked, you will receive:
 - **Repository Path**: The org/repo path (e.g., `github.com/org/repo`)
 - **Repository Name**: The name of the repository (e.g., `repo`)
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/README.md`
+- `workspace/{workspace-name}/TODO-{repository-name}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

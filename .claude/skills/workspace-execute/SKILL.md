@@ -11,6 +11,16 @@ This skill executes work in an initialized workspace by delegating to the `works
 
 **Prerequisites:** The workspace must be initialized first using `/workspace-init`.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files, use paths like:
+- `workspace/{workspace-name}/README.md`
+- `workspace/{workspace-name}/TODO-{repository-name}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+
 ## Steps
 
 ### 1. Workspace

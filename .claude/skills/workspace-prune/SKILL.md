@@ -9,6 +9,10 @@ description: Delete multiple stale workspaces that have not been modified recent
 
 This skill identifies workspaces that have not been modified within a specified number of days and allows batch deletion after user confirmation.
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
 ## Steps
 
 ### 1. List Stale Workspaces

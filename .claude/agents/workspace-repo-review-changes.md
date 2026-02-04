@@ -32,6 +32,15 @@ When invoked, you will receive:
 - **Base Branch**: The base branch to compare against (e.g., `main`, `develop`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
+## Critical: File Path Rules
+
+**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+
+When accessing workspace files (README.md, review files), use paths like:
+- `workspace/{workspace-name}/README.md`
+- `workspace/{workspace-name}/reviews/{timestamp}/{filename}.md`
+
+**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 
