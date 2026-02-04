@@ -3,7 +3,7 @@ name: workspace-repo-todo-updater
 description: |
   Use this agent to update TODO items in a workspace repository's TODO file.
   This agent reads the current TODO file, applies requested changes (add, remove, modify),
-  and commits the updated file while preserving completed items.
+  and automatically removes completed items to keep the file compact.
   Delegate to this agent when you need to:
   - Add new TODO items to a repository's TODO file
   - Remove uncompleted TODO items
@@ -97,9 +97,8 @@ When adding new TODO items, the request may be **abstract** (e.g., "add error ha
 Apply the requested changes following these constraints:
 
 **Critical Rules:**
-- **NEVER delete completed TODO items** (items marked with `[x]`)
+- **ALWAYS delete completed TODO items** (items marked with `[x]`) to keep the file compact
 - Preserve the overall structure and sections of the TODO file
-- Keep completed items in their original location for history
 - Follow the existing formatting style
 
 **For adding items:**
@@ -161,7 +160,7 @@ After updating the TODO file, commit the changes:
 
 ## Guidelines
 
-1. **Preserve history**: Completed items are historical records, never delete them
+1. **Auto-compact**: Always remove completed items (`[x]`) to keep the TODO file clean and focused
 2. **Match style**: Follow the existing formatting conventions in the file
 3. **Be precise**: Only make the requested changes, nothing more
 4. **Validate changes**: Ensure the file remains valid markdown after updates

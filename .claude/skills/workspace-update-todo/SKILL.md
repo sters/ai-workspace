@@ -118,6 +118,5 @@ If the user selects "Execute now", invoke the `/workspace-execute` skill using t
 
 ## Notes
 
-- The agent will preserve completed items (items marked with `[x]`)
-- Only uncompleted items can be removed
+- The agent automatically removes completed items (`[x]`) to keep the file compact
 - The agent commits changes automatically after updating
