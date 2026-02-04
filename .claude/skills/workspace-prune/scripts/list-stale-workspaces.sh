@@ -12,15 +12,14 @@ if [[ ! -d "$WORKSPACE_DIR" ]]; then
 fi
 
 # Use find with -mtime for speed (directories modified more than N days ago)
-stale=$(find "$WORKSPACE_DIR" -maxdepth 1 -mindepth 1 -type d -mtime +"$DAYS" 2>/dev/null | sort)
+# Use -print0 and xargs -0 to handle special characters and batch stat calls
+stale_output=$(find "$WORKSPACE_DIR" -maxdepth 1 -mindepth 1 -type d -mtime +"$DAYS" -print0 2>/dev/null | \
+    xargs -0 stat -f "%N (%Sm)" -t "%Y-%m-%d" 2>/dev/null | \
+    sed 's|.*/\([^/]*\) (|workspace/\1/ (|' | sort)
 
-if [[ -z "$stale" ]]; then
+if [[ -z "$stale_output" ]]; then
     echo "No stale workspaces found (threshold: $DAYS days)"
     exit 0
 fi
 
-# Process all at once: get mtime and format output (faster than per-item stat)
-echo "$stale" | while IFS= read -r ws; do
-    # Use stat -f to get mtime and format in one call
-    stat -f "workspace/%N/ (%Sm)" -t "%Y-%m-%d" "$ws" 2>/dev/null | sed 's|.*/\([^/]*\)/ |\1/ |'
-done
+echo "$stale_output"
