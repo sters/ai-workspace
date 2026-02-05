@@ -7,7 +7,12 @@ set -e
 # Example: ./commit-workspace-snapshot.sh feature-auth-20260130 "Custom message"
 #
 # Commits changes to README.md, TODO-*.md, and reviews/ in the workspace git repository.
-# Auto-generates commit message based on TODO progress if not provided.
+# Only these files are staged; worktree code changes are not included.
+#
+# If message is not provided, auto-generates based on TODO progress:
+#   "Snapshot: {completed}/{total} TODO items completed[ | reviews updated]"
+#
+# Exit code: 0 on success (including no changes), 1 on error
 
 WORKSPACE_NAME="$1"
 CUSTOM_MESSAGE="$2"

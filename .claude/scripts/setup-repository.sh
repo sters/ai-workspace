@@ -4,15 +4,22 @@ set -e
 
 # Usage: ./setup-repository.sh <workspace-name> <org/repo-path>
 # Example: ./setup-repository.sh feature-user-auth-20260131 github.com/org/repo
+# Example: ./setup-repository.sh feature-user-auth-20260131 github.com/org/repo:dev
 # Example: BASE_BRANCH=develop ./setup-repository.sh feature-user-auth-20260131 github.com/org/repo
 #
-# Alias syntax: Use :<alias> suffix to create multiple worktrees from the same repository
-# Example: ./setup-repository.sh feature-user-auth-20260131 github.com/org/repo:dev
-# Example: ./setup-repository.sh feature-user-auth-20260131 github.com/org/repo:prod
+# Clones a repository (if not exists) and creates a git worktree in the workspace.
 #
-# The alias is converted to ___<alias> in directory names (e.g., repo___dev)
+# Process:
+#   1. Clone repository to repositories/<org/repo> if not exists, otherwise fetch latest
+#   2. Auto-detect base branch using detect-base-branch.sh (or use BASE_BRANCH env var)
+#   3. Create new branch: {task-type}/{ticket-id}-{description} or {task-type}/{description}-{date}
+#   4. Create git worktree in workspace/<workspace-name>/<org/repo>
 #
-# Base branch is auto-detected from remote. To override, set BASE_BRANCH environment variable.
+# Alias syntax: Use :<alias> suffix to create multiple worktrees from the same repository.
+#   The alias is converted to ___<alias> in directory names (e.g., repo___dev).
+#   Branch name also includes alias to avoid collisions.
+#
+# Exit code: 0 on success, 1 on error
 
 WORKSPACE_NAME="$1"
 REPOSITORY_PATH_ARG="$2"

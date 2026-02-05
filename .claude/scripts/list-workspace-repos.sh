@@ -1,8 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-# List all repository worktrees in a workspace
-# Usage: list-workspace-repos.sh <workspace-name>
+# Usage: ./list-workspace-repos.sh <workspace-name>
+# Example: ./list-workspace-repos.sh feature-auth-20260130
+#
+# Lists all repository worktrees in a workspace.
+# Finds directories containing .git (regular repos or worktrees).
+#
+# Returns: Repository paths relative to workspace, one per line (e.g., "github.com/org/repo")
+# Exit code: 0 on success, 1 if workspace not found
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"

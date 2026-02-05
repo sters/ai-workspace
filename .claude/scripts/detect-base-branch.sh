@@ -1,7 +1,17 @@
 #!/bin/bash
 
 # Usage: ./detect-base-branch.sh <repository-path>
-# Returns the default branch name (main, develop, master, etc.)
+# Example: ./detect-base-branch.sh repositories/github.com/org/repo
+#
+# Detects the default branch of a Git repository.
+# Detection order:
+#   1. git symbolic-ref refs/remotes/origin/HEAD (existing reference)
+#   2. git remote set-head origin --auto (fetch from remote)
+#   3. Fallback: checks common branch names (main, master, develop, development)
+#   4. Last resort: uses current branch
+#
+# Returns: Branch name to stdout (e.g., "main", "master", "develop")
+# Exit code: 0 on success, 1 on failure
 
 REPOSITORY_PATH="$1"
 
