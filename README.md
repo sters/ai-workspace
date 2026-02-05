@@ -71,6 +71,41 @@ Tasks are executed in isolated directories (`./workspace/{task-name}-{date}/`) u
 
 See [CLAUDE.md](./CLAUDE.md) for detailed documentation.
 
+## Available Agents
+
+Agents are specialized sub-processes that handle specific tasks autonomously. **You don't need to invoke agents directly** — skills automatically launch the appropriate agents for you.
+
+| Agent | Description | Invoked by |
+|-------|-------------|------------|
+| `workspace-repo-todo-planner` | Analyzes repository and creates detailed TODO items | `/workspace-init` |
+| `workspace-todo-coordinator` | Coordinates TODOs across repos for parallel execution | `/workspace-init` |
+| `workspace-repo-todo-executor` | Executes TODO items (implements code, runs tests, commits) | `/workspace-execute` |
+| `workspace-repo-todo-updater` | Updates TODO items (add, remove, modify) | `/workspace-update-todo` |
+| `workspace-repo-review-changes` | Reviews code changes and generates review report | `/workspace-review-changes` |
+| `workspace-collect-reviews` | Collects review results and creates summary | `/workspace-review-changes` |
+| `workspace-repo-create-pr` | Creates pull request following repo's PR template | `/workspace-create-pr` |
+
+### Skills and Agents Relationship
+
+```
+/workspace-init
+  ├─→ workspace-repo-todo-planner (per repository, parallel)
+  └─→ workspace-todo-coordinator
+
+/workspace-execute
+  └─→ workspace-repo-todo-executor (per repository)
+
+/workspace-update-todo
+  └─→ workspace-repo-todo-updater
+
+/workspace-review-changes
+  ├─→ workspace-repo-review-changes (per repository, parallel)
+  └─→ workspace-collect-reviews
+
+/workspace-create-pr
+  └─→ workspace-repo-create-pr (per repository, parallel)
+```
+
 ## Policies
 
 See [.claude/README.md](./.claude/README.md) for implementation policies for agents and skills.
