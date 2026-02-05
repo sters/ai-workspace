@@ -1,6 +1,6 @@
 ---
 name: workspace-list
-description: List all workspaces in the workspace directory
+description: List all workspaces
 ---
 
 # workspace-list

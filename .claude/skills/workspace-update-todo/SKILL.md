@@ -1,6 +1,6 @@
 ---
 name: workspace-update-todo
-description: Update TODO items in a workspace repository
+description: Add, remove, or modify TODO items
 ---
 
 # workspace-update-todo

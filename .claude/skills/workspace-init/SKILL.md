@@ -1,6 +1,6 @@
 ---
 name: workspace-init
-description: Initialize a working directory for development tasks
+description: Create a new workspace with README and TODO files (calls /workspace-add-repo to clone and create worktrees)
 ---
 
 # workspace-init

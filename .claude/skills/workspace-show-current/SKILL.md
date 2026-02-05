@@ -1,13 +1,13 @@
 ---
 name: workspace-show-current
-description: Show the workspace currently focused in this conversation
+description: Display the specified workspace path
 ---
 
 # workspace-show-current
 
 ## Overview
 
-This skill displays which workspace is currently being focused in this conversation context. No additional responses or actions.
+This skill displays the specified workspace path. Use this to confirm or set which workspace you're working with. Output only, no additional responses or actions.
 
 ## Critical: File Path Rules
 

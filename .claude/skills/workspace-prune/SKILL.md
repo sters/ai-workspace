@@ -1,6 +1,6 @@
 ---
 name: workspace-prune
-description: Delete multiple stale workspaces that have not been modified recently
+description: Delete workspaces not modified within N days
 ---
 
 # workspace-prune

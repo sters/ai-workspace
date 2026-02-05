@@ -1,6 +1,6 @@
 ---
 name: workspace-review-changes
-description: Review code changes across all repositories in a workspace
+description: Review code changes and generate review reports
 ---
 
 # workspace-review-changes

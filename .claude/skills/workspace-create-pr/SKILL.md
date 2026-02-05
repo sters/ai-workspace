@@ -1,6 +1,6 @@
 ---
 name: workspace-create-pr
-description: Create pull requests for all repositories in a workspace
+description: Create pull requests for all repositories (draft by default)
 ---
 
 # workspace-create-pr

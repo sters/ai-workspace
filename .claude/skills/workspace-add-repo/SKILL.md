@@ -1,6 +1,6 @@
 ---
 name: workspace-add-repo
-description: Add a repository to an existing workspace
+description: Add a repository to a workspace (clones if needed, creates worktree)
 ---
 
 # workspace-add-repo

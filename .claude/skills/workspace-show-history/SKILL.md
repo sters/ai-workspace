@@ -1,6 +1,6 @@
 ---
 name: workspace-show-history
-description: Show git history of a workspace (README/TODO changes over time)
+description: Show commit history of README/TODO changes
 ---
 
 # workspace-show-history

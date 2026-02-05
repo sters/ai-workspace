@@ -26,18 +26,18 @@ This is a multi-repository workspace manager for Claude Code. It enables complex
 
 | Skill | Description |
 |-------|-------------|
-| `/workspace-init` | Initialize workspace with worktree, README, and TODO files |
-| `/workspace-add-repo` | Add a repository to an existing workspace |
-| `/workspace-execute` | Execute TODO items via workspace-repo-todo-executor agent |
-| `/workspace-review-changes` | Review code changes via workspace-repo-review-changes agent |
-| `/workspace-create-pr` | Create PRs for all repositories (draft by default) |
-| `/workspace-update-todo` | Update TODO items in a workspace repository |
-| `/workspace-show-current` | Show the currently focused workspace |
-| `/workspace-list` | List all workspaces in the workspace directory |
+| `/workspace-init` | Create a new workspace with README and TODO files (calls `/workspace-add-repo` to clone and create worktrees) |
+| `/workspace-add-repo` | Add a repository to a workspace (clones if needed, creates worktree) |
+| `/workspace-execute` | Execute TODO items (implements code, runs tests, makes commits) |
+| `/workspace-review-changes` | Review code changes and generate review reports |
+| `/workspace-create-pr` | Create pull requests for all repositories (draft by default) |
+| `/workspace-update-todo` | Add, remove, or modify TODO items |
 | `/workspace-show-status` | Show TODO progress and background agent status |
-| `/workspace-delete` | Delete a workspace after confirmation |
-| `/workspace-prune` | Delete stale workspaces not modified recently |
-| `/workspace-show-history` | Show git history of a workspace (README/TODO changes) |
+| `/workspace-list` | List all workspaces |
+| `/workspace-show-current` | Display the specified workspace path |
+| `/workspace-show-history` | Show commit history of README/TODO changes |
+| `/workspace-delete` | Delete a workspace (with confirmation) |
+| `/workspace-prune` | Delete workspaces not modified within N days |
 
 ## Primary Workflow
 

@@ -1,6 +1,6 @@
 ---
 name: workspace-execute
-description: Execute tasks in an initialized workspace by working through TODO items
+description: Execute TODO items (implements code, runs tests, makes commits)
 ---
 
 # workspace-execute
