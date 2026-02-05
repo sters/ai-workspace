@@ -104,7 +104,12 @@ Task tool:
 
 ### 6. Report Results
 
-After all agents complete, summarize the changes to the user.
+After all agents complete, summarize the changes to the user and display the updated TODO file path:
+
+```
+Updated TODO file:
+- workspace/{workspace-name}/TODO-{repository-name}.md
+```
 
 ## Example Usage
 
@@ -113,6 +118,8 @@ After all agents complete, summarize the changes to the user.
 ```
 User: /workspace-update-todo feature-user-auth auth-service Add a TODO item to implement error handling
 Assistant: [Validates input, delegates to agent, reports results]
+         Updated TODO file:
+         - workspace/feature-user-auth/TODO-auth-service.md
 ```
 
 ### Remove a TODO item
@@ -120,6 +127,8 @@ Assistant: [Validates input, delegates to agent, reports results]
 ```
 User: /workspace-update-todo feature-user-auth auth-service Remove the TODO about adding comments
 Assistant: [Validates input, delegates to agent, reports results]
+         Updated TODO file:
+         - workspace/feature-user-auth/TODO-auth-service.md
 ```
 
 ### Modify a TODO item
@@ -127,6 +136,8 @@ Assistant: [Validates input, delegates to agent, reports results]
 ```
 User: /workspace-update-todo feature-user-auth auth-service Change the priority of the testing task
 Assistant: [Validates input, delegates to agent, reports results]
+         Updated TODO file:
+         - workspace/feature-user-auth/TODO-auth-service.md
 ```
 
 ## Next Steps - Ask User to Proceed

@@ -212,6 +212,20 @@ After review completes (and any clarifications are resolved), commit the TODO fi
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name} "Add TODO items for all repositories"
 ```
 
+### 8. Display Workspace Files
+
+After committing, display the relative paths of all workspace files for the user:
+
+```
+Workspace files created:
+- workspace/{workspace-name}/README.md
+- workspace/{workspace-name}/TODO-{repo1-name}.md
+- workspace/{workspace-name}/TODO-{repo2-name}.md
+...
+```
+
+List all TODO files that were created (one per repository).
+
 ## Example Usage
 
 ### Example 1: Single Repository
@@ -227,7 +241,10 @@ Assistant:
   6. [Calls workspace-todo-coordinator] → Optimizes (single repo, minimal changes)
   7. [Calls workspace-repo-todo-reviewer] → Validates TODO items
   8. [If issues found, asks user for clarification]
-  9. Done!
+  9. [Displays workspace files]:
+     - workspace/feature-user-auth-20260206/README.md
+     - workspace/feature-user-auth-20260206/TODO-repo.md
+  10. Done!
 ```
 
 ### Example 2: Multiple Repositories
@@ -246,7 +263,12 @@ Assistant:
   6. [Calls workspace-todo-coordinator] → Optimizes for parallel execution
   7. [Calls 3 Task tools in single message for workspace-repo-todo-reviewer] → Validates all TODOs in parallel
   8. [If issues found, asks user for clarification]
-  9. Done!
+  9. [Displays workspace files]:
+     - workspace/feature-product-ids-20260206/README.md
+     - workspace/feature-product-ids-20260206/TODO-proto.md
+     - workspace/feature-product-ids-20260206/TODO-api.md
+     - workspace/feature-product-ids-20260206/TODO-frontend.md
+  10. Done!
 ```
 
 ### Example 3: Same Repository with Aliases (Dev/Prod)
@@ -264,7 +286,11 @@ Assistant:
   7. [Calls workspace-todo-coordinator]
   8. [Calls 2 Task tools in single message for workspace-repo-todo-reviewer]
   9. [If issues found, asks user for clarification]
-  10. Done! Each alias will result in a separate PR.
+  10. [Displays workspace files]:
+      - workspace/feature-config-change-20260206/README.md
+      - workspace/feature-config-change-20260206/TODO-infra___dev.md
+      - workspace/feature-config-change-20260206/TODO-infra___prod.md
+  11. Done! Each alias will result in a separate PR.
 ```
 
 ## Next Steps - Ask User to Proceed
