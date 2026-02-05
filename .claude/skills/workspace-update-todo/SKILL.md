@@ -79,7 +79,30 @@ Task tool:
 
 Skip this step for single-repository workspaces.
 
-### 5. Report Results
+### 5. Review Updated TODOs
+
+After coordination (or directly after update for single-repo workspaces), invoke the `workspace-repo-todo-reviewer` agent to validate the changes:
+
+```yaml
+Task tool:
+  subagent_type: workspace-repo-todo-reviewer
+  run_in_background: true
+  prompt: |
+    Workspace: {workspace-name}
+    Repository: {repository-name}
+```
+
+**What the agent does (defined in agent, not by prompt):**
+- Validates TODO items for specificity, actionability, and alignment
+- Marks unclear items with `[NEEDS_CLARIFICATION]` tags
+- Returns BLOCKING/UNCLEAR issues
+
+**After reviewer completes:**
+- If BLOCKING issues exist: Use AskUserQuestion to clarify before proceeding
+- If only UNCLEAR issues: Ask user whether to proceed or clarify
+- If no issues (STATUS: CLEAN): Proceed to report results
+
+### 6. Report Results
 
 After all agents complete, summarize the changes to the user.
 
