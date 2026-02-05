@@ -1,6 +1,6 @@
 ---
 name: workspace-init
-description: Create a new workspace with README and TODO files (calls /workspace-add-repo to clone and create worktrees)
+description: Create a new workspace with README and TODO files
 ---
 
 # workspace-init
@@ -9,7 +9,7 @@ description: Create a new workspace with README and TODO files (calls /workspace
 
 This skill initializes a working environment for development tasks. It orchestrates:
 1. Workspace directory setup (via `setup-workspace.sh`)
-2. Repository addition with worktrees (via `/workspace-add-repo` skill)
+2. Repository addition with worktrees (via `setup-repository.sh`)
 3. README creation with task details
 4. TODO planning for each repository (via workspace-repo-todo-planner agent)
 5. Cross-repository coordination (via workspace-todo-coordinator agent)
@@ -71,53 +71,42 @@ The script will:
 - Generate README.md from template
 - Create initial commit
 
+**Capture the workspace name from the last line of output** for use in subsequent steps.
+
 #### Step 2b: Add Repositories
 
-Use the `/workspace-add-repo` skill to add each repository.
+For each repository, execute the repository setup script:
 
-**IMPORTANT:** When there are multiple repositories, call multiple Skill tools in a single message to run them in parallel.
-
-**Single repository:**
-
-```yaml
-Skill tool:
-  skill: workspace-add-repo
-  args: "{workspace-name} github.com/org/repo"
+```bash
+./.claude/scripts/setup-repository.sh <workspace-name> <org/repo-path>
 ```
 
-**Multiple repositories (parallel execution):**
+**Examples:**
 
-```yaml
-# Call multiple Skill tools in a single message
-Skill tool:
-  skill: workspace-add-repo
-  args: "{workspace-name} github.com/org/repo1"
+```bash
+# Basic usage
+./.claude/scripts/setup-repository.sh feature-user-auth-20260206 github.com/org/repo
 
-Skill tool:
-  skill: workspace-add-repo
-  args: "{workspace-name} github.com/org/repo2"
+# Override base branch (when user explicitly specifies)
+BASE_BRANCH=develop ./.claude/scripts/setup-repository.sh feature-user-auth-20260206 github.com/org/repo
+
+# With alias (for multiple worktrees from same repo)
+./.claude/scripts/setup-repository.sh feature-user-auth-20260206 github.com/org/repo:dev
 ```
 
-**Override base branch** (when user explicitly specifies, add to args):
+The script will:
+- Clone the repository if not already cloned (to `repositories/` directory)
+- Update the repository with `git fetch --all --prune`
+- Auto-detect the base branch from remote default
+- Create a git worktree in the workspace with a new feature branch
 
-```yaml
-Skill tool:
-  skill: workspace-add-repo
-  args: "{workspace-name} github.com/org/repo with base branch develop"
+**After running the script**, update the README.md Repositories section:
+
+```markdown
+## Repositories
+
+- **repo-name**: `github.com/org/repo` (base: `main`)
 ```
-
-**With alias** (for multiple worktrees from same repo):
-
-```yaml
-Skill tool:
-  skill: workspace-add-repo
-  args: "{workspace-name} github.com/org/repo:dev"
-```
-
-The `/workspace-add-repo` skill handles:
-- Cloning or updating the repository
-- Creating the git worktree
-- Updating README.md with the repository entry
 
 ### 3. Fill in README.md
 
@@ -135,6 +124,8 @@ After setup completes, update the generated `README.md` with:
 - Do NOT fill in placeholder text or make up details
 - Leave sections empty with `<!-- TBD -->` if information is not available and user cannot provide it
 - Read linked resources (Jira tickets, PRs, documentation) using appropriate tools to get accurate details
+
+**DO NOT explore or analyze the repository codebase at this step.** Repository analysis is done by the TODO planner agents in the next step. This step focuses only on capturing task requirements from the user and linked resources.
 
 This README is the source of truth that the TODO planner agents will read. Accuracy is critical.
 
@@ -228,14 +219,15 @@ After review completes (and any clarifications are resolved), commit the TODO fi
 ```
 User: Initialize a workspace for user authentication feature in github.com/org/repo
 Assistant:
-  1. [Runs setup-workspace.sh] → Creates workspace/feature-user-auth-20260116
-  2. [Calls /workspace-add-repo skill] → Clones repo, creates worktree, updates README.md
-  3. [Fills in README.md with task details (Objective, Context, etc.)]
-  4. [Calls workspace-repo-todo-planner] → Creates TODO-repo.md
-  5. [Calls workspace-todo-coordinator] → Optimizes (single repo, minimal changes)
-  6. [Calls workspace-repo-todo-reviewer] → Validates TODO items
-  7. [If issues found, asks user for clarification]
-  8. Done!
+  1. [Runs setup-workspace.sh] → Creates workspace/feature-user-auth-20260206
+  2. [Runs setup-repository.sh] → Clones repo, creates worktree
+  3. [Updates README.md Repositories section]
+  4. [Fills in README.md with task details (Objective, Context, etc.)]
+  5. [Calls workspace-repo-todo-planner] → Creates TODO-repo.md
+  6. [Calls workspace-todo-coordinator] → Optimizes (single repo, minimal changes)
+  7. [Calls workspace-repo-todo-reviewer] → Validates TODO items
+  8. [If issues found, asks user for clarification]
+  9. Done!
 ```
 
 ### Example 2: Multiple Repositories
@@ -246,14 +238,15 @@ User: Initialize a workspace for adding product IDs to cart, involving:
       - github.com/org/api (API implementation)
       - github.com/org/frontend (UI)
 Assistant:
-  1. [Runs setup-workspace.sh] → Creates workspace/feature-product-ids-20260116
-  2. [Calls 3 Skill tools in single message for /workspace-add-repo] → Adds 3 repos in parallel
-  3. [Fills in README.md with task details (Objective, Context, etc.)]
-  4. [Calls 3 Task tools in single message for workspace-repo-todo-planner] → Creates TODO files in parallel
-  5. [Calls workspace-todo-coordinator] → Optimizes for parallel execution
-  6. [Calls 3 Task tools in single message for workspace-repo-todo-reviewer] → Validates all TODOs in parallel
-  7. [If issues found, asks user for clarification]
-  8. Done!
+  1. [Runs setup-workspace.sh] → Creates workspace/feature-product-ids-20260206
+  2. [Runs setup-repository.sh 3 times] → Adds 3 repos sequentially
+  3. [Updates README.md Repositories section with all 3 repos]
+  4. [Fills in README.md with task details (Objective, Context, etc.)]
+  5. [Calls 3 Task tools in single message for workspace-repo-todo-planner] → Creates TODO files in parallel
+  6. [Calls workspace-todo-coordinator] → Optimizes for parallel execution
+  7. [Calls 3 Task tools in single message for workspace-repo-todo-reviewer] → Validates all TODOs in parallel
+  8. [If issues found, asks user for clarification]
+  9. Done!
 ```
 
 ### Example 3: Same Repository with Aliases (Dev/Prod)
@@ -262,17 +255,17 @@ Assistant:
 User: Initialize a workspace for deploying a config change to both dev and prod,
       creating separate PRs for each in github.com/org/infra
 Assistant:
-  1. [Runs setup-workspace.sh] → Creates workspace/feature-config-change-20260201
-  2. [Calls 2 Skill tools in single message for /workspace-add-repo with aliases]
-  3. [Fills in README.md with task details]
-  4. [Calls 2 Task tools in single message for workspace-repo-todo-planner]
-  5. [Calls workspace-todo-coordinator]
-  6. [Calls 2 Task tools in single message for workspace-repo-todo-reviewer]
-  7. [If issues found, asks user for clarification]
-  8. Done! Each alias will result in a separate PR.
+  1. [Runs setup-workspace.sh] → Creates workspace/feature-config-change-20260206
+  2. [Runs setup-repository.sh with github.com/org/infra:dev]
+  3. [Runs setup-repository.sh with github.com/org/infra:prod]
+  4. [Updates README.md with both entries]
+  5. [Fills in README.md with task details]
+  6. [Calls 2 Task tools in single message for workspace-repo-todo-planner]
+  7. [Calls workspace-todo-coordinator]
+  8. [Calls 2 Task tools in single message for workspace-repo-todo-reviewer]
+  9. [If issues found, asks user for clarification]
+  10. Done! Each alias will result in a separate PR.
 ```
-
-See `/workspace-add-repo` skill for details on alias syntax (`repo:alias` format).
 
 ## Next Steps - Ask User to Proceed
 
@@ -297,8 +290,8 @@ If the user selects "Execute now", invoke the `/workspace-execute` skill using t
 
 - Base branch is auto-detected from remote default unless explicitly specified
 - `setup-workspace.sh` creates the workspace directory and README.md template
-- Use `/workspace-add-repo` skill to add repositories; call multiple Skill tools in single message for parallel execution
+- `setup-repository.sh` handles cloning, updating, and worktree creation
 - TODO files are created by planner agents, not by the setup scripts
 - Workspace naming convention: `{task-type}-{ticket-id}-{description}-{date}` or `{task-type}-{description}-{date}`
 - For single repository workspaces, the coordinator step is still run but makes minimal changes
-- See `/workspace-add-repo` for alias syntax and detailed script options
+- Alias syntax: Use `repo:alias` to create multiple worktrees from the same repository (e.g., `github.com/org/repo:dev`)

@@ -47,7 +47,7 @@ fi
 
 # Get the script directory and workspace root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 REPOSITORIES_DIR="$WORKSPACE_ROOT/repositories"
 
 # Construct workspace directory path

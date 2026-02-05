@@ -52,20 +52,20 @@ If workspace does not exist, abort with message:
 Execute the repository setup script:
 
 ```bash
-./.claude/skills/workspace-add-repo/scripts/setup-repository.sh <workspace-name> <org/repo-path>
+./.claude/scripts/setup-repository.sh <workspace-name> <org/repo-path>
 ```
 
 **Examples:**
 
 ```bash
 # Basic usage
-./.claude/skills/workspace-add-repo/scripts/setup-repository.sh feature-user-auth-20260131 github.com/org/repo
+./.claude/scripts/setup-repository.sh feature-user-auth-20260131 github.com/org/repo
 
 # Override base branch
-BASE_BRANCH=develop ./.claude/skills/workspace-add-repo/scripts/setup-repository.sh feature-user-auth-20260131 github.com/org/repo
+BASE_BRANCH=develop ./.claude/scripts/setup-repository.sh feature-user-auth-20260131 github.com/org/repo
 
 # With alias (for multiple worktrees from same repo)
-./.claude/skills/workspace-add-repo/scripts/setup-repository.sh feature-user-auth-20260131 github.com/org/repo:dev
+./.claude/scripts/setup-repository.sh feature-user-auth-20260131 github.com/org/repo:dev
 ```
 
 ### 4. Update README.md Repositories Section
@@ -122,7 +122,7 @@ Assistant:
 
 ## Notes
 
-- The script uses `workspace-init/scripts/setup-repository.sh` which is shared with `/workspace-init`
+- The script `.claude/scripts/setup-repository.sh` is shared with `/workspace-init`
 - Base branch is auto-detected from remote default unless explicitly specified
 - Alias syntax: Use `repo:alias` to create multiple worktrees from the same repository
 - To create TODO items for the new repository, use `/workspace-update-todo` after adding
