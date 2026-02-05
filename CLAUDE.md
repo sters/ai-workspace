@@ -27,6 +27,7 @@ This is a multi-repository workspace manager for Claude Code. It enables complex
 | Skill | Description |
 |-------|-------------|
 | `/workspace-init` | Initialize workspace with worktree, README, and TODO files |
+| `/workspace-add-repo` | Add a repository to an existing workspace |
 | `/workspace-execute` | Execute TODO items via workspace-repo-todo-executor agent |
 | `/workspace-review-changes` | Review code changes via workspace-repo-review-changes agent |
 | `/workspace-create-pr` | Create PRs for all repositories (draft by default) |
