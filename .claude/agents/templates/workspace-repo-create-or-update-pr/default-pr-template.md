@@ -5,4 +5,4 @@
 <How the changes were tested>
 
 ## Related issues
-<Links to related issues/tickets, or "N/A">
+<Full URLs to related issues/tickets (e.g., https://example.atlassian.net/browse/PROJ-123), or "N/A">

@@ -60,7 +60,16 @@ Run the script to find and read the PR template:
 
 The script searches for repository PR templates. If none found, it returns the default template from `.claude/agents/templates/workspace-repo-create-or-update-pr/default-pr-template.md`.
 
-### 2. Gather Change Information
+### 2. Read Workspace README
+
+Read `workspace/{workspace-name}/README.md` to get:
+- Task overview and context
+- **Ticket ID/URL** (from `**Ticket ID**:` field)
+- Related resources and links
+
+**CRITICAL**: Extract any ticket URLs (e.g., Jira, GitHub Issues). These MUST be included in the PR body.
+
+### 3. Gather Change Information
 
 Run the script to gather commit and file change information:
 
@@ -74,18 +83,19 @@ Output includes:
 - Diff statistics
 - Commit log
 
-### 3. Compose PR Content
+### 4. Compose PR Content
 
-Based on the template and change information:
+Based on the template, workspace README, and change information:
 
 1. Create a concise title (under 70 characters)
 2. Write the PR body following the template structure
+3. **ALWAYS include ticket URLs in "Related issues" section** (not just ticket IDs)
 
-### 4. Write PR Body to Temp File
+### 5. Write PR Body to Temp File
 
 Write the composed PR body to a temporary file in the workspace: `workspace/{workspace-name}/tmp/pr-body-{repo-name}.md`
 
-### 5. Create or Update the Pull Request
+### 6. Create or Update the Pull Request
 
 Run the script to create or update the PR:
 
@@ -116,6 +126,9 @@ The PR URL and creation/update status.
 - Follow the repository's PR template exactly if one exists
 - Keep the PR title concise (under 70 characters)
 - Include all commits in the summary, not just the latest one
+- **ALWAYS include full ticket URLs** (not just ticket IDs like "PROJ-123")
+  - Example: `https://example.atlassian.net/browse/PROJ-123` (correct)
+  - Example: `PROJ-123` (incorrect - missing URL)
 
 ## Final Response (CRITICAL - Context Isolation)
 
