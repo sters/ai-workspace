@@ -1,7 +1,7 @@
 #!/bin/bash
-# Prepare review report from template
-# Usage: prepare-review-report.sh <workspace-name> <timestamp> <repository-path>
-# Output: Path to the created review file
+# Prepare verification report from template
+# Usage: prepare-verification-report.sh <workspace-name> <timestamp> <repository-path>
+# Output: Path to the created verification file
 
 set -e
 
@@ -23,17 +23,17 @@ if [ ! -d "$REVIEW_DIR" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TEMPLATE="${SCRIPT_DIR}/../../templates/workspace-repo-review-changes/review-report.md"
+TEMPLATE="${SCRIPT_DIR}/../../templates/workspace-repo-todo-verifier/verification-report.md"
 
-# Convert slashes to underscores for filename, add REVIEW- prefix
-FILENAME="REVIEW-$(echo "$REPO_PATH" | tr '/' '_').md"
-REVIEW_FILE="${REVIEW_DIR}/${FILENAME}"
+# Convert slashes to underscores for filename
+FILENAME="TODO-VERIFY-$(echo "$REPO_PATH" | tr '/' '_').md"
+VERIFY_FILE="${REVIEW_DIR}/${FILENAME}"
 
 if [ ! -f "$TEMPLATE" ]; then
     echo "Error: Template not found: $TEMPLATE" >&2
     exit 1
 fi
 
-cp "$TEMPLATE" "$REVIEW_FILE"
+cp "$TEMPLATE" "$VERIFY_FILE"
 
-echo "$REVIEW_FILE"
+echo "$VERIFY_FILE"

@@ -51,9 +51,11 @@ REVIEW_DIR=$(.claude/skills/workspace-review-changes/scripts/prepare-review-dir.
 
 The script outputs the created directory path (e.g., `workspace/{workspace-name}/reviews/20260116-103045`).
 
-### 4. Delegate to Review Agent for Each Repository
+### 4. Delegate to Review and Verification Agents for Each Repository
 
-For each repository in the workspace, use the Task tool to launch the `workspace-repo-review-changes` agent:
+For each repository in the workspace, launch **both** agents in parallel:
+
+#### 4a. Code Review Agent
 
 ```yaml
 Task tool:
@@ -71,9 +73,29 @@ Task tool:
 - Reviews code for security, performance, and quality issues
 - Writes review report to the review directory
 
-**Example**: For repository `github.com/sters/complex-ai-workspace`, the filename would be `github.com_sters_complex-ai-workspace.md` (slashes replaced with underscores).
+#### 4b. TODO Verification Agent
 
-**Important**: Launch review agents in parallel if there are multiple repositories to review efficiently. Pass the same `{timestamp}` value to all agents.
+```yaml
+Task tool:
+  subagent_type: workspace-repo-todo-verifier
+  run_in_background: true
+  prompt: |
+    Workspace: {workspace-name}
+    Repository: {org/repo-path}
+    Base Branch: {base-branch}
+    Review Timestamp: {timestamp}
+```
+
+**What the agent does (defined in agent, not by prompt):**
+- Reads TODO file and parses all items
+- Verifies each TODO against actual code changes
+- Writes verification report (`TODO-VERIFY-{org}_{repo}.md`) to review directory
+
+**Example filenames**: For repository `github.com/sters/complex-ai-workspace`:
+- Code review: `REVIEW-github.com_sters_complex-ai-workspace.md`
+- TODO verification: `TODO-VERIFY-github.com_sters_complex-ai-workspace.md`
+
+**Important**: Launch ALL agents (both review and verification for all repos) in parallel in a single message. Pass the same `{timestamp}` value to all agents.
 
 ### 5. Collect Review Results and Create Summary Report
 

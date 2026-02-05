@@ -79,10 +79,12 @@ Agents are specialized sub-processes that handle specific tasks autonomously. **
 | Agent | Description | Invoked by |
 |-------|-------------|------------|
 | `workspace-repo-todo-planner` | Analyzes repository and creates detailed TODO items | `/workspace-init` |
-| `workspace-todo-coordinator` | Coordinates TODOs across repos for parallel execution | `/workspace-init` |
+| `workspace-todo-coordinator` | Coordinates TODOs across repos for parallel execution | `/workspace-init`, `/workspace-update-todo` |
+| `workspace-repo-todo-reviewer` | Validates TODO items for specificity and actionability | `/workspace-init`, `/workspace-update-todo` |
 | `workspace-repo-todo-executor` | Executes TODO items (implements code, runs tests, commits) | `/workspace-execute` |
 | `workspace-repo-todo-updater` | Updates TODO items (add, remove, modify) | `/workspace-update-todo` |
 | `workspace-repo-review-changes` | Reviews code changes and generates review report | `/workspace-review-changes` |
+| `workspace-repo-todo-verifier` | Verifies TODO items have been completed | `/workspace-review-changes` |
 | `workspace-collect-reviews` | Collects review results and creates summary | `/workspace-review-changes` |
 | `workspace-repo-create-pr` | Creates pull request following repo's PR template | `/workspace-create-pr` |
 
@@ -91,16 +93,20 @@ Agents are specialized sub-processes that handle specific tasks autonomously. **
 ```
 /workspace-init
   ├─→ workspace-repo-todo-planner (per repository, parallel)
-  └─→ workspace-todo-coordinator
+  ├─→ workspace-todo-coordinator
+  └─→ workspace-repo-todo-reviewer (per repository, parallel)
 
 /workspace-execute
   └─→ workspace-repo-todo-executor (per repository)
 
 /workspace-update-todo
-  └─→ workspace-repo-todo-updater
+  ├─→ workspace-repo-todo-updater
+  ├─→ workspace-todo-coordinator (if multi-repo)
+  └─→ workspace-repo-todo-reviewer
 
 /workspace-review-changes
   ├─→ workspace-repo-review-changes (per repository, parallel)
+  ├─→ workspace-repo-todo-verifier (per repository, parallel)
   └─→ workspace-collect-reviews
 
 /workspace-create-pr

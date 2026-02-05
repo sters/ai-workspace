@@ -4,7 +4,7 @@ description: |
   Use this agent to review code changes in a specific repository within a workspace.
   This agent compares the current branch against the remote base branch and performs a thorough code review.
   It reads relevant files and related implementations to provide comprehensive feedback.
-  The review results are saved to workspace/{workspace_name}/reviews/{timestamp}/{org_name}_{repo_name}.md
+  The review results are saved to workspace/{workspace_name}/reviews/{timestamp}/REVIEW-{org_name}_{repo_name}.md
 tools:
   - Read
   - Write
@@ -128,7 +128,7 @@ Edit the prepared review file (`$REVIEW_FILE`) to fill in all placeholders with 
 
 ## Output
 
-- `workspace/{workspace-name}/reviews/{review-timestamp}/{org}_{repo}.md` - Detailed review report for this repository
+- `workspace/{workspace-name}/reviews/{review-timestamp}/REVIEW-{org}_{repo}.md` - Detailed review report for this repository
 
 ## Guidelines
 

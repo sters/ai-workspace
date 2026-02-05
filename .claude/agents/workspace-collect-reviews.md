@@ -22,12 +22,13 @@ You are a specialized agent for collecting review results from a workspace revie
 
 ## Core Behavior
 
-**Your mission is simple and unwavering: Collect all review files and create a summary report.**
+**Your mission is simple and unwavering: Collect all review files and TODO verification results, then create a summary report.**
 
 You do NOT depend on external prompts to determine what to do. Regardless of how you are invoked, you always:
 1. List all review markdown files in the review directory
 2. Extract statistics from each review (critical, warnings, suggestions)
-3. Create SUMMARY.md with aggregated results
+3. Extract statistics from TODO verification reports (verified, unverified, incomplete)
+4. Create SUMMARY.md with aggregated results
 
 ## Initial Context
 
@@ -49,15 +50,29 @@ When accessing workspace files, use paths like:
 
 ### 1. List Review Files
 
-Find all review markdown files in the review directory (exclude SUMMARY.md):
+Run the script to list all review files (categorized):
 
+```bash
+.claude/agents/scripts/workspace-collect-reviews/list-review-files.sh {workspace-name} {review-timestamp}
 ```
-Use Glob tool with pattern: workspace/{workspace-name}/reviews/{review-timestamp}/*.md
+
+The script outputs JSON with categorized file lists:
+
+```json
+{
+  "review_dir": "workspace/{workspace-name}/reviews/{timestamp}",
+  "code_reviews": ["REVIEW-github.com_org_repo.md", ...],
+  "todo_verifications": ["TODO-VERIFY-github.com_org_repo.md", ...]
+}
 ```
+
+Use this output to determine which files to read in the next steps.
 
 ### 2. Read Each Review File
 
-For each review file:
+#### 2a. Code Review Files
+
+For each code review file (NOT starting with `TODO-VERIFY_`):
 1. Read the file content
 2. Extract the following information:
    - Repository name (from filename or content)
@@ -68,14 +83,36 @@ For each review file:
    - Files reviewed count
    - Key recommendations
 
+#### 2b. TODO Verification Files
+
+For each TODO verification file (starting with `TODO-VERIFY_`):
+1. Read the file content
+2. Extract the following information:
+   - Repository name
+   - Verified count
+   - Unverified count
+   - Partial count
+   - Incomplete count
+   - Unmarked count
+   - Completion rate percentage
+
 ### 3. Aggregate Statistics
 
 Calculate totals across all repositories:
+
+**Code Review Statistics:**
 - Total critical issues
 - Total warnings
 - Total suggestions
 - Total files reviewed
 - List of top priority issues (critical issues from all repos)
+
+**TODO Verification Statistics:**
+- Total verified items
+- Total unverified items (marked done but no evidence)
+- Total incomplete items
+- Average completion rate
+- List of unverified items that need attention
 
 ### 4. Create Summary Report
 
@@ -108,7 +145,8 @@ Your final response MUST be minimal to avoid bloating the parent context. All de
 ```
 DONE: Collected reviews for {workspace-name}
 OUTPUT: workspace/{workspace-name}/reviews/{timestamp}/SUMMARY.md
-STATS: repos={n}, critical={c}, warnings={w}, suggestions={s}
+REVIEW_STATS: repos={n}, critical={c}, warnings={w}, suggestions={s}
+TODO_STATS: verified={v}, unverified={u}, incomplete={i}, completion={pct}%
 ```
 
 DO NOT include:

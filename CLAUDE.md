@@ -52,6 +52,7 @@ Orchestrates workspace setup:
 2. Fills in `README.md` with task details
 3. Calls `workspace-repo-todo-planner` for each repository (parallel) → Creates `TODO-{repo}.md`
 4. Calls `workspace-todo-coordinator` → Optimizes TODOs for parallel execution
+5. Calls `workspace-repo-todo-reviewer` for each repository (parallel) → Validates TODOs, asks user for clarification if needed
 
 ### 2. Execute Tasks
 
@@ -72,10 +73,14 @@ Delegates to `workspace-repo-todo-executor` agent which:
 /workspace-review-changes
 ```
 
-Launches `workspace-repo-review-changes` agent for each repository:
-- Compares current branch against remote base branch
-- Reviews for security, performance, and code quality issues
-- Generates review reports in `workspace/{task}/reviews/{timestamp}/`
+Launches agents for each repository (in parallel):
+- `workspace-repo-review-changes`: Reviews code for security, performance, and quality issues
+- `workspace-repo-todo-verifier`: Verifies TODO items have been completed
+
+Generates reports in `workspace/{task}/reviews/{timestamp}/`:
+- `REVIEW-{org}_{repo}.md` - Code review report
+- `TODO-VERIFY-{org}_{repo}.md` - TODO completion verification
+- `SUMMARY.md` - Aggregated summary
 
 ### 4. Create Pull Request
 
