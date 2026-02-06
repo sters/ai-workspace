@@ -43,9 +43,9 @@ For each repository, extract:
 - Repository path (e.g., `github.com/sters/ai-workspace`)
 - Repository name (e.g., `ai-workspace`)
 
-### 3. Delegate to workspace-repo-todo-executor Agent
+### 3. Launch Executor Agents
 
-For each repository in the workspace, use the Task tool to launch the `workspace-repo-todo-executor` agent:
+For each repository in the workspace, use the Task tool to launch the `workspace-repo-todo-executor` agent in background:
 
 ```yaml
 Task tool:
@@ -65,22 +65,70 @@ Task tool:
 - Makes commits with descriptive messages
 - Reports completion summary
 
-**Important**: Launch agents in parallel if there are multiple repositories.
+**Important**: Launch all agents in parallel if there are multiple repositories.
 
-### 4. Commit Workspace Snapshot
+### 4. Monitor and Handle Blockers (Per-Agent)
 
-After all agents complete, commit the workspace changes:
+**Do not wait for all agents to complete.** Instead, monitor each agent and handle blockers as soon as they are reported.
+
+For each agent that completes:
+
+1. **Parse the response** - The executor agent returns:
+   ```
+   DONE: Completed {n} TODO items for {repository-name}
+   OUTPUT: workspace/{workspace-name}/TODO-{repository-name}.md
+   STATS: completed={n}, remaining={m}, blocked={b}, commits={c}, tests={pass/fail}, lint={pass/fail}
+   BLOCKED: {brief description of blocker(s)} (only if blocked > 0)
+   ```
+
+2. **If `blocked > 0`**, immediately delegate to the `workspace-repo-blocker-planner` agent:
+   ```yaml
+   Task tool:
+     subagent_type: workspace-repo-blocker-planner
+     prompt: |
+       Workspace: {workspace-name}
+       Repository: {repository-name}
+   ```
+
+3. **Present blocker options to user**:
+   ```yaml
+   AskUserQuestion tool:
+     questions:
+       - question: "[{repository-name}] {blocker title} - How would you like to proceed?"
+         header: "Blocker"
+         multiSelect: false
+         options:
+           - label: "{Option 1 from agent analysis}"
+             description: "{Trade-off or impact}"
+           - label: "{Option 2 from agent analysis}"
+             description: "{Trade-off or impact}"
+           - label: "Skip this item"
+             description: "Defer to a later PR"
+   ```
+
+4. **Based on user selection**:
+   - **FIX/WORKAROUND** → Update TODO file with chosen approach, re-launch executor for that repository
+   - **SKIP** → Mark item as skipped in TODO file, continue monitoring other agents
+
+5. **If no blockers**, note completion and continue monitoring remaining agents.
+
+**Parallel handling**: While waiting for user input on one blocker, other agents may complete. Queue their results and process blockers sequentially to avoid overwhelming the user.
+
+### 5. Commit Workspace Snapshot
+
+After **all** repositories are complete (including any re-runs after blocker resolution):
 
 ```bash
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 5. Report Results
+### 6. Report Final Results
 
-After all agents complete, report the execution summary to the user:
+Report the execution summary to the user:
 
-- Completed TODO items count
+- Completed TODO items count (per repository and total)
 - Remaining TODO items (if any)
+- Skipped items (if any blockers were skipped)
 - Test/lint status
 - Commits made
 
@@ -108,7 +156,9 @@ All TODO items completed. Tests passing, no lint errors.
 
 ## Next Steps - Ask User to Proceed
 
-After execution is complete, **always ask the user** whether to proceed with the next step using AskUserQuestion:
+After all execution is complete (Step 6), **always ask the user** whether to proceed with the next step using AskUserQuestion.
+
+**Note**: Blockers are handled inline during Step 4, so by this point all blockers have been resolved or skipped.
 
 ```yaml
 AskUserQuestion tool:

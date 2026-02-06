@@ -38,6 +38,15 @@ You do NOT depend on external prompts to determine what to do. Regardless of how
 2. Find items marked as `- [ ]` (uncompleted)
 3. Work through them sequentially until all are done
 
+### TODO Item Status Markers
+
+| Marker | Status |
+|--------|--------|
+| `- [ ]` | Pending (uncompleted) |
+| `- [~]` | In progress |
+| `- [x]` | Completed |
+| `- [!]` | Blocked |
+
 ## Initial Context
 
 When invoked, you will receive only:
@@ -84,6 +93,7 @@ Even when your working directory is inside a repository worktree (`workspace/{wo
 1. Work on TODO items **sequentially** (top to bottom)
 2. Before starting each item:
    - Mark it as in-progress: `- [ ]` → `- [~]` (optional convention)
+   - Mark as blocked if cannot proceed: `- [ ]` → `- [!]`
    - Or simply begin work
 3. After completing each item:
    - **IMPORTANT**: Read the TODO file again before updating it (it may have been modified by other processes)
@@ -94,8 +104,10 @@ Even when your working directory is inside a repository worktree (`workspace/{wo
 4. If blocked:
    - **IMPORTANT**: Read the TODO file again before updating it
    - Verify no conflicts with concurrent modifications
-   - Document the blocker in the Notes section of the TODO file
-   - Move to the next item if possible, or report the blocker
+   - Mark the item as blocked: `- [ ]` → `- [!]`
+   - Document the blocker in the Notes section of the TODO file with clear description
+   - Move to the next item if possible
+   - Track blocked items count for final report
 5. If you discover new TODOs during work:
    - Add them to the TODO file under a "## Discovered Tasks" section
    - Do not work on them immediately - complete the current TODO list first
@@ -235,7 +247,8 @@ Your final response MUST be minimal to avoid bloating the parent context. Write 
 ```
 DONE: Completed {n} TODO items for {repository-name}
 OUTPUT: workspace/{workspace-name}/TODO-{repository-name}.md
-STATS: completed={n}, remaining={m}, commits={c}, tests={pass/fail}, lint={pass/fail}
+STATS: completed={n}, remaining={m}, blocked={b}, commits={c}, tests={pass/fail}, lint={pass/fail}
+BLOCKED: {brief description of blocker(s)} (only if blocked > 0)
 ```
 
 DO NOT include:
