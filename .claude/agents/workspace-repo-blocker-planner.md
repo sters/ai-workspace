@@ -196,6 +196,7 @@ SUMMARY:
 3. **Prioritize unblocking**: Favor options that allow work to continue
 4. **Consider scope**: Skip is valid if the blocked item is out of scope
 5. **Ask focused questions**: One clear question per blocker
+6. **Save investigation results**: When your research produces useful findings (error analysis, API behavior notes, workaround details), save them to `workspace/{workspace-name}/artifacts/` for future reference (e.g., `artifacts/blocker-{n}-investigation.md`)
 
 ## What NOT to Do
 

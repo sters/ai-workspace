@@ -67,7 +67,8 @@ Execute the workspace setup script:
 The script will:
 - Create a working directory with proper naming convention
 - Initialize git repository with `.gitignore`
-- Create `tmp/` directory
+- Create `tmp/` directory (gitignored, for temporary files)
+- Create `artifacts/` directory (git-tracked, for persistent outputs)
 - Generate README.md from template
 - Create initial commit
 

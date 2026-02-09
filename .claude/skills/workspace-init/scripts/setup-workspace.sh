@@ -67,10 +67,15 @@ echo "==> Creating working directory..."
 mkdir -p "$WORKING_DIR"
 echo "Created: $WORKING_DIR"
 
-# Step 2: Create tmp directory
+# Step 2: Create tmp and artifacts directories
 echo "==> Creating tmp directory..."
 mkdir -p "$WORKING_DIR/tmp"
 echo "Created: $WORKING_DIR/tmp"
+
+echo "==> Creating artifacts directory..."
+mkdir -p "$WORKING_DIR/artifacts"
+touch "$WORKING_DIR/artifacts/.gitkeep"
+echo "Created: $WORKING_DIR/artifacts"
 
 # Step 3: Initialize git repository for workspace tracking
 echo "==> Initializing git repository for workspace tracking..."
@@ -107,7 +112,7 @@ echo "Created: $WORKING_DIR/README.md"
 # Step 5: Create initial git commit for workspace tracking
 echo "==> Creating initial git commit..."
 cd "$WORKING_DIR"
-git add .gitignore README.md
+git add .gitignore README.md artifacts/
 git commit --quiet -m "Initial: $WORKING_DIR_NAME workspace created"
 echo "Initial commit created"
 

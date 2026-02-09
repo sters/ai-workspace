@@ -150,11 +150,13 @@ Generates reports in `workspace/{task}/reviews/{timestamp}/`:
         ├── .gitignore          # Excludes worktrees (github.com/, etc.)
         ├── README.md           # Task context
         ├── TODO-{repo}.md      # Task checklist
+        ├── artifacts/          # Persistent outputs (research, notes, etc.) - git tracked
+        ├── tmp/                # Temporary files (PR bodies, scratch) - gitignored
         ├── reviews/            # Code review output
         └── {org}/{repo}/       # Git worktree (excluded from workspace git)
 ```
 
-Each workspace is a git repository that tracks README.md, TODO-*.md, and reviews/ changes. Use `/workspace-show-history` to view the history.
+Each workspace is a git repository that tracks README.md, TODO-*.md, artifacts/, and reviews/ changes. Use `/workspace-show-history` to view the history.
 
 ## Key Constraints
 

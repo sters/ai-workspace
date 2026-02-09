@@ -116,6 +116,25 @@ Edit the copied TODO file to add specific details based on your analysis.
 
 ## Guidelines
 
+### Using the Artifacts Directory
+
+The workspace has an `artifacts/` directory (`workspace/{workspace-name}/artifacts/`) for preserving important outputs. When planning TODO items, consider whether any items should produce artifacts:
+
+- **Research tasks**: Plan items that save investigation results to `artifacts/` (e.g., `artifacts/api-analysis.md`)
+- **Exploration tasks**: Plan items that document findings in `artifacts/`
+- **Reference material**: If a TODO item involves collecting information (API docs, config samples, architecture notes), plan to save it to `artifacts/`
+
+Example TODO item with artifact output:
+```markdown
+- [ ] **[artifacts/auth-flow-analysis.md]** Document current authentication flow
+  - Target: `artifacts/auth-flow-analysis.md` (new file)
+  - Action: Investigate and document the existing auth flow, including endpoints, token lifecycle, and error handling
+```
+
+Do NOT plan artifacts for code, tests, or config changes — those belong in the repository worktree.
+
+### General
+
 1. **Focus on this repository only**: Do not plan work for other repositories
 2. **Be actionable**: Each TODO should be something the executor can act on
 3. **Reference specific code**: Include file paths, function names, patterns

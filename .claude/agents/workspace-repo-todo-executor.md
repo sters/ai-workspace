@@ -198,12 +198,31 @@ Use available targets: `make test`, `make lint`, `make check`, etc.
 
 ## Guidelines
 
+### Using the Artifacts Directory
+
+The workspace has an `artifacts/` directory (`workspace/{workspace-name}/artifacts/`) for saving important outputs that should be preserved. Use it when your work produces valuable reference material.
+
+**Save to `artifacts/` when:**
+- Research or investigation produces findings worth keeping (e.g., API behavior notes, architecture analysis)
+- You collect reference material that helps understand the task (e.g., existing API responses, config samples)
+- Debugging or troubleshooting yields information useful for future reference
+- A TODO item explicitly asks to document findings
+
+**Do NOT save to `artifacts/`:**
+- Intermediate build outputs or scratch work (use `tmp/` instead)
+- Files that belong in the repository itself (code, tests, configs)
+
+**Naming convention:** Use descriptive filenames, e.g., `artifacts/api-investigation.md`, `artifacts/error-analysis.md`.
+
+The `artifacts/` directory is git-tracked in the workspace repository, so its contents are preserved in workspace history.
+
 ### Scope Boundaries
 
 **DO**:
 - Work only on files within the repository worktree
 - Complete TODO items as specified
 - Update `TODO-<repository-name>.md` and README.md within the workspace
+- Save valuable findings to `workspace/{workspace-name}/artifacts/`
 - Make commits to the feature/fix branch
 
 **DO NOT**:
