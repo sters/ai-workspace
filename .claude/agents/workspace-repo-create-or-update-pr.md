@@ -50,18 +50,16 @@ When accessing workspace files, use paths like:
 
 ## Execution Steps
 
-### 1. Read PR Template
+### 1. Gather All Information (in parallel)
 
-Run the script to find and read the PR template:
+**Run all three of these in parallel** (single message with multiple tool calls) to minimize latency:
 
+**1a. Read PR Template:**
 ```bash
 .claude/agents/scripts/workspace-repo-create-or-update-pr/read-pr-template.sh {workspace-name} {repository-path}
 ```
 
-The script searches for repository PR templates. If none found, it returns the default template from `.claude/agents/templates/workspace-repo-create-or-update-pr/default-pr-template.md`.
-
-### 2. Read Workspace README
-
+**1b. Read Workspace README:**
 Read `workspace/{workspace-name}/README.md` to get:
 - Task overview and context
 - **Ticket ID/URL** (from `**Ticket ID**:` field)
@@ -69,10 +67,7 @@ Read `workspace/{workspace-name}/README.md` to get:
 
 **CRITICAL**: Extract any ticket URLs (e.g., Jira, GitHub Issues). These MUST be included in the PR body.
 
-### 3. Gather Change Information
-
-Run the script to gather commit and file change information:
-
+**1c. Gather Change Information:**
 ```bash
 .claude/agents/scripts/workspace-repo-review-changes/get-repo-changes.sh {workspace-name} {repository-path} {base-branch}
 ```
@@ -83,7 +78,7 @@ Output includes:
 - Diff statistics
 - Commit log
 
-### 4. Compose PR Content
+### 2. Compose PR Content
 
 Based on the template, workspace README, and change information:
 
@@ -91,11 +86,11 @@ Based on the template, workspace README, and change information:
 2. Write the PR body following the template structure
 3. **ALWAYS include ticket URLs in "Related issues" section** (not just ticket IDs)
 
-### 5. Write PR Body to Temp File
+### 3. Write PR Body to Temp File
 
 Write the composed PR body to a temporary file in the workspace: `workspace/{workspace-name}/tmp/pr-body-{repo-name}.md`
 
-### 6. Create or Update the Pull Request
+### 4. Create or Update the Pull Request
 
 Run the script to create or update the PR:
 

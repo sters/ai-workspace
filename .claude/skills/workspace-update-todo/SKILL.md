@@ -60,9 +60,18 @@ Task tool:
 - Removes completed items automatically
 - Commits the changes
 
-### 4. Coordinate Multi-Repository Dependencies (if applicable)
+### 4. Coordinate Multi-Repository Dependencies (rarely needed)
 
-After the updater agent completes, **if the workspace has multiple repositories**, invoke the coordinator to re-optimize dependencies:
+**Skip this step unless ALL of these conditions are met:**
+1. The workspace has **multiple repositories** (more than one `TODO-*.md` file)
+2. The update **affects cross-repository dependencies** — meaning the added/modified TODO items reference another repository's output, APIs, types, or interfaces
+
+**How to determine if cross-repo coordination is needed:**
+- If the user's update request mentions another repository or shared contracts → needed
+- If the update only adds/removes/modifies items within one repo's scope → skip
+- If in doubt, skip — the executor handles single-repo work fine without coordination
+
+When coordination IS needed, invoke the coordinator:
 
 ```yaml
 Task tool:
@@ -76,8 +85,6 @@ Task tool:
 - Reads all TODO files
 - Analyzes cross-repository dependencies
 - Restructures for parallel execution
-
-Skip this step for single-repository workspaces.
 
 ### 5. Review Updated TODOs
 

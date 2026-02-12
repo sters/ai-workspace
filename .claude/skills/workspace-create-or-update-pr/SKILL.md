@@ -48,6 +48,7 @@ For each repository in the workspace, use the Task tool to launch the `workspace
 ```yaml
 Task tool:
   subagent_type: workspace-repo-create-or-update-pr
+  model: sonnet
   run_in_background: true
   prompt: |
     Workspace: {workspace-name}
@@ -57,8 +58,8 @@ Task tool:
 ```
 
 **What the agent does (defined in agent, not by prompt):**
-- Finds and respects the repository's PR template
-- Gathers change information from commits
+- Gathers all information in parallel (PR template, README, git diff)
+- Composes PR title and body
 - Creates or updates the pull request
 
 **Important**: Launch agents in parallel if there are multiple repositories.
