@@ -32,6 +32,9 @@ if [ ! -f "$BODY_FILE" ]; then
     exit 1
 fi
 
+# Convert body-file to absolute path BEFORE cd-ing into worktree
+BODY_FILE_ABS="$(cd "$(dirname "$BODY_FILE")" && pwd)/$(basename "$BODY_FILE")"
+
 cd "$WORKTREE_PATH"
 
 # Push current branch if needed
@@ -47,9 +50,6 @@ fi
 # Check if PR already exists (pass worktree path to subscript)
 CHECK_RESULT=$("$SCRIPT_DIR/check-existing-pr.sh" "$WORKTREE_PATH" 2>/dev/null || echo "none")
 PR_EXISTS=$(echo "$CHECK_RESULT" | head -n1)
-
-# Convert body-file to absolute path for subscripts
-BODY_FILE_ABS="$(cd "$(dirname "$BODY_FILE")" && pwd)/$(basename "$BODY_FILE")"
 
 if [ "$PR_EXISTS" = "exists" ]; then
     # Update existing PR
