@@ -128,6 +128,29 @@ Agents must be **self-driven**, not **prompt-driven**. The agent's behavior shou
    - Prompts don't accidentally override or conflict with agent design
    - Easier to test and debug
 
+**Background Task Result Handling (CRITICAL):**
+
+When using `Task` tool with `run_in_background: true`, results arrive automatically via `<task-notification>` messages. **NEVER use `TaskOutput` to retrieve results.** `TaskOutput` returns the full agent execution transcript (hundreds of KB), which bloats context and can crash the session.
+
+Correct flow:
+1. Call `Task` with `run_in_background: true` → get agent ID
+2. **Wait** for `<task-notification>` to arrive automatically (contains agent's final response in `<result>` tag)
+3. Parse the notification's `<result>` content (the agent's minimal response)
+
+```yaml
+# CORRECT: Wait for notification
+Task tool:
+  run_in_background: true
+  ...
+# → <task-notification> arrives automatically with result
+
+# WRONG: Do NOT do this
+TaskOutput tool:
+  task_id: {agent-id}
+  block: true
+# → Returns full transcript (100-400KB), destroys context
+```
+
 **Context Isolation (CRITICAL):**
 
 Agents run in background via `Task` tool, but their final response returns to the parent context. To prevent context bloat:
