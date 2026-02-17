@@ -9,14 +9,7 @@ description: Delete a workspace (with confirmation)
 
 This skill safely deletes a workspace by first showing its status and confirming with the user. It ensures the user is aware of any incomplete work before deletion.
 
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 

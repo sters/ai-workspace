@@ -193,6 +193,8 @@ tools:
   - Read
   - Write
   - ...
+skills:
+  - workspace-conventions
 ---
 
 # {Agent Title}
@@ -258,9 +260,102 @@ Skills are user-facing commands (`/skill-name`) that orchestrate agents and scri
 - **Orchestration**: Complex skills coordinate multiple agents
 - **Script preference**: Simple tasks use scripts directly, complex tasks delegate to agents
 - **Confirmation prompts**: Destructive actions require user confirmation
-- **Next step guidance**: After completion, suggest logical next steps
+- **Context isolation**: Heavy orchestration skills use `context: fork` to prevent context bloat
 
-**Prompt Structure (`SKILL.md`):**
+**Skill Categories:**
+
+| Category | `context:` | `user-invocable:` | Purpose |
+|----------|-----------|-------------------|---------|
+| **Inline** | (default) | true | Simple, low-overhead skills (list, show, add-repo, delete, prune) |
+| **Forked** | `fork` | true | Heavy orchestration skills (init, execute, review, PR, update-todo) |
+| **Reference** | (default) | `false` | Passive knowledge injected into agents via `skills:` field |
+
+### Reference Skills
+
+Reference skills (`user-invocable: false`) are not shown in the `/` menu. They provide shared conventions that agents load via the `skills:` field in their frontmatter.
+
+**Example:** `workspace-conventions` consolidates file path rules, working directory rules, and scope boundaries. All workspace agents reference it:
+
+```yaml
+# In agent frontmatter
+skills:
+  - workspace-conventions
+```
+
+**Template:**
+```markdown
+---
+name: {skill-name}
+description: "{What conventions this provides}"
+user-invocable: false
+---
+
+# {Title}
+
+{Consolidated conventions and rules}
+```
+
+### Forked Skills (`context: fork`)
+
+Forked skills run in an isolated context. Their intermediate output (agent launches, script results, notifications) does not pollute the main conversation. They receive arguments via `$ARGUMENTS` and return structured `SKILL_COMPLETE` messages.
+
+**Key differences from inline skills:**
+- Cannot chain to other skills (no `Skill` tool invocation at the end)
+- Must return `SKILL_COMPLETE` with `NEXT_ACTION` for the main context to route
+- Parse `$ARGUMENTS` instead of relying on conversation context
+- AskUserQuestion still works within the forked context (e.g., for blocker handling)
+- File path rules stay inline (cannot use `skills:` — that's an agent-only feature)
+
+**Forked Skill Template:**
+```markdown
+---
+name: {skill-name}
+description: {Short description}
+context: fork
+---
+
+# {skill-name}
+
+## Overview
+
+{What this skill does, when to use it}
+
+**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
+
+## Arguments
+
+This skill receives `$ARGUMENTS` from the caller. Parse to extract:
+- {Parameter 1} (required): {description}
+- {Parameter 2} (optional): {description}
+
+If required arguments are missing, abort with usage message.
+
+## Steps
+
+### 1. {Step Name}
+{Instructions}
+
+## Structured Return (CRITICAL)
+
+After completing all steps, return a structured completion message.
+**Do NOT invoke other skills or use AskUserQuestion for next steps.**
+
+\```
+SKILL_COMPLETE: {skill-name}
+WORKSPACE: {workspace-name}
+SUMMARY: {one-line summary}
+NEXT_ACTION: {next-skill workspace-name} or none
+\```
+
+## Notes
+
+{Additional information}
+```
+
+### Inline Skill Template
+
+Inline skills run in the main conversation context. Use for simple, low-overhead operations.
+
 ```markdown
 ---
 name: {skill-name}
@@ -273,29 +368,16 @@ description: {Short description}
 
 {What this skill does, when to use it}
 
-**After completion:** {Suggested next skill}
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 
 ### 1. {Step Name}
-{Instructions, script calls, or agent delegation}
-
-### 2. {Step Name}
 {Instructions}
-
-## Example Usage (optional)
-
-### Example 1: {Scenario}
-{User/Assistant interaction example}
-
-## Next Steps - Ask User to Proceed (optional)
-
-{AskUserQuestion tool example for suggesting next actions}
-{Can be omitted for simple skills like list/show commands}
 
 ## Notes
 
-{Additional information, constraints}
+{Additional information}
 ```
 
 ## Shared Scripts

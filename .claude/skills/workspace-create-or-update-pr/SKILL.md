@@ -1,6 +1,7 @@
 ---
 name: workspace-create-or-update-pr
 description: Create or update pull requests for all repositories (draft by default)
+context: fork
 ---
 
 # workspace-create-or-update-pr
@@ -14,26 +15,22 @@ This skill creates or updates pull requests for all repositories in a workspace 
 
 **Default behavior**: PRs are created as **draft** unless explicitly requested otherwise.
 
-## Critical: File Path Rules
+**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
 
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+## Arguments
 
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/tmp/pr-body-{repo-name}.md`
+This skill receives `$ARGUMENTS` from the caller. Parse to extract:
+- Workspace name (required): `workspace/{workspace-name}` or just `{workspace-name}`
+- Draft mode (optional): `--no-draft` to create non-draft PRs (default: draft)
+- Example: `workspace/feature-user-auth-20260116`
+- Example: `feature-user-auth-20260116 --no-draft`
 
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+If workspace is not specified in `$ARGUMENTS`, abort with message:
+> Please specify a workspace. Example: `/workspace-create-or-update-pr workspace/feature-user-auth-20260116`
 
 ## Steps
 
-### 1. Workspace
-
-**Required**: User must specify the workspace.
-
-- If workspace is **not specified**, abort with message:
-  > Please specify a workspace. Example: `/workspace-create-or-update-pr workspace/feature-user-auth-20260116`
-- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
-
-### 2. Find Repositories
+### 1. Find Repositories
 
 Find all repository worktrees in the workspace:
 
@@ -41,7 +38,7 @@ Find all repository worktrees in the workspace:
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
 ```
 
-### 3. Delegate to workspace-repo-create-or-update-pr Agent for Each Repository
+### 2. Delegate to workspace-repo-create-or-update-pr Agent for Each Repository
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-create-or-update-pr` agent:
 
@@ -64,7 +61,7 @@ Task tool:
 
 **Important**: Launch agents in parallel if there are multiple repositories.
 
-### 4. Report Results
+### 3. Report Results
 
 After all agents complete, report the created/updated PR URLs to the user.
 
@@ -99,6 +96,18 @@ User: Create a PR for workspace/feature-user-auth-20260116, not as draft
 Assistant: I'll create a non-draft PR...
 [Launches create-pr agent with draft=false]
 PR created: https://github.com/org/repo/pull/789
+```
+
+## Structured Return (CRITICAL)
+
+After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** This is a terminal skill in the workflow.
+
+```
+SKILL_COMPLETE: workspace-create-or-update-pr
+WORKSPACE: {workspace-name}
+PRS: {repo1}={created|updated} {pr-url1}, {repo2}={created|updated} {pr-url2}
+SUMMARY: {Created|Updated} {n} pull request(s). {draft count} draft, {non-draft count} ready for review.
+NEXT_ACTION: none
 ```
 
 ## Notes

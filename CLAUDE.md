@@ -143,6 +143,26 @@ Generates reports in `workspace/{task}/artifacts/reviews/{timestamp}/`:
 - Creates a well-formatted pull request with gh CLI
 - **Creates as draft by default** (unless explicitly requested otherwise)
 
+## Post-Skill Routing
+
+Forked skills (`context: fork`) return structured `SKILL_COMPLETE` messages instead of chaining to the next skill. When you receive a `SKILL_COMPLETE` response, parse the `NEXT_ACTION` field and present the suggested next step to the user.
+
+| Completed Skill | Suggested Next Action |
+|----------------|---------------------|
+| `workspace-init` | `workspace-execute` |
+| `workspace-execute` (Route B) | `workspace-review-changes` |
+| `workspace-review-changes` | `workspace-create-or-update-pr` |
+| `workspace-create-or-update-pr` | (terminal — no next action) |
+| `workspace-update-todo` | `workspace-execute` |
+
+**Routing flow:**
+1. Receive `SKILL_COMPLETE` from forked skill
+2. Display the `SUMMARY` to the user
+3. If `NEXT_ACTION` is not `none`, ask the user whether to proceed:
+   - "Yes" → invoke the suggested skill with the workspace name
+   - "No" → end the workflow
+4. If `NEXT_ACTION` is `none`, just display the summary
+
 ## Directory Structure
 
 ```

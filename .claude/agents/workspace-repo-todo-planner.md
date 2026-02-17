@@ -22,6 +22,8 @@ tools:
   - WebFetch
   - WebSearch
   - AskUserQuestion
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository TODO Planner Agent
@@ -44,16 +46,6 @@ When invoked, you will receive only:
 - **Repository Path**: The org/repo path (e.g., `github.com/org/repo`)
 
 Extract the repository name from the path (e.g., `repo` from `github.com/org/repo`).
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

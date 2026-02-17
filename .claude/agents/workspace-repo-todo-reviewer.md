@@ -11,6 +11,8 @@ tools:
   - Glob
   - Grep
   - Explore
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository TODO Reviewer Agent
@@ -33,16 +35,6 @@ You do NOT depend on external prompts to determine what to do. Regardless of how
 When invoked, you will receive only:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Name**: The repository name (e.g., `repo` from `github.com/org/repo`)
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

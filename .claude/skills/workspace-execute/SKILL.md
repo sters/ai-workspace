@@ -1,6 +1,7 @@
 ---
 name: workspace-execute
 description: "Continue working on an existing workspace by executing TODO items. Implements code, runs tests, makes commits. Use when the user wants to resume or continue work on a previously initialized workspace, or after /workspace-init completes."
+context: fork
 ---
 
 # workspace-execute
@@ -13,27 +14,20 @@ This skill executes work in an initialized workspace. It detects the task type a
 
 **Prerequisites:** The workspace must be initialized first using `/workspace-init`.
 
-## Critical: File Path Rules
+**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
 
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+## Arguments
 
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
+This skill receives `$ARGUMENTS` from the caller. Parse to extract:
+- Workspace name (required): `workspace/{workspace-name}` or just `{workspace-name}`
+- Example: `workspace/feature-user-auth-20260116` or `feature-user-auth-20260116`
 
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+If `$ARGUMENTS` is empty, abort with message:
+> Please specify a workspace. Example: `/workspace-execute workspace/feature-user-auth-20260116`
 
 ## Steps
 
-### 1. Workspace
-
-**Required**: User must specify the workspace.
-
-- If workspace is **not specified**, abort with message:
-  > Please specify a workspace. Example: `/workspace-execute workspace/feature-user-auth-20260116`
-- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
-
-### 2. Detect Task Type and Route
+### 1. Detect Task Type and Route
 
 Read the workspace README.md to determine the task type:
 
@@ -78,7 +72,7 @@ After the researcher agent completes, **skip directly to Step 6** (Commit Worksp
 
 For feature, bugfix, and other implementation tasks, continue with Step 3 below.
 
-### 3. Find Repositories (Route B only)
+### 2. Find Repositories (Route B only)
 
 Find all repository worktrees in the workspace:
 
@@ -90,7 +84,7 @@ For each repository, extract:
 - Repository path (e.g., `github.com/sters/ai-workspace`)
 - Repository name (e.g., `ai-workspace`)
 
-### 4. Launch Executor Agents (Route B only)
+### 3. Launch Executor Agents (Route B only)
 
 For each repository in the workspace, use the Task tool to launch the `workspace-repo-todo-executor` agent in background:
 
@@ -114,7 +108,7 @@ Task tool:
 
 **Important**: Launch all agents in parallel if there are multiple repositories.
 
-### 5. Monitor and Handle Blockers (Route B only)
+### 4. Monitor and Handle Blockers (Route B only)
 
 **Do not wait for all agents to complete.** Instead, monitor each agent and handle blockers as soon as they are reported.
 
@@ -161,7 +155,7 @@ For each agent that completes:
 
 **Parallel handling**: While waiting for user input on one blocker, other agents may complete. Queue their results and process blockers sequentially to avoid overwhelming the user.
 
-### 6. Commit Workspace Snapshot
+### 5. Commit Workspace Snapshot
 
 After execution is complete (Route A: researcher done, Route B: all repositories done including re-runs):
 
@@ -169,7 +163,7 @@ After execution is complete (Route A: researcher done, Route B: all repositories
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 7. Report Final Results
+### 6. Report Final Results
 
 Report the execution summary to the user.
 
@@ -210,54 +204,30 @@ Research complete! Report saved to artifacts/research-report.md.
 3 repositories analyzed, 12 findings documented.
 ```
 
-## Next Steps - Ask User to Proceed
+## Structured Return (CRITICAL)
 
-After all execution is complete (Step 7), **always ask the user** whether to proceed with the next step using AskUserQuestion.
+After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** The main context handles routing.
 
 ### For Route B (Standard tasks)
 
-**Note**: Blockers are handled inline during Step 5, so by this point all blockers have been resolved or skipped.
-
-```yaml
-AskUserQuestion tool:
-  questions:
-    - question: "Task execution complete. Would you like to review the code changes before creating/updating a PR?"
-      header: "Next Step"
-      multiSelect: false
-      options:
-        - label: "Review changes (Recommended)"
-          description: "Run /workspace-review-changes to check for issues before PR"
-        - label: "Skip review, create/update PR"
-          description: "Proceed directly to /workspace-create-or-update-pr (creates new PR or updates existing)"
-        - label: "Done for now"
-          description: "I'll continue manually later"
 ```
-
-Based on the user's selection:
-- "Review changes" → Invoke the `/workspace-review-changes` skill using the Skill tool
-- "Skip review, create/update PR" → Invoke the `/workspace-create-or-update-pr` skill using the Skill tool
-- "Done for now" → End the workflow
+SKILL_COMPLETE: workspace-execute
+WORKSPACE: {workspace-name}
+ROUTE: B
+REPOS: {repo1} (completed={n}, remaining={m}, blocked={b}), {repo2} (...)
+SUMMARY: Completed {total-completed} TODO items across {n} repositories. {total-remaining} remaining, {total-blocked} blocked.
+NEXT_ACTION: workspace-review-changes {workspace-name}
+```
 
 ### For Route A (Research tasks)
 
-```yaml
-AskUserQuestion tool:
-  questions:
-    - question: "Research complete. The report is at artifacts/research-report.md. What would you like to do next?"
-      header: "Next Step"
-      multiSelect: false
-      options:
-        - label: "Done"
-          description: "Research is complete, no further action needed"
-        - label: "Create implementation workspace"
-          description: "Use findings to create a new workspace with implementation TODOs"
 ```
-
-Based on the user's selection:
-- "Done" → End the workflow
-- "Create implementation workspace" → Guide the user to run `/workspace-init` for an implementation task based on the research findings
-
-**Important**: Always suggest `/workspace-create-or-update-pr` instead of manual `git push`. The skill handles both creating new PRs and updating existing PRs automatically.
+SKILL_COMPLETE: workspace-execute
+WORKSPACE: {workspace-name}
+ROUTE: A
+SUMMARY: Research complete. Report at artifacts/research-report.md. {n} repositories analyzed.
+NEXT_ACTION: none
+```
 
 ## Notes
 

@@ -9,9 +9,7 @@ description: "List all existing workspaces. Use to check if a workspace already 
 
 This skill lists all existing workspaces in the `workspace/` directory using a shell script. Output only the list, no additional responses or actions.
 
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 

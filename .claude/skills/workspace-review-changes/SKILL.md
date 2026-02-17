@@ -1,6 +1,7 @@
 ---
 name: workspace-review-changes
 description: Review code changes and generate review reports
+context: fork
 ---
 
 # workspace-review-changes
@@ -9,26 +10,20 @@ description: Review code changes and generate review reports
 
 This skill reviews code changes across all repositories in a workspace by delegating to the `workspace-repo-review-changes` agent for each repository. It collects all review results and provides a comprehensive summary.
 
-## Critical: File Path Rules
+**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
 
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+## Arguments
 
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/artifacts/reviews/{timestamp}/*.md`
+This skill receives `$ARGUMENTS` from the caller. Parse to extract:
+- Workspace name (required): `workspace/{workspace-name}` or just `{workspace-name}`
+- Example: `workspace/feature-user-auth-20260116` or `feature-user-auth-20260116`
 
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+If `$ARGUMENTS` is empty, abort with message:
+> Please specify a workspace. Example: `/workspace-review-changes workspace/feature-user-auth-20260116`
 
 ## Steps
 
-### 1. Workspace
-
-**Required**: User must specify the workspace.
-
-- If workspace is **not specified**, abort with message:
-  > Please specify a workspace. Example: `/workspace-review-changes workspace/feature-user-auth-20260116`
-- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
-
-### 2. Find Repositories
+### 1. Find Repositories
 
 Find all repository worktrees in the workspace:
 
@@ -41,7 +36,7 @@ For each repository:
 2. Determine the base branch (from README.md)
 3. Prepare parameters for the review agent
 
-### 3. Create Reviews Directory
+### 2. Create Reviews Directory
 
 Run the script to create a timestamped review directory. **Important**: Capture the output path from the Bash tool result and reuse it for all parallel agents to ensure consistency.
 
@@ -51,7 +46,7 @@ Run the script to create a timestamped review directory. **Important**: Capture 
 
 The script outputs the created directory path to stdout (e.g., `workspace/{workspace-name}/artifacts/reviews/20260116-103045`). Use this path in subsequent steps.
 
-### 4. Delegate to Review and Verification Agents for Each Repository
+### 3. Delegate to Review and Verification Agents for Each Repository
 
 For each repository in the workspace, launch **both** agents in parallel:
 
@@ -97,7 +92,7 @@ Task tool:
 
 **Important**: Launch ALL agents (both review and verification for all repos) in parallel in a single message. Pass the same `{timestamp}` value to all agents.
 
-### 5. Collect Review Results and Create Summary Report
+### 4. Collect Review Results and Create Summary Report
 
 After all review agents complete, use the Task tool to launch the `workspace-collect-reviews` agent:
 
@@ -115,7 +110,7 @@ Task tool:
 2. Create `SUMMARY.md` in the review directory
 3. Return aggregated results for presenting to the user
 
-### 6. Commit Workspace Snapshot
+### 5. Commit Workspace Snapshot
 
 After all reviews complete, commit the workspace changes (including review results):
 
@@ -123,7 +118,7 @@ After all reviews complete, commit the workspace changes (including review resul
 ./.claude/scripts/commit-workspace-snapshot.sh {workspace-name}
 ```
 
-### 7. Present Summary to User
+### 6. Present Summary to User
 
 Display a concise summary to the user using ONLY the statistics returned from the `workspace-collect-reviews` agent response.
 
@@ -171,29 +166,20 @@ Assistant: I'll review the workspace/feature-login-fix-20260115 workspace...
 Review complete! All changes look good with 0 critical issues and 3 suggestions.
 ```
 
-## Next Steps - Ask User to Proceed
+## Structured Return (CRITICAL)
 
-After review is complete, **always ask the user** whether to proceed with the next step using AskUserQuestion:
+After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** The main context handles routing.
 
-```yaml
-AskUserQuestion tool:
-  questions:
-    - question: "Code review complete. Would you like to create pull requests for the changes?"
-      header: "Next Step"
-      multiSelect: false
-      options:
-        - label: "Create PRs (draft)"
-          description: "Run /workspace-create-or-update-pr to create draft pull requests"
-        - label: "Create PRs (ready for review)"
-          description: "Create non-draft pull requests immediately"
-        - label: "Fix issues first"
-          description: "I need to address the review findings before creating PRs"
 ```
-
-Based on the user's selection:
-- "Create PRs (draft)" → Invoke the `/workspace-create-or-update-pr` skill using the Skill tool (default draft mode)
-- "Create PRs (ready for review)" → Invoke the `/workspace-create-or-update-pr` skill with non-draft option
-- "Fix issues first" → End the workflow so user can address review findings
+SKILL_COMPLETE: workspace-review-changes
+WORKSPACE: {workspace-name}
+REVIEW_DIR: workspace/{workspace-name}/artifacts/reviews/{timestamp}
+SUMMARY_FILE: workspace/{workspace-name}/artifacts/reviews/{timestamp}/SUMMARY.md
+REVIEW_STATS: repos={n}, critical={c}, warnings={w}, suggestions={s}
+TODO_STATS: verified={v}, unverified={u}, completion={pct}%
+SUMMARY: Reviewed {n} repositories. {c} critical issues, {w} warnings, {s} suggestions. TODO completion: {pct}%.
+NEXT_ACTION: workspace-create-or-update-pr {workspace-name}
+```
 
 ## Notes
 

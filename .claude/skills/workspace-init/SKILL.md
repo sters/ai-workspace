@@ -1,6 +1,7 @@
 ---
 name: workspace-init
 description: "Use when the user wants to start working on a task, ticket, or feature. Triggered by: ticket URLs (Jira, GitHub Issues, Linear, etc.), task descriptions, or requests like 'work on this', 'implement X', 'fix X', 'これをすすめて', 'これやって'. IMPORTANT: Before creating a new workspace, ALWAYS run /workspace-list first to check if a workspace already exists for the same ticket/task. If one exists, use /workspace-execute or /workspace-show-status instead. Creates workspace with README, clones repos, and plans TODO items via agents."
+context: fork
 ---
 
 # workspace-init
@@ -18,15 +19,17 @@ This skill initializes a working environment for development tasks. It orchestra
 
 **After initialization:** Use `/workspace-execute` to work through TODO items and complete the task.
 
-## Critical: File Path Rules
+**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
 
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+## Arguments
 
-When accessing workspace files (README.md, TODO files), use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
+This skill receives `$ARGUMENTS` from the caller. Parse them to extract:
+- Task type, description, repository paths, ticket ID
+- Example: `feature user-auth github.com/org/repo PROJ-123`
+- Example: `bugfix login-error github.com/org/api github.com/org/frontend`
+- Arguments may also be natural language (e.g., "implement retry logic in github.com/org/api")
 
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+If `$ARGUMENTS` is empty or missing required information, use AskUserQuestion to gather it.
 
 ## Steps
 
@@ -333,41 +336,32 @@ Assistant:
   Done! Each alias will result in a separate PR.
 ```
 
-## Next Steps - Ask User to Proceed
+## Structured Return (CRITICAL)
 
-After initialization is complete, **always ask the user** whether to proceed with the next step using AskUserQuestion.
+After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** The main context handles routing.
 
 ### For standard tasks (feature, bugfix, etc.)
 
-```yaml
-AskUserQuestion tool:
-  questions:
-    - question: "Workspace initialization complete. Would you like to proceed with executing the TODO items?"
-      header: "Next Step"
-      multiSelect: false
-      options:
-        - label: "Execute now"
-          description: "Run /workspace-execute to work through TODO items immediately"
-        - label: "Skip for now"
-          description: "I'll review the workspace files first and execute later"
+```
+SKILL_COMPLETE: workspace-init
+WORKSPACE: {workspace-name}
+TASK_TYPE: {task-type}
+REPOS: {repo1}, {repo2}, ...
+TODO_ITEMS: {total count across all repos}
+SUMMARY: Initialized workspace with {n} TODO items across {m} repositories
+NEXT_ACTION: workspace-execute {workspace-name}
 ```
 
 ### For research/investigation/documentation tasks
 
-```yaml
-AskUserQuestion tool:
-  questions:
-    - question: "Workspace initialization complete. Would you like to start the research?"
-      header: "Next Step"
-      multiSelect: false
-      options:
-        - label: "Start research now"
-          description: "Run /workspace-execute to begin cross-repository investigation"
-        - label: "Skip for now"
-          description: "I'll review the workspace README first and start later"
 ```
-
-If the user selects "Execute now" or "Start research now", invoke the `/workspace-execute` skill using the Skill tool.
+SKILL_COMPLETE: workspace-init
+WORKSPACE: {workspace-name}
+TASK_TYPE: {task-type}
+REPOS: {repo1}, {repo2}, ...
+SUMMARY: Initialized research workspace with {m} repositories
+NEXT_ACTION: workspace-execute {workspace-name}
+```
 
 ## Notes
 

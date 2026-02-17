@@ -9,9 +9,7 @@ description: Delete workspaces not modified within N days
 
 This skill identifies workspaces that have not been modified within a specified number of days and allows batch deletion after user confirmation.
 
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 

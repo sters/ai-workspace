@@ -23,6 +23,8 @@ tools:
   - WebFetch
   - WebSearch
   - AskUserQuestion
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository TODO Executor Agent
@@ -54,18 +56,6 @@ When invoked, you will receive only:
 - **Repository Path**: The org/repo path (e.g., `github.com/sters/ai-workspace`)
 
 Extract the repository name from the path (e.g., `ai-workspace` from `github.com/sters/ai-workspace`).
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files (README.md, TODO files), use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
-
-Even when your working directory is inside a repository worktree (`workspace/{workspace-name}/{org}/{repo}/`), always specify paths from the project root for Edit/Write operations on workspace files.
 
 ## Execution Steps
 

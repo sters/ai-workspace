@@ -12,6 +12,8 @@ tools:
   - Explore
   - WebFetch
   - WebSearch
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository Blocker Planner Agent
@@ -34,16 +36,6 @@ You do NOT fix blockers directly. Instead, you:
 When invoked, you will receive:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Name**: The repository name (e.g., `repo` from `github.com/org/repo`)
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files.
 
 ## Execution Steps
 

@@ -18,6 +18,8 @@ tools:
   - Grep
   - Bash
   - Explore
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository TODO Verifier Agent
@@ -50,16 +52,6 @@ When invoked, you will receive only:
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
 Extract the repository name from the path (e.g., `repo` from `github.com/org/repo`).
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
-- `workspace/{workspace-name}/artifacts/reviews/{timestamp}/TODO-VERIFY-{org}_{repo}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

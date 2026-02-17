@@ -1,6 +1,7 @@
 ---
 name: workspace-update-todo
 description: Add, remove, or modify TODO items
+context: fork
 ---
 
 # workspace-update-todo
@@ -11,27 +12,23 @@ This skill updates TODO items in a workspace's TODO file. It delegates the actua
 
 **After completion:** Use `/workspace-execute` to work through the updated TODO items.
 
-## Critical: File Path Rules
+**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
 
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+## Arguments
 
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/TODO-{repository-name}.md`
+This skill receives `$ARGUMENTS` from the caller. Parse to extract:
+- Workspace name (required)
+- Repository name or TODO file name (required)
+- Update request (required): what to add, remove, or modify
+- Example: `feature-user-auth auth-service Add error handling to all endpoints`
+- Example: `feature-user-auth TODO-api.md Remove the caching TODO`
 
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+If `$ARGUMENTS` is missing workspace or repository, abort with message:
+> Please specify a workspace and TODO file. Example: `/workspace-update-todo feature-user-auth auth-service Add error handling`
 
 ## Steps
 
-### 1. Validate Workspace and Repository
-
-**Required**: User must specify the workspace and TODO file (or repository name).
-
-- If workspace or TODO file is **not specified**, abort with message:
-  > Please specify a workspace and TODO file. Example: `/workspace-update-todo workspace/feature-user-auth-20260116 TODO-auth-service.md`
-- Workspace format: `workspace/{workspace-name}` or just `{workspace-name}`
-- TODO file format: `TODO-{repository-name}.md` or just `{repository-name}`
-
-### 2. Delegate to Agent
+### 1. Delegate to Agent
 
 Pass the user's request **as-is** to the agent. Do NOT convert to TODO format yourself.
 
@@ -40,7 +37,7 @@ The agent will:
 - Convert abstract requests (e.g., "add error handling") to specific TODOs
 - Apply concrete requests directly
 
-### 3. Invoke Agent
+### 2. Invoke Agent
 
 Invoke the `workspace-repo-todo-updater` agent:
 
@@ -60,7 +57,7 @@ Task tool:
 - Removes completed items automatically
 - Commits the changes
 
-### 4. Coordinate Multi-Repository Dependencies (rarely needed)
+### 3. Coordinate Multi-Repository Dependencies (rarely needed)
 
 **Skip this step unless ALL of these conditions are met:**
 1. The workspace has **multiple repositories** (more than one `TODO-*.md` file)
@@ -86,7 +83,7 @@ Task tool:
 - Analyzes cross-repository dependencies
 - Restructures for parallel execution
 
-### 5. Review Updated TODOs
+### 4. Review Updated TODOs
 
 After coordination (or directly after update for single-repo workspaces), invoke the `workspace-repo-todo-reviewer` agent to validate the changes:
 
@@ -109,7 +106,7 @@ Task tool:
 - If only UNCLEAR issues: Ask user whether to proceed or clarify
 - If no issues (STATUS: CLEAN): Proceed to report results
 
-### 6. Report Results
+### 5. Report Results
 
 After all agents complete, summarize the changes to the user and display the updated TODO file path:
 
@@ -147,24 +144,19 @@ Assistant: [Validates input, delegates to agent, reports results]
          - workspace/feature-user-auth/TODO-auth-service.md
 ```
 
-## Next Steps - Ask User to Proceed
+## Structured Return (CRITICAL)
 
-After TODO update is complete, **always ask the user** whether to proceed with the next step using AskUserQuestion:
+After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** The main context handles routing.
 
-```yaml
-AskUserQuestion tool:
-  questions:
-    - question: "TODO file updated. Would you like to proceed with executing the updated TODO items?"
-      header: "Next Step"
-      multiSelect: false
-      options:
-        - label: "Execute now"
-          description: "Run /workspace-execute to work through TODO items immediately"
-        - label: "Skip for now"
-          description: "I'll review the changes first and execute later"
 ```
-
-If the user selects "Execute now", invoke the `/workspace-execute` skill using the Skill tool.
+SKILL_COMPLETE: workspace-update-todo
+WORKSPACE: {workspace-name}
+REPOSITORY: {repository-name}
+TODO_FILE: workspace/{workspace-name}/TODO-{repository-name}.md
+STATS: added={a}, removed={r}, modified={m}
+SUMMARY: Updated TODO for {repository-name}. Added {a}, removed {r}, modified {m} items.
+NEXT_ACTION: workspace-execute {workspace-name}
+```
 
 ## Notes
 

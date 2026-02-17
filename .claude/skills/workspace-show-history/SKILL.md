@@ -9,9 +9,7 @@ description: Show commit history of README/TODO changes
 
 This skill shows the git commit history of a workspace, displaying how README and TODO files have changed over time.
 
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 

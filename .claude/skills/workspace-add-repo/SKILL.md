@@ -14,14 +14,7 @@ This skill adds a repository to an existing workspace. It handles:
 
 **Use case:** When you need to add a new repository to a workspace that was already initialized with `/workspace-init`.
 
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 

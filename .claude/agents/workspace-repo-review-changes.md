@@ -22,6 +22,8 @@ tools:
   - TodoWrite
   - Explore
   - AskUserQuestion
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository Changes Review Agent
@@ -46,16 +48,6 @@ When invoked, you will receive only:
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
 
 Extract the repository name from the path (e.g., `ai-workspace` from `github.com/sters/ai-workspace`).
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files (README.md, review files), use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/artifacts/reviews/{timestamp}/{filename}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

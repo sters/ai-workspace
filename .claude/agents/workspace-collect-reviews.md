@@ -21,6 +21,8 @@ tools:
   - TodoWrite
   - Explore
   - AskUserQuestion
+skills:
+  - workspace-conventions
 ---
 
 # Collect Review Results Agent
@@ -42,16 +44,6 @@ You do NOT depend on external prompts to determine what to do. Regardless of how
 When invoked, you will receive only:
 - **Workspace Name**: The workspace name (e.g., `feature-user-auth-20260116`)
 - **Review Timestamp**: The timestamp for the review directory (e.g., `20260116-103045`)
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/artifacts/reviews/{timestamp}/*.md`
-- `workspace/{workspace-name}/artifacts/reviews/{timestamp}/SUMMARY.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

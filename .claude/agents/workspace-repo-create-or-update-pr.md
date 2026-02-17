@@ -13,6 +13,8 @@ tools:
   - Task
   - TodoWrite
   - AskUserQuestion
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Repository Create PR Agent
@@ -38,15 +40,6 @@ When invoked, you will receive only:
 - **Draft**: Whether to create as draft (true or false)
 
 Extract the repository name from the path (e.g., `repo` from `github.com/org/repo`).
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/tmp/pr-body-{repo-name}.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

@@ -23,6 +23,8 @@ tools:
   - WebFetch
   - WebSearch
   - AskUserQuestion
+skills:
+  - workspace-conventions
 ---
 
 # Workspace Researcher Agent
@@ -44,16 +46,6 @@ You do NOT depend on external prompts to determine what to do. Regardless of how
 
 When invoked, you will receive only:
 - **Workspace Name**: The name of the workspace (e.g., `research-auth-flow-20260116`)
-
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
-
-When accessing workspace files, use paths like:
-- `workspace/{workspace-name}/README.md`
-- `workspace/{workspace-name}/artifacts/research-report.md`
-
-**DO NOT** use absolute paths (starting with `/`) for workspace files. The permission system requires relative paths from the project root.
 
 ## Execution Steps
 

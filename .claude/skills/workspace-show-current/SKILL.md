@@ -9,9 +9,7 @@ description: Display the specified workspace path
 
 This skill displays the specified workspace path. Use this to confirm or set which workspace you're working with. Output only, no additional responses or actions.
 
-## Critical: File Path Rules
-
-**ALWAYS use paths relative to the project root** (where `.claude/` directory exists).
+**Paths:** Use relative paths from project root (see CLAUDE.md for details).
 
 ## Steps
 
