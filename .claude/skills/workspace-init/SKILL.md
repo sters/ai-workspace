@@ -296,8 +296,23 @@ Assistant:
 After committing and displaying workspace files, report directly to the user:
 - Workspace name and task type
 - Number of repositories and TODO items created
-- Suggest `/workspace-execute {workspace-name}` as the next step
-- Do NOT invoke other skills automatically — let the user decide next steps
+
+Then use `AskUserQuestion` to let the user choose the next action:
+
+```yaml
+AskUserQuestion:
+  question: "What would you like to do next?"
+  header: "Next step"
+  options:
+    - label: "/workspace-execute (Recommended)"
+      description: "Start executing TODO items in the workspace"
+    - label: "/workspace-update-todo"
+      description: "Modify TODO items before execution"
+    - label: "/workspace-show-status"
+      description: "Check workspace status"
+```
+
+After the user selects an option, invoke the corresponding skill with the workspace name as argument. Do NOT invoke other skills automatically before asking.
 
 ## Notes
 

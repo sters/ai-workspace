@@ -102,13 +102,30 @@ Launched 1 PR agent in background (non-draft mode).
 PR URL will be available when agent completes.
 ```
 
-## After Completion
+## After Launching
 
-After launching PR agents, report directly to the user:
+After launching PR agents, report directly to the user immediately (**do NOT wait for agents to complete**):
 - Number of agents launched and repository names
 - Draft mode status
 - Note that PR URLs will be available when agents complete
-- This is the terminal step in the workflow — no next action needed
+- Suggest `/workspace-show-status {workspace-name}` to monitor progress
+
+## After All Agents Complete
+
+When all background agents have completed (confirmed via `<task-notification>`), use `AskUserQuestion` to let the user choose the next action:
+
+```yaml
+AskUserQuestion:
+  question: "All PR agents have completed. What would you like to do next?"
+  header: "Next step"
+  options:
+    - label: "/workspace-show-status (Recommended)"
+      description: "Check PR URLs and status"
+    - label: "Done"
+      description: "No further action needed"
+```
+
+After the user selects an option, invoke the corresponding skill with the workspace name as argument (if applicable). Do NOT invoke other skills automatically before asking.
 
 ## Notes
 

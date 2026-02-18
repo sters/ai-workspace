@@ -124,13 +124,31 @@ Launched 4 review agents in background for 2 repositories.
 Use /workspace-show-status to monitor progress.
 ```
 
-## After Completion
+## After Launching
 
-After launching review agents, report directly to the user:
+After launching review agents, report directly to the user immediately (**do NOT wait for agents to complete**):
 - Number of agents launched and repository names
 - Review directory path
 - Suggest `/workspace-show-status {workspace-name}` to monitor progress
-- Do NOT invoke other skills automatically — let the user decide next steps
+
+## After All Agents Complete
+
+When all background agents have completed (confirmed via `<task-notification>`), use `AskUserQuestion` to let the user choose the next action:
+
+```yaml
+AskUserQuestion:
+  question: "All review agents have completed. What would you like to do next?"
+  header: "Next step"
+  options:
+    - label: "/workspace-create-or-update-pr (Recommended)"
+      description: "Create pull requests"
+    - label: "/workspace-show-status"
+      description: "Check detailed review results"
+    - label: "/workspace-execute"
+      description: "Continue executing TODO items if issues were found"
+```
+
+After the user selects an option, invoke the corresponding skill with the workspace name as argument. Do NOT invoke other skills automatically before asking.
 
 ## Notes
 

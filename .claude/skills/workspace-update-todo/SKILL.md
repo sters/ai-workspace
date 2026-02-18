@@ -94,12 +94,28 @@ Assistant: [Validates input, launches updater agent in background]
          Use /workspace-show-status to check when update is complete.
 ```
 
-## After Completion
+## After Launching
 
-After launching the updater agent, report directly to the user:
+After launching the updater agent, report directly to the user immediately (**do NOT wait for agent to complete**):
 - TODO file being updated
 - Suggest `/workspace-show-status {workspace-name}` to check progress
-- Do NOT invoke other skills automatically — let the user decide next steps
+
+## After All Agents Complete
+
+When the background agent has completed (confirmed via `<task-notification>`), use `AskUserQuestion` to let the user choose the next action:
+
+```yaml
+AskUserQuestion:
+  question: "TODO update is complete. What would you like to do next?"
+  header: "Next step"
+  options:
+    - label: "/workspace-execute (Recommended)"
+      description: "Execute the updated TODO items"
+    - label: "/workspace-show-status"
+      description: "Check updated TODO status"
+```
+
+After the user selects an option, invoke the corresponding skill with the workspace name as argument. Do NOT invoke other skills automatically before asking.
 
 ## Notes
 

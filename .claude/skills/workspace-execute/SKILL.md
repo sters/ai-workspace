@@ -143,12 +143,30 @@ Assistant: I'll execute the research in workspace/research-auth-flow-20260116...
 Launched researcher agent in background. Use /workspace-show-status to monitor progress.
 ```
 
-## After Completion
+## After Launching
 
-After launching agents, report directly to the user:
+After launching agents, report directly to the user immediately (**do NOT wait for agents to complete**):
 - Number of agents launched and repository names
 - Suggest `/workspace-show-status {workspace-name}` to monitor progress
-- Do NOT invoke other skills automatically — let the user decide next steps
+
+## After All Agents Complete
+
+When all background agents have completed (confirmed via `<task-notification>`), use `AskUserQuestion` to let the user choose the next action:
+
+```yaml
+AskUserQuestion:
+  question: "All executor agents have completed. What would you like to do next?"
+  header: "Next step"
+  options:
+    - label: "/workspace-review-changes (Recommended)"
+      description: "Review code changes before creating PR"
+    - label: "/workspace-show-status"
+      description: "Check detailed execution results"
+    - label: "/workspace-update-todo"
+      description: "Modify TODO items and re-execute"
+```
+
+After the user selects an option, invoke the corresponding skill with the workspace name as argument. Do NOT invoke other skills automatically before asking.
 
 ## Notes
 
