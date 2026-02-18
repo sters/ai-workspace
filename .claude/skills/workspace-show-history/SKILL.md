@@ -1,6 +1,7 @@
 ---
 name: workspace-show-history
 description: Show commit history of README/TODO changes
+context: fork
 ---
 
 # workspace-show-history

@@ -1,6 +1,7 @@
 ---
 name: workspace-show-current
 description: Display the specified workspace path
+context: fork
 ---
 
 # workspace-show-current

@@ -1,6 +1,7 @@
 ---
 name: workspace-list
 description: "List all existing workspaces. Use to check if a workspace already exists for a given ticket or task before creating a new one with /workspace-init."
+context: fork
 ---
 
 # workspace-list
