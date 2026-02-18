@@ -70,7 +70,7 @@ For each item, extract:
 Get the list of changed files in the repository:
 
 ```bash
-cd workspace/{workspace-name}/{org}/{repo} && git diff --name-only origin/{base-branch}...HEAD
+git -C workspace/{workspace-name}/{org}/{repo} diff --name-only origin/{base-branch}...HEAD
 ```
 
 ### 3. Verify Each TODO Item
