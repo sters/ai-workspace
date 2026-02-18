@@ -4,12 +4,19 @@ description: |
   Use this agent to collect review results from a workspace review directory and generate a summary report.
   This agent reads all review markdown files, extracts key metrics, and creates SUMMARY.md.
 
-  CRITICAL: This agent MUST return a minimal response (4-5 lines only) containing just:
+  CRITICAL: This agent MUST return a compact response containing:
   - DONE: Collected reviews for {workspace}
   - OUTPUT: {SUMMARY.md path}
   - REVIEW_STATS: repos={n}, critical={c}, warnings={w}, suggestions={s}
   - TODO_STATS: verified={v}, unverified={u}, completion={pct}%
-  All detailed results must be written to SUMMARY.md, NOT returned in the response.
+  - FINDINGS: (one line per finding, prefixed with severity and repo)
+    - [CRITICAL] {repo}: {one-line description}
+    - [WARNING] {repo}: {one-line description}
+    - [SUGGESTION] {repo}: {one-line description}
+  - TODO: (one line per unverified/incomplete item)
+    - [UNVERIFIED] {repo}: {one-line description}
+    - [INCOMPLETE] {repo}: {one-line description}
+  All detailed results must be written to SUMMARY.md. The response includes one-line summaries for quick overview.
 tools:
   - Read
   - Write
@@ -139,19 +146,25 @@ Then edit the file to fill in all placeholders with the collected results.
 
 ## Final Response (CRITICAL - Context Isolation)
 
-Your final response MUST be minimal to avoid bloating the parent context. All details are in the SUMMARY.md file, so return ONLY:
+Your final response MUST be compact but include one-line summaries of findings. All full details are in the SUMMARY.md file. Return in this format:
 
 ```
 DONE: Collected reviews for {workspace-name}
 OUTPUT: workspace/{workspace-name}/artifacts/reviews/{timestamp}/SUMMARY.md
 REVIEW_STATS: repos={n}, critical={c}, warnings={w}, suggestions={s}
 TODO_STATS: verified={v}, unverified={u}, incomplete={i}, completion={pct}%
+FINDINGS:
+- [CRITICAL] {repo}: {one-line description}
+- [WARNING] {repo}: {one-line description}
+- [SUGGESTION] {repo}: {one-line description}
+TODO:
+- [UNVERIFIED] {repo}: {one-line description}
+- [INCOMPLETE] {repo}: {one-line description}
 ```
 
-DO NOT include:
-- Individual repository findings
-- Detailed statistics
-- Lists of issues
-- Verbose explanations
-
-The parent will read SUMMARY.md if details are needed.
+Rules:
+- FINDINGS section: List every critical/warning/suggestion item with `[LEVEL] repo: one-line description` format. If no findings, write `FINDINGS: (none)`
+- TODO section: List every unverified/incomplete item with `[STATUS] repo: one-line description` format. If all verified, write `TODO: (all verified)`
+- Keep each line to one sentence maximum
+- DO NOT include verbose explanations, code snippets, or full file paths in findings
+- The parent uses these one-line summaries to show the user an overview without opening SUMMARY.md

@@ -133,11 +133,32 @@ After launching review agents, report directly to the user immediately (**do NOT
 
 ## After All Agents Complete
 
-When all background agents have completed (confirmed via `<task-notification>`), use `AskUserQuestion` to let the user choose the next action:
+When all per-repository background agents (review + verification) have completed (confirmed via `<task-notification>`):
+
+### Step 1: Launch workspace-collect-reviews
+
+Launch the `workspace-collect-reviews` agent in the **background** to aggregate results:
+
+```yaml
+Task tool:
+  subagent_type: workspace-collect-reviews
+  run_in_background: true
+  prompt: |
+    Workspace: {workspace-name}
+    Review Timestamp: {timestamp}
+```
+
+### Step 2: Display Findings Summary
+
+When `workspace-collect-reviews` completes (via `<task-notification>`), display its response to the user. The response contains FINDINGS and TODO one-line summaries that give the user an overview of review results without opening the detailed report.
+
+### Step 3: Ask Next Action
+
+After displaying the findings summary, use `AskUserQuestion` to let the user choose the next action:
 
 ```yaml
 AskUserQuestion:
-  question: "All review agents have completed. What would you like to do next?"
+  question: "What would you like to do next?"
   header: "Next step"
   options:
     - label: "/workspace-create-or-update-pr (Recommended)"
