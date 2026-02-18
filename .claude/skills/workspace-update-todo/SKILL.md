@@ -1,7 +1,6 @@
 ---
 name: workspace-update-todo
 description: Add, remove, or modify TODO items
-context: fork
 ---
 
 # workspace-update-todo
@@ -37,9 +36,9 @@ The agent will:
 - Convert abstract requests (e.g., "add error handling") to specific TODOs
 - Apply concrete requests directly
 
-### 2. Invoke Agent
+### 2. Launch Updater Agent
 
-Invoke the `workspace-repo-todo-updater` agent:
+Invoke the `workspace-repo-todo-updater` agent in background:
 
 ```yaml
 Task tool:
@@ -57,63 +56,14 @@ Task tool:
 - Removes completed items automatically
 - Commits the changes
 
-### 3. Coordinate Multi-Repository Dependencies (rarely needed)
+**Do NOT wait for the agent to complete.** Proceed immediately to Step 3.
 
-**Skip this step unless ALL of these conditions are met:**
-1. The workspace has **multiple repositories** (more than one `TODO-*.md` file)
-2. The update **affects cross-repository dependencies** — meaning the added/modified TODO items reference another repository's output, APIs, types, or interfaces
+### 3. Report Agent Launched
 
-**How to determine if cross-repo coordination is needed:**
-- If the user's update request mentions another repository or shared contracts → needed
-- If the update only adds/removes/modifies items within one repo's scope → skip
-- If in doubt, skip — the executor handles single-repo work fine without coordination
+Report the launched agent to the user immediately.
 
-When coordination IS needed, invoke the coordinator:
-
-```yaml
-Task tool:
-  subagent_type: workspace-todo-coordinator
-  run_in_background: true
-  prompt: |
-    Workspace: {workspace-name}
-```
-
-**What the agent does (defined in agent, not by prompt):**
-- Reads all TODO files
-- Analyzes cross-repository dependencies
-- Restructures for parallel execution
-
-### 4. Review Updated TODOs
-
-After coordination (or directly after update for single-repo workspaces), invoke the `workspace-repo-todo-reviewer` agent to validate the changes:
-
-```yaml
-Task tool:
-  subagent_type: workspace-repo-todo-reviewer
-  run_in_background: true
-  prompt: |
-    Workspace: {workspace-name}
-    Repository: {repository-name}
-```
-
-**What the agent does (defined in agent, not by prompt):**
-- Validates TODO items for specificity, actionability, and alignment
-- Marks unclear items with `[NEEDS_CLARIFICATION]` tags
-- Returns BLOCKING/UNCLEAR issues
-
-**After reviewer completes:**
-- If BLOCKING issues exist: Use AskUserQuestion to clarify before proceeding
-- If only UNCLEAR issues: Ask user whether to proceed or clarify
-- If no issues (STATUS: CLEAN): Proceed to report results
-
-### 5. Report Results
-
-After all agents complete, summarize the changes to the user and display the updated TODO file path:
-
-```
-Updated TODO file:
-- workspace/{workspace-name}/TODO-{repository-name}.md
-```
+- TODO file being updated
+- Summary of requested changes
 
 ## Example Usage
 
@@ -121,44 +71,38 @@ Updated TODO file:
 
 ```
 User: /workspace-update-todo feature-user-auth auth-service Add a TODO item to implement error handling
-Assistant: [Validates input, delegates to agent, reports results]
-         Updated TODO file:
-         - workspace/feature-user-auth/TODO-auth-service.md
+Assistant: [Validates input, launches updater agent in background]
+         Launched updater agent for TODO-auth-service.md.
+         Use /workspace-show-status to check when update is complete.
 ```
 
 ### Remove a TODO item
 
 ```
 User: /workspace-update-todo feature-user-auth auth-service Remove the TODO about adding comments
-Assistant: [Validates input, delegates to agent, reports results]
-         Updated TODO file:
-         - workspace/feature-user-auth/TODO-auth-service.md
+Assistant: [Validates input, launches updater agent in background]
+         Launched updater agent for TODO-auth-service.md.
+         Use /workspace-show-status to check when update is complete.
 ```
 
 ### Modify a TODO item
 
 ```
 User: /workspace-update-todo feature-user-auth auth-service Change the priority of the testing task
-Assistant: [Validates input, delegates to agent, reports results]
-         Updated TODO file:
-         - workspace/feature-user-auth/TODO-auth-service.md
+Assistant: [Validates input, launches updater agent in background]
+         Launched updater agent for TODO-auth-service.md.
+         Use /workspace-show-status to check when update is complete.
 ```
 
-## Structured Return (CRITICAL)
+## After Completion
 
-After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** The main context handles routing.
-
-```
-SKILL_COMPLETE: workspace-update-todo
-WORKSPACE: {workspace-name}
-REPOSITORY: {repository-name}
-TODO_FILE: workspace/{workspace-name}/TODO-{repository-name}.md
-STATS: added={a}, removed={r}, modified={m}
-SUMMARY: Updated TODO for {repository-name}. Added {a}, removed {r}, modified {m} items.
-NEXT_ACTION: workspace-execute {workspace-name}
-```
+After launching the updater agent, report directly to the user:
+- TODO file being updated
+- Suggest `/workspace-show-status {workspace-name}` to check progress
+- Do NOT invoke other skills automatically — let the user decide next steps
 
 ## Notes
 
 - The agent automatically removes completed items (`[x]`) to keep the file compact
 - The agent commits changes automatically after updating
+- **Non-blocking**: This skill returns immediately after launching the updater agent. It does NOT wait for the agent to complete. Use `/workspace-show-status` to check progress. Once the update is done, proceed to `/workspace-execute`.

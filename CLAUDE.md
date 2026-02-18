@@ -84,18 +84,20 @@ User: CC-2573の続きをやって
 
 ## Primary Workflow
 
+Most skills launch agents in the background and return immediately (**non-blocking**). Use `/workspace-show-status` between steps to check agent progress. `workspace-init` is the exception — it waits for agents to complete because user interaction may be needed.
+
 ### 1. Initialize Workspace
 
 ```
 /workspace-init {task-description}
 ```
 
-Orchestrates workspace setup:
+Orchestrates workspace setup (waits for completion):
 1. Runs setup script: Creates directory, worktrees, `README.md` template
-2. Fills in `README.md` with task details
-3. **Task type branching**: Research/investigation tasks skip TODO planning (steps 4-5 below)
+2. Fills in `README.md` with task details (may ask user for clarification)
+3. **Task type branching**: Research/investigation tasks skip TODO planning (steps 4-6 below)
 4. Calls `workspace-repo-todo-planner` for each repository (parallel) → Creates `TODO-{repo}.md`
-5. Calls `workspace-todo-coordinator` → Optimizes TODOs for parallel execution
+5. Calls `workspace-todo-coordinator` → Optimizes TODOs for parallel execution (skipped for single-repo workspaces)
 6. Calls `workspace-repo-todo-reviewer` for each repository (parallel) → Validates TODOs, asks user for clarification if needed
 
 ### 2. Execute Tasks
@@ -104,14 +106,14 @@ Orchestrates workspace setup:
 /workspace-execute
 ```
 
-Detects task type and routes accordingly:
+Detects task type and launches agents in background:
 
-**Research/Investigation tasks** → Delegates to `workspace-researcher` agent which:
+**Research/Investigation tasks** → Launches `workspace-researcher` agent which:
 - Reads README.md to understand research objectives
 - Investigates all repositories in the workspace (cross-repo)
 - Writes findings to `artifacts/research-report.md`
 
-**Feature/Bugfix tasks** → Delegates to `workspace-repo-todo-executor` agent (per repo) which:
+**Feature/Bugfix tasks** → Launches `workspace-repo-todo-executor` agents (per repo) which:
 - Reads README.md and TODO file to understand the task
 - Works through TODO items sequentially
 - Follows TDD (or repository-specified methodology)
@@ -124,14 +126,11 @@ Detects task type and routes accordingly:
 /workspace-review-changes
 ```
 
-Launches agents for each repository (in parallel):
+Launches agents in background for each repository (in parallel):
 - `workspace-repo-review-changes`: Reviews code for security, performance, and quality issues
 - `workspace-repo-todo-verifier`: Verifies TODO items have been completed
 
-Generates reports in `workspace/{task}/artifacts/reviews/{timestamp}/`:
-- `REVIEW-{org}_{repo}.md` - Code review report
-- `TODO-VERIFY-{org}_{repo}.md` - TODO completion verification
-- `SUMMARY.md` - Aggregated summary
+Reports are written to `workspace/{task}/artifacts/reviews/{timestamp}/`
 
 ### 4. Create Pull Request
 
@@ -139,29 +138,27 @@ Generates reports in `workspace/{task}/artifacts/reviews/{timestamp}/`:
 /workspace-create-or-update-pr
 ```
 
+Launches PR creation agents in background:
 - Finds and follows the repository's PR template
 - Creates a well-formatted pull request with gh CLI
 - **Creates as draft by default** (unless explicitly requested otherwise)
 
 ## Post-Skill Routing
 
-Forked skills (`context: fork`) return structured `SKILL_COMPLETE` messages instead of chaining to the next skill. When you receive a `SKILL_COMPLETE` response, parse the `NEXT_ACTION` field and present the suggested next step to the user.
+All orchestration skills are **non-blocking** — they launch background agents and return immediately. Use `/workspace-show-status` to check agent progress between steps.
 
-| Completed Skill | Suggested Next Action |
-|----------------|---------------------|
-| `workspace-init` | `workspace-execute` |
-| `workspace-execute` (Route B) | `workspace-review-changes` |
-| `workspace-review-changes` | `workspace-create-or-update-pr` |
-| `workspace-create-or-update-pr` | (terminal — no next action) |
-| `workspace-update-todo` | `workspace-execute` |
+`workspace-init` is an exception: it waits for agents to complete (planner → coordinator → reviewer) because user interaction may be needed during the review step.
 
-**Routing flow:**
-1. Receive `SKILL_COMPLETE` from forked skill
-2. Display the `SUMMARY` to the user
-3. If `NEXT_ACTION` is not `none`, ask the user whether to proceed:
-   - "Yes" → invoke the suggested skill with the workspace name
-   - "No" → end the workflow
-4. If `NEXT_ACTION` is `none`, just display the summary
+| Completed Skill | Suggested Next Action | Notes |
+|----------------|---------------------|-------|
+| `workspace-init` | `workspace-execute` | Waits for agents — may ask user for clarification |
+| `workspace-execute` | `workspace-show-status` | Non-blocking — executor/researcher agents running in background |
+| `workspace-review-changes` | `workspace-show-status` | Non-blocking — review agents running in background |
+| `workspace-create-or-update-pr` | (terminal — no next action) | Non-blocking — PR agents running in background |
+| `workspace-update-todo` | `workspace-show-status` | Non-blocking — updater agent running in background |
+
+> **Workflow progression:** `/workspace-init` → `/workspace-execute` → `/workspace-review-changes` → `/workspace-create-or-update-pr`
+> After execute/review/PR, use `/workspace-show-status` to confirm background agents have completed before proceeding to the next step.
 
 ## Directory Structure
 

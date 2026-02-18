@@ -260,15 +260,17 @@ Skills are user-facing commands (`/skill-name`) that orchestrate agents and scri
 - **Orchestration**: Complex skills coordinate multiple agents
 - **Script preference**: Simple tasks use scripts directly, complex tasks delegate to agents
 - **Confirmation prompts**: Destructive actions require user confirmation
-- **Context isolation**: Heavy orchestration skills use `context: fork` to prevent context bloat
+- **Non-blocking orchestration**: Most orchestration skills launch agents in background and return immediately
+- **Blocking orchestration**: `workspace-init` waits for agents because user interaction may be needed during review
 
 **Skill Categories:**
 
-| Category | `context:` | `user-invocable:` | Purpose |
-|----------|-----------|-------------------|---------|
-| **Inline** | (default) | true | Simple, low-overhead skills (list, show, add-repo, delete, prune) |
-| **Forked** | `fork` | true | Heavy orchestration skills (init, execute, review, PR, update-todo) |
-| **Reference** | (default) | `false` | Passive knowledge injected into agents via `skills:` field |
+| Category | `user-invocable:` | Purpose |
+|----------|-------------------|---------|
+| **Inline** | true | Simple, low-overhead skills (list, show, add-repo, delete, prune) |
+| **Orchestration (blocking)** | true | Wait for agents, supports user interaction (init) |
+| **Orchestration (non-blocking)** | true | Launch background agents and return immediately (execute, review, PR, update-todo) |
+| **Reference** | `false` | Passive knowledge injected into agents via `skills:` field |
 
 ### Reference Skills
 
@@ -295,61 +297,35 @@ user-invocable: false
 {Consolidated conventions and rules}
 ```
 
-### Forked Skills (`context: fork`)
+### Orchestration Skills (Non-blocking)
 
-Forked skills run in an isolated context. Their intermediate output (agent launches, script results, notifications) does not pollute the main conversation. They receive arguments via `$ARGUMENTS` and return structured `SKILL_COMPLETE` messages.
+Orchestration skills launch background agents and return immediately. They run inline (no `context: fork`) to avoid blocking the main conversation.
 
-**Key differences from inline skills:**
-- Cannot chain to other skills (no `Skill` tool invocation at the end)
-- Must return `SKILL_COMPLETE` with `NEXT_ACTION` for the main context to route
-- Parse `$ARGUMENTS` instead of relying on conversation context
-- AskUserQuestion still works within the forked context (e.g., for blocker handling)
-- File path rules stay inline (cannot use `skills:` — that's an agent-only feature)
+**When to use:** Skills that delegate work to agents and don't need to wait (e.g., execute, review, PR creation).
 
-**Forked Skill Template:**
+**Key principles:**
+- Launch agents with `run_in_background: true` and return immediately
+- Do NOT wait for agents to complete
+- Report what was launched and suggest `/workspace-show-status` to monitor progress
+- Do NOT invoke other skills automatically — let the user decide next steps
+
+**Orchestration Skill Template:**
 ```markdown
 ---
 name: {skill-name}
 description: {Short description}
-context: fork
 ---
 
 # {skill-name}
 
-## Overview
-
-{What this skill does, when to use it}
-
-**Paths:** Use relative paths from project root for all workspace file operations (see CLAUDE.md for details).
-
-## Arguments
-
-This skill receives `$ARGUMENTS` from the caller. Parse to extract:
-- {Parameter 1} (required): {description}
-- {Parameter 2} (optional): {description}
-
-If required arguments are missing, abort with usage message.
-
 ## Steps
-
 ### 1. {Step Name}
-{Instructions}
+{Launch agents with run_in_background: true}
 
-## Structured Return (CRITICAL)
-
-After completing all steps, return a structured completion message.
-**Do NOT invoke other skills or use AskUserQuestion for next steps.**
-
-\```
-SKILL_COMPLETE: {skill-name}
-WORKSPACE: {workspace-name}
-SUMMARY: {one-line summary}
-NEXT_ACTION: {next-skill workspace-name} or none
-\```
-
-## Notes
-
-{Additional information}
+## After Completion
+Report directly to the user:
+- What agents were launched
+- Suggest next action (e.g., `/workspace-show-status`)
 ```
 
 ### Inline Skill Template

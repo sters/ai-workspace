@@ -1,7 +1,6 @@
 ---
 name: workspace-create-or-update-pr
 description: Create or update pull requests for all repositories (draft by default)
-context: fork
 ---
 
 # workspace-create-or-update-pr
@@ -38,9 +37,9 @@ Find all repository worktrees in the workspace:
 ./.claude/scripts/list-workspace-repos.sh {workspace-name}
 ```
 
-### 2. Delegate to workspace-repo-create-or-update-pr Agent for Each Repository
+### 2. Launch PR Agents
 
-For each repository in the workspace, use the Task tool to launch the `workspace-repo-create-or-update-pr` agent:
+For each repository in the workspace, use the Task tool to launch the `workspace-repo-create-or-update-pr` agent in background:
 
 ```yaml
 Task tool:
@@ -61,9 +60,15 @@ Task tool:
 
 **Important**: Launch agents in parallel if there are multiple repositories.
 
-### 3. Report Results
+**Do NOT wait for agents to complete.** Proceed immediately to Step 3.
 
-After all agents complete, report the created/updated PR URLs to the user.
+### 3. Report Agents Launched
+
+Report the launched agents to the user immediately.
+
+- Number of PR agents launched
+- Repository names
+- Draft mode status
 
 ## Example Usage
 
@@ -72,11 +77,9 @@ After all agents complete, report the created/updated PR URLs to the user.
 ```
 User: Create PRs for my workspace
 Assistant: Let me identify the workspace and create PRs...
-[Identifies repositories, launches workspace-repo-create-or-update-pr agents]
-[After completion]
-PRs created:
-- https://github.com/org/repo1/pull/123 (draft)
-- https://github.com/org/repo2/pull/456 (draft)
+[Identifies 2 repositories, launches 2 PR agents in background]
+Launched 2 PR agents in background (draft mode).
+PR URLs will be available when agents complete.
 ```
 
 ### Example 2: Update Existing PR
@@ -84,9 +87,9 @@ PRs created:
 ```
 User: Update the PR with my latest changes
 Assistant: I'll update the existing PR...
-[Launches workspace-repo-create-or-update-pr agent]
-[After completion]
-PR updated: https://github.com/org/repo/pull/123
+[Launches 1 PR agent in background]
+Launched 1 PR agent in background.
+PR URL will be available when agent completes.
 ```
 
 ### Example 3: Create Non-Draft PR
@@ -94,21 +97,18 @@ PR updated: https://github.com/org/repo/pull/123
 ```
 User: Create a PR for workspace/feature-user-auth-20260116, not as draft
 Assistant: I'll create a non-draft PR...
-[Launches create-pr agent with draft=false]
-PR created: https://github.com/org/repo/pull/789
+[Launches 1 PR agent in background with draft=false]
+Launched 1 PR agent in background (non-draft mode).
+PR URL will be available when agent completes.
 ```
 
-## Structured Return (CRITICAL)
+## After Completion
 
-After completing all steps, return a structured completion message. **Do NOT invoke other skills or use AskUserQuestion for next steps.** This is a terminal skill in the workflow.
-
-```
-SKILL_COMPLETE: workspace-create-or-update-pr
-WORKSPACE: {workspace-name}
-PRS: {repo1}={created|updated} {pr-url1}, {repo2}={created|updated} {pr-url2}
-SUMMARY: {Created|Updated} {n} pull request(s). {draft count} draft, {non-draft count} ready for review.
-NEXT_ACTION: none
-```
+After launching PR agents, report directly to the user:
+- Number of agents launched and repository names
+- Draft mode status
+- Note that PR URLs will be available when agents complete
+- This is the terminal step in the workflow — no next action needed
 
 ## Notes
 
@@ -116,3 +116,4 @@ NEXT_ACTION: none
 - If a PR already exists for the branch, it will be updated instead of creating a new one
 - The agent respects repository PR templates if they exist
 - PR body is temporarily stored in `workspace/{name}/tmp/` during creation
+- **Non-blocking**: This skill returns immediately after launching agents. It does NOT wait for agents to complete. PR URLs will be reported via agent completion notifications.

@@ -45,7 +45,15 @@ workspace/{workspace-name}/
 ### TODO-{repo-name}.md
 - Completed: X
 - Incomplete: Y
+- In Progress: Z
+- Blocked: B
 - Progress: XX%
+
+Blocked items:
+- [!] Item that is blocked (reason)
+
+In-progress items:
+- [~] Item currently being worked on
 
 Incomplete items:
 - [ ] Item 1
@@ -61,3 +69,5 @@ Incomplete items:
 - Display only the status information
 - Keep the output concise and structured
 - Show incomplete TODO items (up to 5) if any exist
+- `[!]` marks blocked items — items the executor could not complete due to unresolved issues
+- `[~]` marks in-progress items — items currently being worked on by a background agent
