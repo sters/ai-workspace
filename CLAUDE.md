@@ -48,10 +48,10 @@ Recognize these as workspace tasks:
 
 ```
 # User pastes a Jira ticket URL and says "work on this"
-User: https://mercari.atlassian.net/browse/CC-2573 これをすすめて
-→ 1. /workspace-list → check if CC-2573 workspace exists
+User: https://example.atlassian.net/browse/XX-2573 これをすすめて
+→ 1. /workspace-list → check if XX-2573 workspace exists
 → 2a. If exists: /workspace-show-status → /workspace-execute (resume)
-→ 2b. If not: /workspace-init (create new workspace for CC-2573)
+→ 2b. If not: /workspace-init (create new workspace for XX-2573)
 
 # User describes a task
 User: Add retry logic to the payment service in github.com/org/payment-api
@@ -59,8 +59,8 @@ User: Add retry logic to the payment service in github.com/org/payment-api
 → 2. /workspace-init feature add-retry-logic github.com/org/payment-api
 
 # User wants to continue previous work
-User: CC-2573の続きをやって
-→ 1. /workspace-list → find workspace with CC-2573
+User: XX-2573の続きをやって
+→ 1. /workspace-list → find workspace with XX-2573
 → 2. /workspace-show-status → check progress
 → 3. /workspace-execute → resume work
 ```
