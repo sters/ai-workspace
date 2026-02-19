@@ -19,11 +19,15 @@ This skill receives `$ARGUMENTS` from the caller. Parse to extract:
 - Workspace name (required)
 - Repository name or TODO file name (required)
 - Update request (required): what to add, remove, or modify
+- `--interactive` flag (optional): enables preview checkpoint before applying changes
 - Example: `feature-user-auth auth-service Add error handling to all endpoints`
 - Example: `feature-user-auth TODO-api.md Remove the caching TODO`
+- Example: `feature-user-auth auth-service Add error handling --interactive`
 
 If `$ARGUMENTS` is missing workspace or repository, abort with message:
 > Please specify a workspace and TODO file. Example: `/workspace-update-todo feature-user-auth auth-service Add error handling`
+
+**`--interactive` flag:** When present, the updater agent runs in the foreground with a preview checkpoint before applying changes. The user can approve, modify, or cancel. When absent, the default autonomous background behavior is used.
 
 ## Steps
 
@@ -38,6 +42,8 @@ The agent will:
 
 ### 2. Launch Updater Agent
 
+#### Auto mode (default — no `--interactive` flag):
+
 Invoke the `workspace-repo-todo-updater` agent in background:
 
 ```yaml
@@ -50,20 +56,44 @@ Task tool:
     Update Request: {what the user wants to change}
 ```
 
+**Do NOT wait for the agent to complete.** Proceed immediately to Step 3.
+
+#### Interactive mode (`--interactive` flag):
+
+Invoke the `workspace-repo-todo-updater` agent in foreground:
+
+```yaml
+Task tool:
+  subagent_type: workspace-repo-todo-updater
+  run_in_background: false
+  prompt: |
+    Workspace: {workspace-name}
+    Repository: {repository-name}
+    Update Request: {what the user wants to change}
+    Mode: interactive
+```
+
+The agent will pause with a preview checkpoint before applying changes. **Wait for the agent to complete**, then proceed to Step 3.
+
 **What the agent does (defined in agent, not by prompt):**
 - Reads the current TODO file
 - Applies the requested changes
 - Removes completed items automatically
 - Commits the changes
 
-**Do NOT wait for the agent to complete.** Proceed immediately to Step 3.
+### 3. Report Results
 
-### 3. Report Agent Launched
+#### Auto mode:
 
-Report the launched agent to the user immediately.
-
+Report the launched agent to the user immediately:
 - TODO file being updated
 - Summary of requested changes
+
+#### Interactive mode:
+
+Report completed results directly to the user:
+- TODO file updated (or cancelled)
+- Summary of changes applied
 
 ## Example Usage
 
@@ -121,4 +151,5 @@ After the user selects an option, invoke the corresponding skill with the worksp
 
 - The agent automatically removes completed items (`[x]`) to keep the file compact
 - The agent commits changes automatically after updating
-- **Non-blocking**: This skill returns immediately after launching the updater agent. It does NOT wait for the agent to complete. Use `/workspace-show-status` to check progress. Once the update is done, proceed to `/workspace-execute`.
+- **Non-blocking** (auto mode): This skill returns immediately after launching the updater agent. It does NOT wait for the agent to complete. Use `/workspace-show-status` to check progress. Once the update is done, proceed to `/workspace-execute`.
+- **Interactive mode (`--interactive`)**: The updater agent runs in the foreground with `Mode: interactive`, enabling a preview checkpoint before applying changes. The user can approve, modify, or cancel. Results are reported directly when the agent completes. `run_in_background: false` still provides context isolation (sub-agent context doesn't leak to parent).

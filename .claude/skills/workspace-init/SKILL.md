@@ -22,11 +22,15 @@ This skill initializes a working environment for development tasks. It orchestra
 
 This skill receives `$ARGUMENTS` from the caller. Parse them to extract:
 - Task type, description, repository paths, ticket ID
+- `--interactive` flag (optional): enables interactive mode for TODO planning
 - Example: `feature user-auth github.com/org/repo PROJ-123`
 - Example: `bugfix login-error github.com/org/api github.com/org/frontend`
+- Example: `--interactive feature user-auth github.com/org/repo`
 - Arguments may also be natural language (e.g., "implement retry logic in github.com/org/api")
 
 If `$ARGUMENTS` is empty or missing required information, use AskUserQuestion to gather it.
+
+**`--interactive` flag:** When present, TODO planning runs in the foreground with user checkpoints. Planners run sequentially (not in parallel) so the user can review each one. The reviewer step is skipped since the user already approved during planning. When absent, the default autonomous behavior is used.
 
 ## Steps
 
@@ -144,7 +148,9 @@ After filling in README.md, check the task type to determine the next steps:
 
 ### 5. Call workspace-repo-todo-planner for Each Repository
 
-For each repository in the workspace, invoke the `workspace-repo-todo-planner` agent:
+For each repository in the workspace, invoke the `workspace-repo-todo-planner` agent.
+
+#### Auto mode (default — no `--interactive` flag):
 
 ```yaml
 Task tool:
@@ -155,18 +161,34 @@ Task tool:
     Repository: {org/repo-path}
 ```
 
+**Run multiple planners in parallel** if there are multiple repositories.
+
+#### Interactive mode (`--interactive` flag):
+
+```yaml
+Task tool:
+  subagent_type: workspace-repo-todo-planner
+  run_in_background: false
+  prompt: |
+    Workspace: {workspace-name}
+    Repository: {org/repo-path}
+    Mode: interactive
+```
+
+**Run planners sequentially** (one at a time) so the user can interact with each checkpoint. The agent will pause for approach approval and draft review.
+
 **What the agent does (defined in agent, not by prompt):**
 - Reads workspace README.md to understand the task
 - Analyzes repository structure and documentation
 - Creates detailed TODO items in `TODO-{repo-name}.md`
-
-**Run multiple planners in parallel** if there are multiple repositories.
 
 ### 6. Call workspace-todo-coordinator (multi-repo only)
 
 **Skip this step if there is only one repository.** The coordinator optimizes cross-repo dependencies, which is unnecessary for single-repo workspaces.
 
 After all TODO planners complete, invoke the `workspace-todo-coordinator` agent:
+
+#### Auto mode (default):
 
 ```yaml
 Task tool:
@@ -176,13 +198,27 @@ Task tool:
     Workspace: {workspace-name}
 ```
 
+#### Interactive mode:
+
+```yaml
+Task tool:
+  subagent_type: workspace-todo-coordinator
+  run_in_background: false
+  prompt: |
+    Workspace: {workspace-name}
+```
+
+Run in foreground so the workflow stays sequential, but do NOT pass `Mode: interactive` — the coordinator runs autonomously in both modes.
+
 **What the agent does (defined in agent, not by prompt):**
 - Read all TODO files
 - Analyze dependencies between repositories
 - Restructure TODOs to maximize parallel execution
 - Add coordination notes to README.md
 
-### 7. Call workspace-repo-todo-reviewer for Each Repository
+### 7. Call workspace-repo-todo-reviewer for Each Repository (auto mode only)
+
+**Skip this entire step in interactive mode.** The user already reviewed and approved TODO items during the planner checkpoints in Step 5.
 
 After planners complete (or after coordination for multi-repo), invoke the `workspace-repo-todo-reviewer` agent for each repository:
 
@@ -324,3 +360,4 @@ After the user selects an option, invoke the corresponding skill with the worksp
 - Alias syntax: Use `repo:alias` to create multiple worktrees from the same repository (e.g., `github.com/org/repo:dev`)
 - For single repository workspaces, the coordinator step is still run but makes minimal changes
 - This skill runs inline and waits for background agents (planner → coordinator → reviewer) to complete before returning. This allows user interaction (AskUserQuestion) during the review step if clarifications are needed.
+- **Interactive mode (`--interactive`)**: Planners run sequentially in the foreground with `Mode: interactive`, enabling two user checkpoints per repository (approach approval + draft review). The reviewer step (Step 7) is skipped since the user already approved during planning. The coordinator still runs autonomously. `run_in_background: false` still provides context isolation (sub-agent context doesn't leak to parent).

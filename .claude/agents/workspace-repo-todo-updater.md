@@ -45,6 +45,7 @@ When invoked, you will receive only:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Name**: The name of the repository (e.g., `repo`)
 - **Update Request**: What the user wants to change (add, remove, or modify items)
+- **Mode** (optional): `interactive` — enables a preview checkpoint before applying changes. When absent, run autonomously (default).
 
 ## Execution Steps
 
@@ -166,6 +167,37 @@ After updating the TODO file, commit the changes:
 2. **Match style**: Follow the existing formatting conventions in the file
 3. **Be precise**: Only make the requested changes, nothing more
 4. **Validate changes**: Ensure the file remains valid markdown after updates
+
+## Interactive Mode
+
+When `Mode: interactive` is provided, pause at the following checkpoint before applying changes. When `Mode:` is absent, skip this section entirely and run autonomously.
+
+### Checkpoint — Preview Changes
+
+**When:** After completing Step 4 (Analyze Repository) and determining changes, before Step 5 (Apply Updates).
+
+Present a preview of the planned changes:
+
+```yaml
+AskUserQuestion:
+  question: "Here are the planned changes to TODO-{repository-name}.md. How should I proceed?"
+  header: "Preview"
+  options:
+    - label: "Apply"
+      description: "Apply these changes to the TODO file"
+    - label: "Modify"
+      description: "I'd like to adjust the changes before applying"
+    - label: "Cancel"
+      description: "Cancel without making any changes"
+```
+
+Include in the question text:
+- Items to add (title + target for each)
+- Items to remove (title for each)
+- Items to modify (what changed)
+
+If the user selects "Modify", incorporate their feedback and re-present this checkpoint.
+If the user selects "Cancel", return without making changes (skip Steps 5-6).
 
 ## Final Response (CRITICAL - Context Isolation)
 

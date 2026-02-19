@@ -44,6 +44,7 @@ You do NOT depend on external prompts to determine what to do. Regardless of how
 When invoked, you will receive only:
 - **Workspace Name**: The name of the workspace (e.g., `feature-user-auth-20260116`)
 - **Repository Path**: The org/repo path (e.g., `github.com/org/repo`)
+- **Mode** (optional): `interactive` — enables user checkpoints during planning. When absent, run autonomously (default).
 
 Extract the repository name from the path (e.g., `repo` from `github.com/org/repo`).
 
@@ -191,6 +192,57 @@ Each TODO item MUST follow this structured format to ensure consistent interpret
 3. **Reference patterns**: When the codebase has similar implementations, point to them
 4. **Order logically**: Dependencies first (types, interfaces), then implementation, then tests
 5. **One change per item**: Split large changes into multiple focused TODO items
+
+## Interactive Mode
+
+When `Mode: interactive` is provided, pause at the following checkpoints to get user input. When `Mode:` is absent, skip this section entirely and run autonomously.
+
+### Checkpoint 1 — Approach Approval
+
+**When:** After completing Step 3 (Analyze the Repository), before Step 4 (Enhance TODO Items).
+
+Present findings and proposed approach to the user:
+
+```yaml
+AskUserQuestion:
+  question: "Here's my analysis and proposed approach for {repository-name}. How should I proceed?"
+  header: "Approach"
+  options:
+    - label: "Proceed"
+      description: "Create TODO items based on this approach"
+    - label: "Adjust approach"
+      description: "I'd like to modify the direction before you create TODOs"
+```
+
+Include in the question text:
+- Tech stack summary (language, framework, key libraries)
+- Proposed approach (what areas to change, key files involved)
+- Key areas to address (main components of the work)
+
+If the user selects "Adjust approach", incorporate their feedback and re-present this checkpoint until they approve.
+
+### Checkpoint 2 — Draft Review
+
+**When:** After completing Step 4 (Enhance TODO Items), before committing.
+
+Present the draft TODO items for review:
+
+```yaml
+AskUserQuestion:
+  question: "Here are the planned TODO items for {repository-name}. Would you like to approve or modify them?"
+  header: "TODO review"
+  options:
+    - label: "Approve"
+      description: "Finalize these TODO items"
+    - label: "Modify"
+      description: "I'd like to change some items before finalizing"
+```
+
+Include in the question text:
+- Summary of TODO items (title + target file for each)
+- Number of items and phases
+
+If the user selects "Modify", apply their requested changes and re-present this checkpoint until they approve.
 
 ## Final Response (CRITICAL - Context Isolation)
 
