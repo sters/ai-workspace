@@ -3,14 +3,17 @@
 detect-blocked-commands.py - Extract blocked Bash commands from Claude Code debug logs
 
 Usage: detect-blocked-commands.py [num_sessions] [settings_file]
-Output: JSON array of blocked commands not already in settings
+Output: JSON object with two keys:
+  - "blocked": array of blocked commands not already in settings
+  - "missingAbsolute": array of relative path rules lacking absolute path coverage
 
 The script:
 1. Lists recent session .jsonl files by modification time
 2. Extracts session IDs and checks corresponding debug files
 3. Parses debug files for permission denied events with addRules suggestions
 4. Filters out rules that already exist in settings.local.json
-5. Outputs deduplicated rules with occurrence counts
+5. Detects relative path rules missing corresponding absolute path versions
+6. Outputs deduplicated rules with occurrence counts
 """
 
 import json
@@ -122,6 +125,72 @@ def extract_blocked_commands(debug_file: Path) -> list[str]:
     return blocked_commands
 
 
+def _is_covered_by(rule: str, existing_abs_rules: set[str]) -> bool:
+    """Check if a rule is covered by any existing absolute path rule."""
+    for existing in existing_abs_rules:
+        if existing == rule:
+            continue
+        # Exact prefix match (e.g., "git -C:*" covers "git -C foo")
+        if existing.endswith(":*") and rule.startswith(existing[:-2]):
+            return True
+        # Glob wildcard coverage (e.g., /**/* patterns)
+        if "**" in existing:
+            prefix = existing.split("**")[0]
+            if rule.startswith(prefix):
+                return True
+    return False
+
+
+def find_missing_absolute_coverage(existing_rules: set[str], cwd: str) -> list[dict]:
+    """Find relative path rules that lack corresponding absolute path coverage."""
+    # Collect all existing absolute rules for coverage checks
+    existing_abs_rules = {r for r in existing_rules if r.startswith("/")}
+
+    # Build candidates: deduplicate by absolute ruleContent
+    candidates: dict[str, str] = {}  # abs_rule -> source (first seen)
+
+    for rule in existing_rules:
+        # Identify relative path rules
+        # Match: "./.claude/...", ".claude/...", "./workspace/...", "workspace/...", etc.
+        rel_path = None
+        if rule.startswith("./"):
+            rel_path = rule[2:]  # Remove "./"
+        elif rule.startswith(".claude/") or rule.startswith("workspace/"):
+            rel_path = rule
+        else:
+            continue
+
+        # Compute absolute version
+        abs_rule = cwd + "/" + rel_path
+
+        # Skip if absolute version already exists in settings
+        if abs_rule in existing_rules:
+            continue
+
+        # Skip if covered by an existing absolute wildcard in settings
+        if _is_covered_by(abs_rule, existing_abs_rules):
+            continue
+
+        # Deduplicate: keep first source seen per absolute rule
+        if abs_rule not in candidates:
+            candidates[abs_rule] = rule
+
+    # Second pass: filter out candidates covered by OTHER candidates with wildcards
+    # (e.g., a specific script covered by a suggested /**/* wildcard)
+    candidate_rules = set(candidates.keys())
+    missing = []
+    for abs_rule, source in candidates.items():
+        if _is_covered_by(abs_rule, candidate_rules):
+            continue
+        missing.append({
+            "ruleContent": abs_rule,
+            "source": f"Bash({source})",
+            "type": "missing_absolute",
+        })
+
+    return missing
+
+
 def main():
     num_sessions = int(sys.argv[1]) if len(sys.argv) > 1 else 10
     settings_file = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(".claude/settings.local.json")
@@ -134,12 +203,15 @@ def main():
     # Get recent session IDs
     session_ids = get_recent_session_ids(projects_dir, num_sessions)
 
-    if not session_ids:
-        print("[]")
-        return
-
     # Load existing rules
     existing_rules = load_existing_rules(settings_file)
+
+    if not session_ids:
+        # No sessions to scan, but still check for missing absolute coverage
+        cwd = os.getcwd()
+        missing_absolute = find_missing_absolute_coverage(existing_rules, cwd)
+        print(json.dumps({"blocked": [], "missingAbsolute": missing_absolute}, indent=2))
+        return
 
     # Collect all blocked commands
     all_blocked = []
@@ -166,7 +238,15 @@ def main():
             continue
         results.append({"ruleContent": rule_content, "count": count})
 
-    print(json.dumps(results, indent=2))
+    # Find relative path rules missing absolute coverage
+    cwd = os.getcwd()
+    missing_absolute = find_missing_absolute_coverage(existing_rules, cwd)
+
+    output = {
+        "blocked": results,
+        "missingAbsolute": missing_absolute,
+    }
+    print(json.dumps(output, indent=2))
 
 
 if __name__ == "__main__":

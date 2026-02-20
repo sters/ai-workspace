@@ -22,37 +22,48 @@ python3 .claude/skills/permissions-suggest/scripts/detect-blocked-commands.py {n
 **Arguments**:
 - `num_sessions`: Number of recent sessions to scan (default: 10)
 
-**Output**: JSON array of blocked commands with occurrence counts:
+**Output**: JSON object with two keys:
 ```json
-[
-  {"ruleContent": "pnpm --filter contacts test:*", "count": 5},
-  {"ruleContent": "npm run lint:*", "count": 3}
-]
+{
+  "blocked": [
+    {"ruleContent": "pnpm --filter contacts test:*", "count": 5},
+    {"ruleContent": "npm run lint:*", "count": 3}
+  ],
+  "missingAbsolute": [
+    {"ruleContent": "/Users/.../ai-workspace/.claude/scripts/**/*:*", "source": "Bash(./.claude/scripts/**/*:*)", "type": "missing_absolute"}
+  ]
+}
 ```
 
 ### 2. Handle Results
 
-**If no blocked commands found:**
+**If both `blocked` and `missingAbsolute` are empty:**
 Report to the user:
-> No blocked Bash commands found in the last {n} sessions.
+> No blocked Bash commands or missing path coverage found in the last {n} sessions.
 
-**If commands found:**
-Use AskUserQuestion to let the user select which commands to allow:
+**If suggestions found:**
+Present both categories in a single `AskUserQuestion` with `multiSelect: true`:
+
+- **Blocked commands**: Format as `"{ruleContent} ({count}x blocked)"`
+- **Missing absolute coverage**: Format as `"{ruleContent} (abs for {source})"`
+
+Combine both into one options list (up to 4 total, prioritizing blocked commands first).
 
 ```yaml
 AskUserQuestion tool:
   questions:
-    - question: "Which commands would you like to allow?"
+    - question: "Which rules would you like to add?"
       header: "Permissions"
       multiSelect: true
       options:
-        # First 4 most frequent commands as options
-        # Format: "{ruleContent} ({count}x blocked)"
+        # Mix of blocked commands and missing absolute coverage
+        # Blocked: "{ruleContent} ({count}x blocked)"
+        # Missing: "{ruleContent} (abs for Bash({source}))"
 ```
 
 ### 3. Update Settings
 
-For each selected command:
+For each selected rule:
 1. Read the current `.claude/settings.local.json`
 2. Add the rule in format `Bash({ruleContent})` to `permissions.allow`
 3. Write the updated settings file
