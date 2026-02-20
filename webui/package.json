@@ -1,0 +1,37 @@
+{
+  "name": "ai-workspace-ui",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "ai-workspace-ui": "./bin/start.mjs"
+  },
+  "scripts": {
+    "dev": "bun next build && bun next start -p 3741",
+    "dev:hot": "bun next dev -p 3741",
+    "build": "bun next build",
+    "start": "bun next start -p 3741"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.49",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
+    "swr": "^2.3.0",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.0"
+  }
+}
