@@ -208,7 +208,7 @@ export async function POST(request: Request) {
         const meta = parseReadmeMeta(readmeContent);
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length <= 1) {
-          ctx.emitStatus("Skipping coordination (single repo or research task)");
+          ctx.emitResult("Skipped coordination (single repo or research task).");
           return true;
         }
 
@@ -224,7 +224,7 @@ export async function POST(request: Request) {
           .filter((f): f is { repoName: string; content: string } => f !== null);
 
         if (todoFiles.length === 0) {
-          ctx.emitStatus("No TODO files found, skipping coordination");
+          ctx.emitResult("No TODO files found, skipping coordination.");
           return true;
         }
 
