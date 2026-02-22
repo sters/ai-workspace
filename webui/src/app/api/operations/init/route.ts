@@ -85,12 +85,16 @@ export async function POST(request: Request) {
               repoResults.push(repoResult);
               ctx.emitStatus(`Repository ready: ${repoResult.repoName} (branch: ${repoResult.branchName})`);
             } catch (err) {
-              ctx.emitStatus(`Failed to setup repository ${repoPath}: ${err}`);
+              ctx.emitResult(`Failed to setup repository ${repoPath}: ${err}`);
               return false;
             }
           }
         }
 
+        const repoSummary = repoResults.length > 0
+          ? `\nRepositories: ${repoResults.map((r) => `${r.repoName} (${r.branchName})`).join(", ")}`
+          : "";
+        ctx.emitResult(`Workspace **${wsName}** created.${repoSummary}`);
         return true;
       },
     },
@@ -142,17 +146,18 @@ export async function POST(request: Request) {
 
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch) {
-          ctx.emitStatus("Research/investigation task detected — skipping TODO planning");
           commitWorkspaceSnapshot(wsName, "Setup complete (research task)");
+          ctx.emitResult("Research/investigation task — skipping TODO planning.");
           return true;
         }
 
         if (repoResults.length === 0) {
-          ctx.emitStatus("No repositories configured — skipping TODO planning");
           commitWorkspaceSnapshot(wsName, "Setup complete (no repos)");
+          ctx.emitResult("No repositories configured — skipping TODO planning.");
           return true;
         }
 
+        ctx.emitResult(`Ready to plan: ${repoResults.length} repo(s), task type: ${meta.taskType}`);
         return true;
       },
     },
@@ -288,7 +293,7 @@ export async function POST(request: Request) {
       fn: async (ctx) => {
         ctx.emitStatus("Committing workspace snapshot...");
         commitWorkspaceSnapshot(wsName, "Init complete: workspace setup and TODO planning");
-        ctx.emitStatus("Workspace initialization complete");
+        ctx.emitResult(`Workspace **${wsName}** initialization complete.`);
         return true;
       },
     },
