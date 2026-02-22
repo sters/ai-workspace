@@ -21,10 +21,10 @@ import type { PipelinePhase } from "@/lib/process-manager";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { description, taskType, repositories, ticketId } = body as {
+  const { description, taskType, ticketId } = body as {
     description: string;
     taskType?: string;
-    repositories?: string[];
+    repositories?: string | string[];
     ticketId?: string;
   };
   if (!description) {
@@ -32,6 +32,18 @@ export async function POST(request: Request) {
       { error: "description is required" },
       { status: 400 }
     );
+  }
+
+  // repositories may arrive as a JSON string from the form or as an array
+  let repositories: string[] | undefined;
+  if (typeof body.repositories === "string") {
+    try {
+      repositories = JSON.parse(body.repositories);
+    } catch {
+      repositories = [body.repositories];
+    }
+  } else if (Array.isArray(body.repositories)) {
+    repositories = body.repositories;
   }
 
   const tt = taskType ?? "feature";
