@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
-import { WORKSPACE_DIR } from "@/lib/config";
+import { WORKSPACE_DIR, resolveWorkspaceName } from "@/lib/config";
 import { startOperationPipeline } from "@/lib/process-manager";
 import { getReadme } from "@/lib/workspace";
 import { parseReadmeMeta } from "@/lib/readme-parser";
@@ -20,14 +20,15 @@ import type { PipelinePhase, GroupChild } from "@/lib/process-manager";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { workspace } = body as { workspace: string };
-  if (!workspace) {
+  const { workspace: rawWorkspace } = body as { workspace: string };
+  if (!rawWorkspace) {
     return NextResponse.json(
       { error: "workspace is required" },
       { status: 400 }
     );
   }
 
+  const workspace = resolveWorkspaceName(rawWorkspace);
   const readmeContent = getReadme(workspace) ?? "";
   const meta = parseReadmeMeta(readmeContent);
   const repos = listWorkspaceRepos(workspace);
