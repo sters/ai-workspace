@@ -372,12 +372,35 @@ export function setupRepository(
   const worktreePath = path.join(wsPath, repoPathInput);
   fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
 
-  // If the branch already exists (e.g. from a previous failed init), delete it first
+  // If the branch already exists, resolve the conflict
   try {
     exec(`git -C "${repoAbsPath}" rev-parse --verify "${branchName}"`);
-    // Branch exists — prune stale worktree refs, then delete branch
+    // Branch exists — prune stale worktree refs first
     try { exec(`git -C "${repoAbsPath}" worktree prune`); } catch { /* ignore */ }
-    exec(`git -C "${repoAbsPath}" branch -D "${branchName}"`);
+
+    // Check if the branch is still used by an active worktree
+    const worktreeList = exec(`git -C "${repoAbsPath}" worktree list --porcelain`);
+    const isInUse = worktreeList
+      .split("\n")
+      .some((line) => line === `branch refs/heads/${branchName}`);
+
+    if (isInUse) {
+      // Branch is actively used by another workspace — use a unique suffix
+      let suffix = 2;
+      while (true) {
+        const candidate = `${branchName}-${suffix}`;
+        try {
+          exec(`git -C "${repoAbsPath}" rev-parse --verify "${candidate}"`);
+          suffix++;
+        } catch {
+          branchName = candidate;
+          break;
+        }
+      }
+    } else {
+      // Branch is a stale leftover — safe to delete and recreate
+      exec(`git -C "${repoAbsPath}" branch -D "${branchName}"`);
+    }
   } catch {
     // Branch doesn't exist — good
   }
