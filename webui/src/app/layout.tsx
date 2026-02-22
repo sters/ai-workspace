@@ -46,12 +46,6 @@ export default function RootLayout({
                   </Link>
                   <div className="ml-3 border-l pl-2">
                     <Link
-                      href="/utilities/permissions-suggest"
-                      className="block rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
-                    >
-                      Permissions Suggest
-                    </Link>
-                    <Link
                       href="/utilities/workspace-prune"
                       className="block rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                     >

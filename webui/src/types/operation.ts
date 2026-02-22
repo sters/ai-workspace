@@ -5,8 +5,13 @@ export type OperationType =
   | "create-pr"
   | "update-todo"
   | "delete"
-  | "permissions-suggest"
   | "workspace-prune";
+
+export interface OperationChild {
+  id: string;
+  label: string;
+  status: "running" | "completed" | "failed";
+}
 
 export interface OperationPhaseInfo {
   index: number;
@@ -21,6 +26,7 @@ export interface Operation {
   status: "running" | "completed" | "failed";
   startedAt: string;
   completedAt?: string;
+  children?: OperationChild[];
   phases?: OperationPhaseInfo[];
 }
 
@@ -29,7 +35,10 @@ export interface OperationEvent {
   operationId: string;
   data: string;
   timestamp: string;
+  /** Which child operation this event belongs to (for operation groups). */
   childLabel?: string;
+  /** Pipeline phase index (0-based) this event belongs to. */
   phaseIndex?: number;
+  /** Pipeline phase label this event belongs to. */
   phaseLabel?: string;
 }

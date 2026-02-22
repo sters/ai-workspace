@@ -207,7 +207,12 @@ export function parseStreamEvent(raw: string): LogEntry[] {
   }
   // SDK system messages
   else if (parsed.type === "system") {
-    if (parsed.subtype === "init") {
+    if (parsed.subtype === "initializing") {
+      entries.push({
+        kind: "system",
+        content: "Session initializing...",
+      });
+    } else if (parsed.subtype === "init") {
       entries.push({
         kind: "system",
         content: `Session initialized (model: ${parsed.model ?? "unknown"}, session: ${parsed.session_id ?? "unknown"})`,

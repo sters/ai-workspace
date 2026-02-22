@@ -2,12 +2,6 @@ import Link from "next/link";
 
 const tools = [
   {
-    href: "/utilities/permissions-suggest",
-    name: "Permissions Suggest",
-    description:
-      "Detect blocked Bash commands from recent sessions and suggest permission settings.",
-  },
-  {
     href: "/utilities/workspace-prune",
     name: "Workspace Prune",
     description:

@@ -28,13 +28,19 @@ export interface ClaudeProcess {
   submitAnswer: (toolUseId: string, answers: Record<string, string>) => boolean;
 }
 
+export interface RunClaudeOptions {
+  /** Working directory override. Defaults to AI_WORKSPACE_ROOT. */
+  cwd?: string;
+}
+
 function log(operationId: string, ...args: unknown[]) {
   console.log(`[claude-sdk][${operationId}]`, ...args);
 }
 
 export function runClaude(
   operationId: string,
-  prompt: string
+  prompt: string,
+  options?: RunClaudeOptions
 ): ClaudeProcess {
   const handlers: ((event: OperationEvent) => void)[] = [];
   const abortController = new AbortController();
@@ -49,9 +55,11 @@ export function runClaude(
     for (const h of handlers) h(event);
   };
 
+  const cwd = options?.cwd ?? AI_WORKSPACE_ROOT;
+
   log(operationId, "starting SDK query");
-  log(operationId, "cwd:", AI_WORKSPACE_ROOT);
-  log(operationId, "prompt:", prompt);
+  log(operationId, "cwd:", cwd);
+  log(operationId, "prompt:", prompt.slice(0, 200) + (prompt.length > 200 ? "..." : ""));
   log(operationId, "cliPath:", cliPath);
 
   // Run the SDK query in the background (non-blocking)
@@ -61,9 +69,10 @@ export function runClaude(
         prompt,
         options: {
           abortController,
-          cwd: AI_WORKSPACE_ROOT,
+          cwd,
           pathToClaudeCodeExecutable: cliPath,
-          settingSources: ["project", "user"],
+          // Only use user settings — no .claude/ project settings needed
+          settingSources: ["user"],
           // Use canUseTool to auto-approve all tools and handle AskUserQuestion interactively
           canUseTool: async (toolName, input, options) => {
             if (toolName === "AskUserQuestion") {

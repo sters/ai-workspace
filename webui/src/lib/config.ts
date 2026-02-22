@@ -10,3 +10,10 @@ function resolveRoot(): string {
 
 export const AI_WORKSPACE_ROOT = resolveRoot();
 export const WORKSPACE_DIR = path.join(AI_WORKSPACE_ROOT, "workspace");
+
+export function resolveWorkspaceName(input: string): string {
+  if (path.isAbsolute(input)) {
+    return path.basename(input);
+  }
+  return input;
+}
