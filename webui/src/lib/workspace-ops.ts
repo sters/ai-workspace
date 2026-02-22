@@ -205,15 +205,19 @@ export function setupWorkspace(
   }
 
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const dirName = ticketId
+  let dirName = ticketId
     ? `${taskType}-${ticketId}-${slug}-${date}`
     : `${taskType}-${slug}-${date}`;
 
-  const wsPath = path.join(WORKSPACE_DIR, dirName);
-
-  // Remove stale directory from a previous failed init
+  // If the directory already exists, append a numeric suffix
+  let wsPath = path.join(WORKSPACE_DIR, dirName);
   if (fs.existsSync(wsPath)) {
-    fs.rmSync(wsPath, { recursive: true, force: true });
+    let suffix = 2;
+    while (fs.existsSync(path.join(WORKSPACE_DIR, `${dirName}-${suffix}`))) {
+      suffix++;
+    }
+    dirName = `${dirName}-${suffix}`;
+    wsPath = path.join(WORKSPACE_DIR, dirName);
   }
 
   // Create directories
