@@ -55,7 +55,7 @@ export default function RootLayout({
                 </div>
               </nav>
               <div className="border-t p-3 text-xs text-muted-foreground">
-                localhost:3741
+                {process.env.NEXT_PUBLIC_GIT_HASH ?? "dev"}
               </div>
             </div>
           </aside>

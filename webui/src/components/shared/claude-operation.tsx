@@ -125,6 +125,15 @@ export function ClaudeOperation({
     />
   );
 
+  const showStarting = effectiveRunning && events.length === 0;
+
+  const startingIndicator = showStarting && (
+    <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+      <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      Operation starting…
+    </div>
+  );
+
   if (vertical) {
     return (
       <div className="space-y-3">
@@ -132,7 +141,8 @@ export function ClaudeOperation({
           <div className="flex justify-end">{statusBlock}</div>
         )}
         {childContent}
-        {operation && (
+        {startingIndicator}
+        {operation && events.length > 0 && (
           <CollapsibleOperationLog
             operation={operation}
             isRunning={isRunning}
@@ -151,7 +161,8 @@ export function ClaudeOperation({
         {statusBlock && <div className="ml-auto">{statusBlock}</div>}
       </div>
 
-      {operation && (
+      {startingIndicator}
+      {operation && events.length > 0 && (
         <CollapsibleOperationLog
           operation={operation}
           isRunning={isRunning}

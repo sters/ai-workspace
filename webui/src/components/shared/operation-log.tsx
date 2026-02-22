@@ -52,7 +52,6 @@ export function OperationLog({
   isRunning,
   phases: initialPhases,
 }: OperationLogProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [activePhaseTab, setActivePhaseTab] = useState<number | "all">("all");
   const userSelectedTabRef = useRef(false);
 
@@ -164,12 +163,6 @@ export function OperationLog({
     return groupByChildLabel(buildDisplayNodes(cleanEntries));
   }, [entries, filteredEntries, activePhaseTab, livePhases]);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
-  }, [entries.length, activePhaseTab]);
 
   if (events.length === 0) {
     return null;
@@ -194,7 +187,6 @@ export function OperationLog({
       )}
 
       <div
-        ref={containerRef}
         className="max-h-[500px] overflow-auto rounded-lg border bg-card p-3 text-sm"
       >
         <div className="space-y-1.5">
