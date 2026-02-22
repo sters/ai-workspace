@@ -44,6 +44,24 @@ export async function POST(request: Request) {
           return true;
         }
 
+        // Ask user for confirmation before deleting
+        const staleList = stale.map((ws) => `${ws.name} (${ws.ageDays}d old)`).join("\n");
+        const answers = await ctx.emitAsk([
+          {
+            question: `Delete ${stale.length} stale workspace(s)?\n\n${staleList}`,
+            options: [
+              { label: "Delete all", description: `Delete all ${stale.length} stale workspace(s)` },
+              { label: "Cancel", description: "Do not delete any workspaces" },
+            ],
+          },
+        ]);
+
+        const answer = Object.values(answers)[0] ?? "";
+        if (answer === "Cancel") {
+          ctx.emitResult("Prune cancelled by user.");
+          return true;
+        }
+
         ctx.emitStatus(`Deleting ${stale.length} of ${all.length} workspace(s)...`);
 
         let deleted = 0;

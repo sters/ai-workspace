@@ -16,6 +16,8 @@ interface ManagedOperation {
   childProcesses: Map<string, ClaudeProcess>;
   events: OperationEvent[];
   listeners: Set<(event: OperationEvent) => void>;
+  /** Pending ask resolvers for function-phase emitAsk calls, keyed by toolUseId. */
+  pendingAsks: Map<string, (answers: Record<string, string>) => void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -162,11 +164,24 @@ export interface PipelinePhaseGroup {
   children: GroupChild[];
 }
 
+export interface AskQuestionOption {
+  label: string;
+  description: string;
+}
+
+export interface AskQuestionDef {
+  question: string;
+  options: AskQuestionOption[];
+  multiSelect?: boolean;
+}
+
 export interface PhaseFunctionContext {
   operationId: string;
   emitStatus: (message: string) => void;
   /** Emit a result message that will be displayed outside the collapsible log. */
   emitResult: (message: string) => void;
+  /** Ask the user a question and wait for their answer. Returns the answers keyed by question text. */
+  emitAsk: (questions: AskQuestionDef[]) => Promise<Record<string, string>>;
   /** Run a single Claude child query and wait for completion. */
   runChild: (label: string, prompt: string, options?: RunClaudeOptions) => Promise<boolean>;
   /** Run multiple Claude child queries in parallel and wait for all to complete. */
@@ -223,6 +238,7 @@ export function startOperationPipeline(
     childProcesses: new Map(),
     events: [],
     listeners: new Set(),
+    pendingAsks: new Map(),
   };
 
   operations.set(id, managed);
@@ -257,6 +273,56 @@ export function startOperationPipeline(
                 data: JSON.stringify({ type: "result", subtype: "success", result: msg }),
                 timestamp: new Date().toISOString(),
                 ...phaseExtra,
+              });
+            },
+            emitAsk: (questions) => {
+              const toolUseId = `fn-ask-${id}-${i}-${childCounter++}`;
+              // Emit an ask event that the UI will render
+              emitEvent(managed, {
+                type: "output",
+                operationId: managed.operation.id,
+                data: JSON.stringify({
+                  type: "assistant",
+                  message: {
+                    content: [{
+                      type: "tool_use",
+                      id: toolUseId,
+                      name: "AskUserQuestion",
+                      input: {
+                        questions: questions.map((q) => ({
+                          question: q.question,
+                          options: q.options,
+                          multiSelect: q.multiSelect ?? false,
+                        })),
+                      },
+                    }],
+                  },
+                }),
+                timestamp: new Date().toISOString(),
+                ...phaseExtra,
+              });
+              // Return a promise that resolves when the user answers
+              return new Promise<Record<string, string>>((resolve) => {
+                managed.pendingAsks.set(toolUseId, (answers) => {
+                  // Emit a tool_result event so findPendingAsk marks it answered
+                  emitEvent(managed, {
+                    type: "output",
+                    operationId: managed.operation.id,
+                    data: JSON.stringify({
+                      type: "user",
+                      message: {
+                        content: [{
+                          type: "tool_result",
+                          tool_use_id: toolUseId,
+                          content: Object.values(answers).join(", "),
+                        }],
+                      },
+                    }),
+                    timestamp: new Date().toISOString(),
+                    ...phaseExtra,
+                  });
+                  resolve(answers);
+                });
               });
             },
             runChild: (label, prompt, opts) => {
@@ -382,6 +448,13 @@ export function submitAnswer(
 ): boolean {
   const managed = operations.get(id);
   if (!managed || managed.operation.status !== "running") return false;
+  // Check function-phase pending asks first
+  const pendingResolver = managed.pendingAsks.get(toolUseId);
+  if (pendingResolver) {
+    managed.pendingAsks.delete(toolUseId);
+    pendingResolver(answers);
+    return true;
+  }
   if (managed.claudeProcess?.submitAnswer(toolUseId, answers)) return true;
   for (const [, process] of managed.childProcesses) {
     if (process.submitAnswer(toolUseId, answers)) return true;
