@@ -48,27 +48,58 @@ function sanitizeSlug(input: string, maxLength = 50): string {
 }
 
 // ---------------------------------------------------------------------------
-// generateSlugFromDescription — ask Claude for a short English slug
+// analyzeTaskDescription — ask Claude to extract structured metadata
 // ---------------------------------------------------------------------------
 
 import { runClaude } from "./claude-sdk";
 
-export async function generateSlugFromDescription(
+export interface TaskAnalysis {
+  taskType: string;
+  slug: string;
+  ticketId: string;
+  repositories: string[];
+}
+
+export async function analyzeTaskDescription(
   description: string,
-): Promise<string> {
-  return new Promise<string>((resolve) => {
+): Promise<TaskAnalysis> {
+  return new Promise<TaskAnalysis>((resolve) => {
     let textOutput = "";
     let resolved = false;
 
-    const safeResolve = (value: string) => {
+    const fallback: TaskAnalysis = {
+      taskType: "feature",
+      slug: sanitizeSlug(description),
+      ticketId: "",
+      repositories: [],
+    };
+
+    const safeResolve = (value: TaskAnalysis) => {
       if (resolved) return;
       resolved = true;
       resolve(value);
     };
 
     const process = runClaude(
-      `slug-gen-${Date.now()}`,
-      `Generate a short workspace directory name in English for this task. Use 2-5 lowercase words separated by hyphens. Reply with ONLY the slug, nothing else. No explanation, no quotes, no backticks.\n\nTask: ${description}`,
+      `analyze-${Date.now()}`,
+      `Analyze the following task description and extract structured metadata. Reply with ONLY a JSON object, no explanation, no markdown fences.
+
+JSON schema:
+{
+  "taskType": "feature" | "bugfix" | "research" | "investigation",
+  "slug": "short-english-slug (2-5 lowercase words, hyphen-separated)",
+  "ticketId": "ticket ID if found (e.g. PROJ-123, #456), or empty string",
+  "repositories": ["github.com/org/repo", ...] (full paths found in description, or empty array)
+}
+
+Rules:
+- taskType: infer from context. Default to "feature" if unclear.
+- slug: concise English directory name for the workspace. Do NOT include the ticket ID in the slug.
+- ticketId: extract Jira IDs (XX-123), GitHub issue refs (#123 or org/repo#123), Linear IDs, etc. Empty string if none.
+- repositories: extract repository paths like "github.com/org/repo". Include the host. Empty array if none mentioned.
+
+Task description:
+${description}`,
     );
 
     process.onEvent((event) => {
@@ -87,17 +118,24 @@ export async function generateSlugFromDescription(
         }
       }
       if (event.type === "complete" || event.type === "error") {
-        const slug = textOutput
-          .trim()
-          .split("\n")[0]
-          .trim()
-          .replace(/[`'"]/g, "");
-        safeResolve(slug || "");
+        try {
+          // Strip markdown fences if present
+          const cleaned = textOutput.trim().replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+          const parsed = JSON.parse(cleaned);
+          safeResolve({
+            taskType: parsed.taskType || fallback.taskType,
+            slug: sanitizeSlug(parsed.slug || "") || fallback.slug,
+            ticketId: parsed.ticketId || "",
+            repositories: Array.isArray(parsed.repositories) ? parsed.repositories : [],
+          });
+        } catch {
+          safeResolve(fallback);
+        }
       }
     });
 
-    // Timeout after 30 seconds — fall back to empty string
-    setTimeout(() => safeResolve(""), 30000);
+    // Timeout after 30 seconds — fall back to defaults
+    setTimeout(() => safeResolve(fallback), 30000);
   });
 }
 

@@ -5,9 +5,9 @@ import { WORKSPACE_DIR } from "@/lib/config";
 import { startOperationPipeline } from "@/lib/process-manager";
 import { parseReadmeMeta } from "@/lib/readme-parser";
 import {
+  analyzeTaskDescription,
   setupWorkspace,
   setupRepository,
-  listWorkspaceRepos,
   commitWorkspaceSnapshot,
   type SetupRepositoryResult,
 } from "@/lib/workspace-ops";
@@ -21,12 +21,7 @@ import type { PipelinePhase } from "@/lib/process-manager";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { description, taskType, ticketId } = body as {
-    description: string;
-    taskType?: string;
-    repositories?: string | string[];
-    ticketId?: string;
-  };
+  const { description } = body as { description: string };
   if (!description) {
     return NextResponse.json(
       { error: "description is required" },
@@ -34,39 +29,40 @@ export async function POST(request: Request) {
     );
   }
 
-  // repositories may arrive as a JSON string from the form or as an array
-  let repositories: string[] | undefined;
-  if (typeof body.repositories === "string") {
-    try {
-      repositories = JSON.parse(body.repositories);
-    } catch {
-      repositories = [body.repositories];
-    }
-  } else if (Array.isArray(body.repositories)) {
-    repositories = body.repositories;
-  }
-
-  const tt = taskType ?? "feature";
-
   // Shared mutable state across pipeline phases
   let wsName = "";
   let wsPath = "";
   const repoResults: SetupRepositoryResult[] = [];
 
   const phases: PipelinePhase[] = [
-    // Phase A: Setup workspace and repositories (TypeScript, immediate)
+    // Phase A: Analyze description with Claude, then create workspace + setup repos
     {
       kind: "function",
-      label: "Setup workspace",
+      label: "Analyze & setup workspace",
       fn: async (ctx) => {
+        ctx.emitStatus("Analyzing task description...");
+        const analysis = await analyzeTaskDescription(description);
+        ctx.emitStatus(
+          `Detected: type=${analysis.taskType}, slug=${analysis.slug}` +
+            (analysis.ticketId ? `, ticket=${analysis.ticketId}` : "") +
+            (analysis.repositories.length > 0
+              ? `, repos=[${analysis.repositories.join(", ")}]`
+              : ""),
+        );
+
         ctx.emitStatus("Creating workspace directory...");
-        const result = setupWorkspace(tt, description, ticketId);
+        const result = setupWorkspace(
+          analysis.taskType,
+          description,
+          analysis.ticketId || undefined,
+          analysis.slug,
+        );
         wsName = result.workspaceName;
         wsPath = result.workspacePath;
         ctx.emitStatus(`Workspace created: ${wsName}`);
 
-        if (repositories && repositories.length > 0) {
-          for (const repoPath of repositories) {
+        if (analysis.repositories.length > 0) {
+          for (const repoPath of analysis.repositories) {
             ctx.emitStatus(`Setting up repository: ${repoPath}`);
             try {
               const repoResult = setupRepository(wsName, repoPath);
@@ -104,7 +100,7 @@ export async function POST(request: Request) {
         return ctx.runChild("Fill README", prompt, { cwd: wsPath });
       },
     },
-    // Phase C: Detect task type and setup any additional repos, prepare for planning
+    // Phase C: Detect task type and setup any additional repos from README
     {
       kind: "function",
       label: "Prepare for planning",
@@ -125,7 +121,6 @@ export async function POST(request: Request) {
               repoResults.push(repoResult);
             } catch (err) {
               ctx.emitStatus(`Warning: Failed to setup ${metaRepo.path}: ${err}`);
-              // Continue — non-fatal for planning
             }
           }
         }
@@ -155,7 +150,6 @@ export async function POST(request: Request) {
         const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
         const meta = parseReadmeMeta(readmeContent);
 
-        // Skip if research/investigation or no repos
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
           ctx.emitStatus("Skipping TODO planning");
@@ -198,7 +192,6 @@ export async function POST(request: Request) {
           return true;
         }
 
-        // Read TODO files
         const todoFiles = repoResults
           .map((repo) => {
             const todoPath = path.join(wsPath, `TODO-${repo.repoName}.md`);
