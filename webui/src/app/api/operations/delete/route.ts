@@ -23,11 +23,11 @@ export async function POST(request: Request) {
         ctx.emitStatus(`Deleting workspace: ${workspace}`);
         try {
           await deleteWorkspace(workspace);
-          ctx.emitStatus(`Deleted workspace: ${workspace}`);
+          ctx.emitResult(`Deleted workspace: ${workspace}`);
           return true;
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          ctx.emitStatus(`Failed to delete workspace: ${message}`);
+          ctx.emitResult(`Failed to delete workspace: ${message}`);
           return false;
         }
       },

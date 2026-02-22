@@ -165,6 +165,8 @@ export interface PipelinePhaseGroup {
 export interface PhaseFunctionContext {
   operationId: string;
   emitStatus: (message: string) => void;
+  /** Emit a result message that will be displayed outside the collapsible log. */
+  emitResult: (message: string) => void;
   /** Run a single Claude child query and wait for completion. */
   runChild: (label: string, prompt: string, options?: RunClaudeOptions) => Promise<boolean>;
   /** Run multiple Claude child queries in parallel and wait for all to complete. */
@@ -248,6 +250,15 @@ export function startOperationPipeline(
           phaseSuccess = await phase.fn({
             operationId: id,
             emitStatus: (msg) => emitStatus(managed, msg, phaseExtra),
+            emitResult: (msg) => {
+              emitEvent(managed, {
+                type: "output",
+                operationId: managed.operation.id,
+                data: JSON.stringify({ type: "result", subtype: "success", result: msg }),
+                timestamp: new Date().toISOString(),
+                ...phaseExtra,
+              });
+            },
             runChild: (label, prompt, opts) => {
               const cid = `${id}-phase-${i}-fn-${childCounter++}`;
               operation.children!.push({ id: cid, label, status: "running" });

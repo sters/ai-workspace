@@ -19,7 +19,7 @@ export async function POST(request: Request) {
         const all = listAllWorkspacesWithAge(d);
 
         if (all.length === 0) {
-          ctx.emitStatus("No workspaces found.");
+          ctx.emitResult("No workspaces found.");
           return true;
         }
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         const stale = all.filter((ws) => ws.isStale);
 
         if (stale.length === 0) {
-          ctx.emitStatus(`All ${all.length} workspace(s) are within ${d} days. Nothing to prune.`);
+          ctx.emitResult(`All ${all.length} workspace(s) are within ${d} days. Nothing to prune.`);
           return true;
         }
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
           }
         }
 
-        ctx.emitStatus(
+        ctx.emitResult(
           `Done. Deleted ${deleted}/${stale.length} workspace(s)` +
             (failedCount > 0 ? `, ${failedCount} failed` : ""),
         );
