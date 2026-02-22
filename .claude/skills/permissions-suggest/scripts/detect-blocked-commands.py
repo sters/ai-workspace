@@ -3,6 +3,7 @@
 detect-blocked-commands.py - Extract blocked Bash commands from Claude Code debug logs
 
 Usage: detect-blocked-commands.py [num_sessions] [settings_file]
+       detect-blocked-commands.py --session-id <session-id> [settings_file]
 Output: JSON object with two keys:
   - "blocked": array of blocked commands not already in settings
   - "missingAbsolute": array of relative path rules lacking absolute path coverage
@@ -67,6 +68,55 @@ def load_existing_rules(settings_file: Path) -> set[str]:
         return set()
 
 
+def _parse_suggestions_json(raw: str) -> list:
+    """Parse the suggestions JSON from a debug log line.
+
+    The debug log may format the JSON in two ways:
+    1. Multi-line: actual newlines and unescaped quotes (older format)
+    2. Single-line quoted: wrapped in outer quotes with literal \\n and \\"
+       e.g. "[\\n  {\\n    \\"type\\": \\"addRules\\", ...}\\n]"
+    """
+    stripped = raw.strip()
+
+    # Try direct parse first (multi-line format)
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        pass
+
+    # Single-line quoted format: strip trailing quote, then decode escapes
+    if stripped.endswith('"'):
+        stripped = stripped[:-1]
+    # Replace literal two-char sequences with actual characters
+    decoded = stripped.replace('\\"', '"').replace("\\n", "\n")
+    try:
+        return json.loads(decoded)
+    except json.JSONDecodeError:
+        pass
+
+    return []
+
+
+def _extract_rule_contents(suggestions: list) -> list[str]:
+    """Extract Bash ruleContent values from parsed suggestions."""
+    results = []
+    for suggestion in suggestions:
+        if (
+            suggestion.get("type") == "addRules"
+            and suggestion.get("behavior") == "allow"
+        ):
+            for rule in suggestion.get("rules", []):
+                if rule.get("toolName") == "Bash":
+                    rule_content = rule.get("ruleContent")
+                    if rule_content:
+                        results.append(rule_content)
+    return results
+
+
+# Max lines to look ahead for "Bash tool permission denied" after a suggestion
+_DENIED_LOOKAHEAD = 15
+
+
 def extract_blocked_commands(debug_file: Path) -> list[str]:
     """Extract blocked Bash command rules from a debug log file."""
     if not debug_file.exists():
@@ -78,47 +128,41 @@ def extract_blocked_commands(debug_file: Path) -> list[str]:
         with open(debug_file, encoding="utf-8", errors="replace") as f:
             content = f.read()
 
-        # Parse line by line to handle the log format correctly
         lines = content.split("\n")
         i = 0
         while i < len(lines):
             line = lines[i]
-            if "Permission suggestions for Bash:" in line:
-                # Extract the JSON that follows
-                marker = "Permission suggestions for Bash:"
-                json_start = line.find(marker) + len(marker)
-                json_str = line[json_start:].strip()
+            if "Permission suggestions for Bash:" not in line:
+                i += 1
+                continue
 
-                # Continue collecting lines until we find the closing bracket
-                j = i + 1
+            # Extract the JSON portion after the marker
+            marker = "Permission suggestions for Bash: "
+            json_start = line.find(marker) + len(marker)
+            json_str = line[json_start:].strip()
+
+            # Collect additional lines if the JSON spans multiple lines
+            j = i + 1
+            if not json_str.rstrip().rstrip('"').endswith("]"):
                 while j < len(lines) and not json_str.rstrip().endswith("]"):
                     json_str += "\n" + lines[j]
                     j += 1
 
-                # Check if the next non-empty line contains 'Bash tool permission denied'
-                k = j
-                while k < len(lines) and not lines[k].strip():
-                    k += 1
+            # Look ahead (up to _DENIED_LOOKAHEAD lines) for permission denied
+            is_denied = False
+            for k in range(j, min(j + _DENIED_LOOKAHEAD, len(lines))):
+                if "Bash tool permission denied" in lines[k]:
+                    is_denied = True
+                    break
+                # Stop early if we hit the next permission suggestion
+                if "Permission suggestions for Bash:" in lines[k]:
+                    break
 
-                if k < len(lines) and "Bash tool permission denied" in lines[k]:
-                    try:
-                        suggestions = json.loads(json_str.strip())
-                        for suggestion in suggestions:
-                            if (
-                                suggestion.get("type") == "addRules"
-                                and suggestion.get("behavior") == "allow"
-                            ):
-                                for rule in suggestion.get("rules", []):
-                                    if rule.get("toolName") == "Bash":
-                                        rule_content = rule.get("ruleContent")
-                                        if rule_content:
-                                            blocked_commands.append(rule_content)
-                    except json.JSONDecodeError:
-                        pass
-                i = j
-            else:
-                i += 1
+            if is_denied:
+                suggestions = _parse_suggestions_json(json_str)
+                blocked_commands.extend(_extract_rule_contents(suggestions))
 
+            i = j
     except OSError:
         return []
 
@@ -191,17 +235,51 @@ def find_missing_absolute_coverage(existing_rules: set[str], cwd: str) -> list[d
     return missing
 
 
+def _parse_args() -> tuple:
+    """Parse CLI arguments. Returns (session_ids_or_count, settings_file).
+
+    Supported forms:
+        detect-blocked-commands.py [num_sessions] [settings_file]
+        detect-blocked-commands.py --session-id <id> [settings_file]
+    """
+    args = sys.argv[1:]
+    session_id = None
+    num_sessions = 10
+    settings_file = Path(".claude/settings.local.json")
+
+    i = 0
+    while i < len(args):
+        if args[i] == "--session-id" and i + 1 < len(args):
+            session_id = args[i + 1]
+            i += 2
+        elif i == 0 and session_id is None:
+            # First positional arg is num_sessions (if not using --session-id)
+            try:
+                num_sessions = int(args[i])
+            except ValueError:
+                pass
+            i += 1
+        else:
+            # Remaining positional arg is settings_file
+            settings_file = Path(args[i])
+            i += 1
+
+    return session_id, num_sessions, settings_file
+
+
 def main():
-    num_sessions = int(sys.argv[1]) if len(sys.argv) > 1 else 10
-    settings_file = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(".claude/settings.local.json")
+    session_id, num_sessions, settings_file = _parse_args()
 
     home = Path.home()
     project_path = get_project_path()
     projects_dir = home / ".claude" / "projects" / f"-{project_path}"
     debug_dir = home / ".claude" / "debug"
 
-    # Get recent session IDs
-    session_ids = get_recent_session_ids(projects_dir, num_sessions)
+    # Get session IDs
+    if session_id:
+        session_ids = [session_id]
+    else:
+        session_ids = get_recent_session_ids(projects_dir, num_sessions)
 
     # Load existing rules
     existing_rules = load_existing_rules(settings_file)
