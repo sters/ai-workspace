@@ -59,6 +59,15 @@ export function useOperation(storageKey?: string) {
     }
   }, [sseError, storageKey, operation]);
 
+  // ---------- Status events → detect __setWorkspace ----------
+  useEffect(() => {
+    const last = events[events.length - 1];
+    if (last?.type === "status" && last.data.startsWith("__setWorkspace:")) {
+      const ws = last.data.slice("__setWorkspace:".length);
+      setOperation((prev) => (prev ? { ...prev, workspace: ws } : null));
+    }
+  }, [events]);
+
   // ---------- Complete event → update status ----------
   // Only react to the pipeline-level complete (no childLabel).
   // Child process completes are tagged with childLabel and don't end the operation.

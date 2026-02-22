@@ -182,6 +182,8 @@ export interface PhaseFunctionContext {
   emitResult: (message: string) => void;
   /** Ask the user a question and wait for their answer. Returns the answers keyed by question text. */
   emitAsk: (questions: AskQuestionDef[]) => Promise<Record<string, string>>;
+  /** Update the operation's workspace identifier. Notifies the FE via a special event. */
+  setWorkspace: (workspace: string) => void;
   /** Run a single Claude child query and wait for completion. */
   runChild: (label: string, prompt: string, options?: RunClaudeOptions) => Promise<boolean>;
   /** Run multiple Claude child queries in parallel and wait for all to complete. */
@@ -274,6 +276,10 @@ export function startOperationPipeline(
                 timestamp: new Date().toISOString(),
                 ...phaseExtra,
               });
+            },
+            setWorkspace: (ws) => {
+              managed.operation.workspace = ws;
+              emitStatus(managed, `__setWorkspace:${ws}`, phaseExtra);
             },
             emitAsk: (questions) => {
               const toolUseId = `fn-ask-${id}-${i}-${childCounter++}`;

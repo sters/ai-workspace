@@ -19,6 +19,10 @@ export interface OperationContext {
   isRunning: boolean;
   /** True when there is an active or completed operation. */
   hasOperation: boolean;
+  /** The workspace name (may be updated dynamically during the operation). */
+  workspace?: string;
+  /** The operation status. */
+  status?: string;
 }
 
 /**
@@ -107,6 +111,8 @@ export function ClaudeOperation({
     start: handleStart,
     isRunning: effectiveRunning,
     hasOperation: !!operation,
+    workspace: operation?.workspace,
+    status: operation?.status,
   });
 
   const nextActions = showNextActions && (

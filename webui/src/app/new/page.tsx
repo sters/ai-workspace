@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ClaudeOperation } from "@/components/shared/claude-operation";
 
 export default function NewWorkspacePage() {
@@ -29,21 +30,48 @@ export default function NewWorkspacePage() {
       </div>
 
       <ClaudeOperation storageKey="init">
-        {({ start, isRunning }) =>
-          !isRunning ? (
-            <button
-              onClick={() => {
-                if (!description.trim()) return;
-                start("init", { description: description.trim() });
-              }}
-              disabled={!description.trim()}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              Initialize
-            </button>
-          ) : null
-        }
+        {({ start, isRunning, workspace, status }) => (
+          <>
+            {!isRunning && status !== "completed" && (
+              <button
+                onClick={() => {
+                  if (!description.trim()) return;
+                  start("init", { description: description.trim() });
+                }}
+                disabled={!description.trim()}
+                className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                Initialize
+              </button>
+            )}
+            {status === "completed" && workspace && (
+              <InitNextActions workspace={workspace} />
+            )}
+          </>
+        )}
       </ClaudeOperation>
+    </div>
+  );
+}
+
+function InitNextActions({ workspace }: { workspace: string }) {
+  return (
+    <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
+      <p className="mb-2 text-sm font-medium text-foreground">Next steps</p>
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href={`/workspace/${encodeURIComponent(workspace)}?action=execute`}
+          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Execute
+        </Link>
+        <Link
+          href={`/workspace/${encodeURIComponent(workspace)}`}
+          className="rounded-md border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
+        >
+          View Workspace
+        </Link>
+      </div>
     </div>
   );
 }

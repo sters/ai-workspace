@@ -75,6 +75,7 @@ export async function POST(request: Request) {
         );
         wsName = result.workspaceName;
         wsPath = result.workspacePath;
+        ctx.setWorkspace(wsName);
         ctx.emitStatus(`Workspace created: ${wsName}`);
 
         if (analysis.repositories.length > 0) {
