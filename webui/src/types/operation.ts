@@ -4,8 +4,7 @@ export type OperationType =
   | "review"
   | "create-pr"
   | "update-todo"
-  | "delete"
-  | "workspace-prune";
+  | "delete";
 
 export interface OperationChild {
   id: string;

@@ -177,6 +177,7 @@ export function startOperation(
   });
 
   operations.set(id, managed);
+  emitStatus(managed, "Initializing...");
   return operation;
 }
 
