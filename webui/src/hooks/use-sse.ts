@@ -32,7 +32,9 @@ export function useSSE(operationId: string | null) {
         try {
           const event: OperationEvent = JSON.parse(e.data);
           setEvents((prev) => [...prev, event]);
-          if (event.type === "complete") {
+          // Only close on the pipeline-level complete (no childLabel).
+          // Child process completes are tagged with childLabel and should not end the stream.
+          if (event.type === "complete" && !event.childLabel) {
             es.close();
             setConnected(false);
           }

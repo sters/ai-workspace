@@ -50,7 +50,9 @@ export async function GET(request: Request) {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify(event)}\n\n`)
           );
-          if (event.type === "complete") {
+          // Only close on the pipeline-level complete (no childLabel).
+          // Child process completes should not end the SSE stream.
+          if (event.type === "complete" && !event.childLabel) {
             console.log(`[sse][${operationId}] complete`);
             unsubscribe();
             controller.close();

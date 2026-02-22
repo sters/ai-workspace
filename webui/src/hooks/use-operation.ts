@@ -60,9 +60,15 @@ export function useOperation(storageKey?: string) {
   }, [sseError, storageKey, operation]);
 
   // ---------- Complete event → update status ----------
+  // Only react to the pipeline-level complete (no childLabel).
+  // Child process completes are tagged with childLabel and don't end the operation.
   useEffect(() => {
     const last = events[events.length - 1];
-    if (last?.type === "complete" && operation?.status === "running") {
+    if (
+      last?.type === "complete" &&
+      !last.childLabel &&
+      operation?.status === "running"
+    ) {
       try {
         const d = JSON.parse(last.data);
         setOperation((prev) =>
