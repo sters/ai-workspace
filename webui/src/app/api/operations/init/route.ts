@@ -172,7 +172,7 @@ export async function POST(request: Request) {
 
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
-          ctx.emitStatus("Skipping TODO planning");
+          ctx.emitResult("Skipped TODO planning.");
           return true;
         }
 
@@ -248,7 +248,7 @@ export async function POST(request: Request) {
         const meta = parseReadmeMeta(readmeContent);
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
-          ctx.emitStatus("Skipping TODO review");
+          ctx.emitResult("Skipped TODO review.");
           return true;
         }
 
@@ -273,7 +273,7 @@ export async function POST(request: Request) {
           .filter((c): c is NonNullable<typeof c> => c !== null);
 
         if (children.length === 0) {
-          ctx.emitStatus("No TODO files to review");
+          ctx.emitResult("No TODO files to review.");
           return true;
         }
 
