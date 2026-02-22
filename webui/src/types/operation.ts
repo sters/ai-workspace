@@ -8,6 +8,12 @@ export type OperationType =
   | "permissions-suggest"
   | "workspace-prune";
 
+export interface OperationPhaseInfo {
+  index: number;
+  label: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+}
+
 export interface Operation {
   id: string;
   type: OperationType;
@@ -15,6 +21,7 @@ export interface Operation {
   status: "running" | "completed" | "failed";
   startedAt: string;
   completedAt?: string;
+  phases?: OperationPhaseInfo[];
 }
 
 export interface OperationEvent {
@@ -22,4 +29,7 @@ export interface OperationEvent {
   operationId: string;
   data: string;
   timestamp: string;
+  childLabel?: string;
+  phaseIndex?: number;
+  phaseLabel?: string;
 }

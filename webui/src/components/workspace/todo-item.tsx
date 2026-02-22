@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { TodoItem as TodoItemType } from "@/types/workspace";
-import { MarkdownRenderer } from "./markdown-renderer";
+import { MarkdownRenderer } from "../shared/markdown-renderer";
 
 const statusIcons: Record<TodoItemType["status"], string> = {
   completed: "\u2705",

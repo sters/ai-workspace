@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ClaudeOperation } from "./claude-operation";
+import { ClaudeOperation } from "../shared/claude-operation";
 import type { OperationType } from "@/types/operation";
 
 export function UtilityPage({

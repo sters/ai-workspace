@@ -1,6 +1,6 @@
 "use client";
 
-import { UtilityPage } from "@/components/utility-page";
+import { UtilityPage } from "@/components/utilities/utility-page";
 
 export default function WorkspacePrunePage() {
   return (

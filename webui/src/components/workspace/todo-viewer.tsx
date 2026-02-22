@@ -2,12 +2,12 @@
 
 import type { TodoFile, TodoSection } from "@/types/workspace";
 import { TodoItemRow } from "./todo-item";
-import { ProgressBar } from "./progress-bar";
-import { MarkdownRenderer } from "./markdown-renderer";
+import { ProgressBar } from "../shared/progress-bar";
+import { MarkdownRenderer } from "../shared/markdown-renderer";
 
 const NOTE_SECTION_RE = /notes/i;
 
-function SectionBlock({ section }: { section: TodoSection }) {
+export function SectionBlock({ section }: { section: TodoSection }) {
   const isNoteSection =
     NOTE_SECTION_RE.test(section.heading) && section.items.length === 0;
 

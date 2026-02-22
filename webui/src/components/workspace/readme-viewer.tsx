@@ -1,6 +1,6 @@
 "use client";
 
-import { MarkdownRenderer } from "./markdown-renderer";
+import { MarkdownRenderer } from "../shared/markdown-renderer";
 
 export function ReadmeViewer({ content }: { content: string }) {
   if (!content) {

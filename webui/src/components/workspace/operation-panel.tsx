@@ -1,17 +1,25 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ClaudeOperation } from "./claude-operation";
+import { ClaudeOperation, type OperationContext } from "../shared/claude-operation";
+import type { OperationType } from "@/types/operation";
 
 export function OperationPanel({
   workspacePath,
+  autoAction,
+  onAutoActionConsumed,
 }: {
   workspacePath: string;
+  /** When set, auto-trigger this operation on mount (once). */
+  autoAction?: OperationType;
+  /** Called after auto-action has been triggered, so the parent can clear the param. */
+  onAutoActionConsumed?: () => void;
 }) {
   const router = useRouter();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const autoActionFiredRef = useRef(false);
 
   const openDeleteDialog = () => {
     setShowDeleteConfirm(true);
@@ -24,9 +32,17 @@ export function OperationPanel({
   };
 
   return (
-    <ClaudeOperation storageKey={`workspace:${workspacePath}`}>
-      {({ start, isRunning }) => (
-        <>
+    <ClaudeOperation storageKey={`workspace:${workspacePath}`} workspace={workspacePath}>
+      {({ start, isRunning, hasOperation }) => (
+        <AutoActionWrapper
+          autoAction={autoAction}
+          firedRef={autoActionFiredRef}
+          start={start}
+          isRunning={isRunning}
+          hasOperation={hasOperation}
+          workspacePath={workspacePath}
+          onConsumed={onAutoActionConsumed}
+        >
           <button
             onClick={() => start("execute", { workspace: workspacePath })}
             disabled={isRunning}
@@ -91,8 +107,42 @@ export function OperationPanel({
               </div>
             </dialog>
           )}
-        </>
+        </AutoActionWrapper>
       )}
     </ClaudeOperation>
   );
+}
+
+/**
+ * Helper component that auto-triggers an action via useEffect.
+ * Must be a separate component so the effect can access the `start` function
+ * from the ClaudeOperation render prop.
+ */
+function AutoActionWrapper({
+  autoAction,
+  firedRef,
+  start,
+  isRunning,
+  hasOperation,
+  workspacePath,
+  onConsumed,
+  children,
+}: {
+  autoAction?: OperationType;
+  firedRef: React.MutableRefObject<boolean>;
+  start: OperationContext["start"];
+  isRunning: boolean;
+  hasOperation: boolean;
+  workspacePath: string;
+  onConsumed?: () => void;
+  children: React.ReactNode;
+}) {
+  useEffect(() => {
+    if (!autoAction || firedRef.current || isRunning || hasOperation) return;
+    firedRef.current = true;
+    start(autoAction, { workspace: workspacePath });
+    onConsumed?.();
+  }, [autoAction, firedRef, start, isRunning, hasOperation, workspacePath, onConsumed]);
+
+  return <>{children}</>;
 }

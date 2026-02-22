@@ -3,6 +3,12 @@
 export type LogEntryBase = {
   /** Non-null when the entry originates from a sub-agent (Task tool). */
   parentToolUseId?: string | null;
+  /** Label for grouping entries in operation groups/pipelines. */
+  childLabel?: string;
+  /** Phase index for pipeline operations. */
+  phaseIndex?: number;
+  /** Phase label for pipeline operations. */
+  phaseLabel?: string;
 };
 
 export type LogEntry = LogEntryBase &
@@ -23,6 +29,10 @@ export type LogEntry = LogEntryBase &
         taskSummary?: string;
         /** Formatted usage string from task_notification (e.g., "12.3s, 5 tools"). */
         taskUsage?: string;
+        /** Task ID from the SDK. */
+        taskId?: string;
+        /** Output file path for background tasks. */
+        taskOutputFile?: string;
       }
     | { kind: "error"; content: string }
     | { kind: "complete"; exitCode: number }
@@ -208,6 +218,7 @@ export function parseStreamEvent(raw: string): LogEntry[] {
         content: `Task started: ${parsed.description ?? parsed.task_id}`,
         taskToolUseId: parsed.tool_use_id,
         taskStatus: "running",
+        taskId: parsed.task_id,
       });
     } else if (parsed.subtype === "task_notification") {
       const usageInfo: string[] = [];
@@ -224,6 +235,8 @@ export function parseStreamEvent(raw: string): LogEntry[] {
         taskStatus: parsed.status,
         taskSummary: parsed.summary || undefined,
         taskUsage: usageInfo.length > 0 ? usageInfo.join(", ") : undefined,
+        taskId: parsed.task_id,
+        taskOutputFile: parsed.output_file,
       });
     }
     // Other system subtypes (status, hook_*, compact_boundary) are silently skipped

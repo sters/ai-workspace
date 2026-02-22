@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WorkspaceList } from "@/components/workspace-list";
+import { WorkspaceList } from "@/components/dashboard/workspace-list";
 
 export default function DashboardPage() {
   return (

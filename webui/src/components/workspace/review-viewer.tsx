@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ReviewSession } from "@/types/workspace";
 import { useReviewDetail } from "@/hooks/use-workspace";
-import { MarkdownRenderer } from "./markdown-renderer";
+import { MarkdownRenderer } from "../shared/markdown-renderer";
 
 export function ReviewViewer({
   workspaceName,

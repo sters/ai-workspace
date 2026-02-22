@@ -1,10 +1,12 @@
 "use client";
 
 import { useWorkspaces } from "@/hooks/use-workspaces";
+import { useRunningOperations } from "@/hooks/use-running-operations";
 import { WorkspaceCard } from "./workspace-card";
 
 export function WorkspaceList() {
   const { workspaces, isLoading, error } = useWorkspaces();
+  const { runningWorkspaces } = useRunningOperations();
 
   if (isLoading) {
     return (
@@ -39,7 +41,11 @@ export function WorkspaceList() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {workspaces.map((ws) => (
-        <WorkspaceCard key={ws.name} workspace={ws} />
+        <WorkspaceCard
+          key={ws.name}
+          workspace={ws}
+          isRunning={runningWorkspaces.has(ws.name)}
+        />
       ))}
     </div>
   );

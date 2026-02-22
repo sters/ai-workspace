@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ClaudeOperation } from "@/components/claude-operation";
+import { ClaudeOperation } from "@/components/shared/claude-operation";
 
 export default function NewWorkspacePage() {
   const [description, setDescription] = useState("");
