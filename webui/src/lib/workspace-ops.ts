@@ -371,6 +371,17 @@ export function setupRepository(
   // Create worktree
   const worktreePath = path.join(wsPath, repoPathInput);
   fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
+
+  // If the branch already exists (e.g. from a previous failed init), delete it first
+  try {
+    exec(`git -C "${repoAbsPath}" rev-parse --verify "${branchName}"`);
+    // Branch exists — prune stale worktree refs, then delete branch
+    try { exec(`git -C "${repoAbsPath}" worktree prune`); } catch { /* ignore */ }
+    exec(`git -C "${repoAbsPath}" branch -D "${branchName}"`);
+  } catch {
+    // Branch doesn't exist — good
+  }
+
   exec(
     `git -C "${repoAbsPath}" worktree add -b "${branchName}" "${worktreePath}" "origin/${baseBranch}"`,
   );
