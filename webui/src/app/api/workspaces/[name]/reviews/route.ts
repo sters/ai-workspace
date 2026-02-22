@@ -8,6 +8,6 @@ export async function GET(
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const reviews = await getReviewSessions(name);
+  const reviews = getReviewSessions(name);
   return NextResponse.json(reviews);
 }

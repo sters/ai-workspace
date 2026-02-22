@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const detail = await getWorkspaceDetail(name);
+  const detail = getWorkspaceDetail(name);
   if (!detail) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

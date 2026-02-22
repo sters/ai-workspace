@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const workspace = resolveWorkspaceName(rawWorkspace);
-  const readmeContent = (await getReadme(workspace)) ?? "";
+  const readmeContent = getReadme(workspace) ?? "";
   const meta = parseReadmeMeta(readmeContent);
   const repos = listWorkspaceRepos(workspace);
   const wsPath = path.join(WORKSPACE_DIR, workspace);
@@ -80,9 +80,10 @@ export async function POST(request: Request) {
     });
 
     // TODO verifier
-    const todoFile = Bun.file(path.join(wsPath, `TODO-${repo.repoName}.md`));
-    const todoContent = (await todoFile.exists())
-      ? await todoFile.text()
+    const todoFileName = `TODO-${repo.repoName}.md`;
+    const todoPath = path.join(wsPath, todoFileName);
+    const todoContent = fs.existsSync(todoPath)
+      ? fs.readFileSync(todoPath, "utf-8")
       : "";
 
     reviewChildren.push({

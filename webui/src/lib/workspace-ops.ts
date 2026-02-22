@@ -3,6 +3,7 @@
  * All paths are relative to AI_WORKSPACE_ROOT unless otherwise noted.
  */
 
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { AI_WORKSPACE_ROOT, WORKSPACE_DIR } from "./config";
@@ -11,14 +12,12 @@ import { AI_WORKSPACE_ROOT, WORKSPACE_DIR } from "./config";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function exec(cmd: string, opts?: { cwd?: string }): string {
-  const result = Bun.spawnSync(["sh", "-c", cmd], {
+function exec(cmd: string, opts?: { cwd?: string; maxBuffer?: number }): string {
+  return execSync(cmd, {
+    encoding: "utf-8",
     cwd: opts?.cwd ?? AI_WORKSPACE_ROOT,
-  });
-  if (!result.success) {
-    throw new Error(`Command failed (exit ${result.exitCode}): ${cmd}\n${result.stderr.toString()}`);
-  }
-  return result.stdout.toString().trim();
+    maxBuffer: opts?.maxBuffer ?? 10 * 1024 * 1024,
+  }).trim();
 }
 
 function repoDir(): string {
@@ -90,7 +89,7 @@ ${description}`;
  * Parse a TaskAnalysis from a JSON file written by the analysis child process.
  * Returns a fallback if the file is missing or unparseable.
  */
-export async function parseAnalysisResult(filePath: string, fallbackDescription: string): Promise<TaskAnalysis> {
+export function parseAnalysisResult(filePath: string, fallbackDescription: string): TaskAnalysis {
   const fallback: TaskAnalysis = {
     taskType: "feature",
     slug: sanitizeSlug(fallbackDescription),
@@ -99,7 +98,7 @@ export async function parseAnalysisResult(filePath: string, fallbackDescription:
   };
 
   try {
-    const raw = (await Bun.file(filePath).text()).trim();
+    const raw = fs.readFileSync(filePath, "utf-8").trim();
     // Strip markdown fences if present
     const cleaned = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
     const parsed = JSON.parse(cleaned);
@@ -182,12 +181,12 @@ export interface SetupWorkspaceResult {
   workspacePath: string;
 }
 
-export async function setupWorkspace(
+export function setupWorkspace(
   taskType: string,
   description: string,
   ticketId?: string,
   preGeneratedSlug?: string,
-): Promise<SetupWorkspaceResult> {
+): SetupWorkspaceResult {
   // Use pre-generated slug if provided, otherwise sanitize the description
   let slug = preGeneratedSlug
     ? sanitizeSlug(preGeneratedSlug)
@@ -225,13 +224,13 @@ export async function setupWorkspace(
   fs.mkdirSync(wsPath, { recursive: true });
   fs.mkdirSync(path.join(wsPath, "tmp"), { recursive: true });
   fs.mkdirSync(path.join(wsPath, "artifacts"), { recursive: true });
-  await Bun.write(path.join(wsPath, "artifacts", ".gitkeep"), "");
+  fs.writeFileSync(path.join(wsPath, "artifacts", ".gitkeep"), "");
 
   // Initialize git
   exec(`git init --quiet "${wsPath}"`);
 
   // Write .gitignore
-  await Bun.write(path.join(wsPath, ".gitignore"), GITIGNORE_CONTENT);
+  fs.writeFileSync(path.join(wsPath, ".gitignore"), GITIGNORE_CONTENT);
 
   // Write README from template
   const dateFormatted = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
@@ -240,7 +239,7 @@ export async function setupWorkspace(
     .replace(/\{\{TASK_TYPE\}\}/g, taskType)
     .replace(/\{\{TICKET_ID\}\}/g, ticketId ?? "N/A")
     .replace(/\{\{DATE\}\}/g, dateFormatted);
-  await Bun.write(path.join(wsPath, "README.md"), readme);
+  fs.writeFileSync(path.join(wsPath, "README.md"), readme);
 
   // Initial commit
   exec(`git -C "${wsPath}" add .gitignore README.md artifacts/`);
@@ -489,10 +488,10 @@ export function listWorkspaceRepos(workspaceName: string): WorkspaceRepo[] {
 // commitWorkspaceSnapshot
 // ---------------------------------------------------------------------------
 
-export async function commitWorkspaceSnapshot(
+export function commitWorkspaceSnapshot(
   workspaceName: string,
   message?: string,
-): Promise<boolean> {
+): boolean {
   const wsPath = path.join(WORKSPACE_DIR, workspaceName);
   if (!fs.existsSync(path.join(wsPath, ".git"))) return false;
 
@@ -526,7 +525,7 @@ export async function commitWorkspaceSnapshot(
     let completed = 0;
     let total = 0;
     for (const f of todoFiles) {
-      const content = await Bun.file(path.join(wsPath, f)).text();
+      const content = fs.readFileSync(path.join(wsPath, f), "utf-8");
       const lines = content.split("\n");
       for (const line of lines) {
         if (/^\s*- \[x\]/.test(line)) { completed++; total++; }

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   }
 
   const workspace = resolveWorkspaceName(rawWorkspace);
-  const readmeContent = (await getReadme(workspace)) ?? "";
+  const readmeContent = getReadme(workspace) ?? "";
   const meta = parseReadmeMeta(readmeContent);
   const repos = listWorkspaceRepos(workspace);
 

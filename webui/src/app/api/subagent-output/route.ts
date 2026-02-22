@@ -51,22 +51,23 @@ export async function GET(request: Request) {
       function sendChunk() {
         if (closed) return;
         try {
-          const file = Bun.file(targetPath);
-          const fileSize = file.size;
-          if (fileSize === 0 || fileSize <= offset) return;
+          const stat = fs.statSync(targetPath);
+          if (stat.size <= offset) return;
 
-          const readLen = Math.min(fileSize - offset, MAX_READ_BYTES);
-          file.slice(offset, offset + readLen).text().then((text: string) => {
-            if (closed) return;
+          const readLen = Math.min(stat.size - offset, MAX_READ_BYTES);
+          const fd = fs.openSync(targetPath, "r");
+          try {
+            const buf = Buffer.alloc(readLen);
+            fs.readSync(fd, buf, 0, readLen, offset);
             offset += readLen;
             controller.enqueue(
               encoder.encode(
-                `data: ${JSON.stringify({ content: text, size: offset })}\n\n`
+                `data: ${JSON.stringify({ content: buf.toString("utf-8"), size: offset })}\n\n`
               )
             );
-          }).catch(() => {
-            // read failed silently
-          });
+          } finally {
+            fs.closeSync(fd);
+          }
 
           // Set up fs.watch once the file exists (it may not exist on first call)
           startWatching();

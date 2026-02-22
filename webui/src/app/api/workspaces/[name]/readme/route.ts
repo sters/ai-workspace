@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const readme = await getReadme(name);
+  const readme = getReadme(name);
   if (readme === null) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
