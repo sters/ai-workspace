@@ -48,10 +48,8 @@ function sanitizeSlug(input: string, maxLength = 50): string {
 }
 
 // ---------------------------------------------------------------------------
-// analyzeTaskDescription — ask Claude to extract structured metadata
+// Task analysis — structured metadata extraction via Claude child process
 // ---------------------------------------------------------------------------
-
-import { runClaude } from "./claude-sdk";
 
 export interface TaskAnalysis {
   taskType: string;
@@ -60,29 +58,14 @@ export interface TaskAnalysis {
   repositories: string[];
 }
 
-export async function analyzeTaskDescription(
-  description: string,
-): Promise<TaskAnalysis> {
-  return new Promise<TaskAnalysis>((resolve) => {
-    let textOutput = "";
-    let resolved = false;
+/**
+ * Build a prompt for a Claude child process to analyze a task description
+ * and write the result as JSON to the given output path.
+ */
+export function buildAnalysisPrompt(description: string, outputPath: string): string {
+  return `Analyze the following task description and extract structured metadata.
 
-    const fallback: TaskAnalysis = {
-      taskType: "feature",
-      slug: sanitizeSlug(description),
-      ticketId: "",
-      repositories: [],
-    };
-
-    const safeResolve = (value: TaskAnalysis) => {
-      if (resolved) return;
-      resolved = true;
-      resolve(value);
-    };
-
-    const process = runClaude(
-      `analyze-${Date.now()}`,
-      `Analyze the following task description and extract structured metadata. Reply with ONLY a JSON object, no explanation, no markdown fences.
+Write ONLY a JSON object to the file ${outputPath} using the Write tool. No explanation, no markdown.
 
 JSON schema:
 {
@@ -99,44 +82,35 @@ Rules:
 - repositories: extract repository paths like "github.com/org/repo". Include the host. Empty array if none mentioned.
 
 Task description:
-${description}`,
-    );
+${description}`;
+}
 
-    process.onEvent((event) => {
-      if (event.type === "output") {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "assistant" && data.message?.content) {
-            for (const block of data.message.content) {
-              if (block.type === "text") {
-                textOutput += block.text;
-              }
-            }
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      if (event.type === "complete" || event.type === "error") {
-        try {
-          // Strip markdown fences if present
-          const cleaned = textOutput.trim().replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
-          const parsed = JSON.parse(cleaned);
-          safeResolve({
-            taskType: parsed.taskType || fallback.taskType,
-            slug: sanitizeSlug(parsed.slug || "") || fallback.slug,
-            ticketId: parsed.ticketId || "",
-            repositories: Array.isArray(parsed.repositories) ? parsed.repositories : [],
-          });
-        } catch {
-          safeResolve(fallback);
-        }
-      }
-    });
+/**
+ * Parse a TaskAnalysis from a JSON file written by the analysis child process.
+ * Returns a fallback if the file is missing or unparseable.
+ */
+export function parseAnalysisResult(filePath: string, fallbackDescription: string): TaskAnalysis {
+  const fallback: TaskAnalysis = {
+    taskType: "feature",
+    slug: sanitizeSlug(fallbackDescription),
+    ticketId: "",
+    repositories: [],
+  };
 
-    // Timeout after 30 seconds — fall back to defaults
-    setTimeout(() => safeResolve(fallback), 30000);
-  });
+  try {
+    const raw = fs.readFileSync(filePath, "utf-8").trim();
+    // Strip markdown fences if present
+    const cleaned = raw.replace(/^```json?\s*/, "").replace(/\s*```$/, "").trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      taskType: parsed.taskType || fallback.taskType,
+      slug: sanitizeSlug(parsed.slug || "") || fallback.slug,
+      ticketId: parsed.ticketId || "",
+      repositories: Array.isArray(parsed.repositories) ? parsed.repositories : [],
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 // ---------------------------------------------------------------------------

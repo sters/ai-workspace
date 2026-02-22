@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { WORKSPACE_DIR } from "@/lib/config";
 import { startOperationPipeline } from "@/lib/process-manager";
 import { parseReadmeMeta } from "@/lib/readme-parser";
 import {
-  analyzeTaskDescription,
+  buildAnalysisPrompt,
+  parseAnalysisResult,
   setupWorkspace,
   setupRepository,
   commitWorkspaceSnapshot,
@@ -29,19 +31,33 @@ export async function POST(request: Request) {
     );
   }
 
+  // Temp file for analysis result (unique per request)
+  const analysisPath = path.join(os.tmpdir(), `ai-ws-analysis-${Date.now()}.json`);
+
   // Shared mutable state across pipeline phases
   let wsName = "";
   let wsPath = "";
   const repoResults: SetupRepositoryResult[] = [];
 
   const phases: PipelinePhase[] = [
-    // Phase A: Analyze description with Claude, then create workspace + setup repos
+    // Phase A: Claude analyzes the task description (visible in FE logs)
     {
       kind: "function",
-      label: "Analyze & setup workspace",
+      label: "Analyze task description",
       fn: async (ctx) => {
-        ctx.emitStatus("Analyzing task description...");
-        const analysis = await analyzeTaskDescription(description);
+        const prompt = buildAnalysisPrompt(description, analysisPath);
+        return ctx.runChild("Analyze task", prompt);
+      },
+    },
+    // Phase B: Read analysis result, create workspace, setup repos
+    {
+      kind: "function",
+      label: "Setup workspace",
+      fn: async (ctx) => {
+        const analysis = parseAnalysisResult(analysisPath, description);
+        // Clean up temp file
+        try { fs.unlinkSync(analysisPath); } catch { /* ignore */ }
+
         ctx.emitStatus(
           `Detected: type=${analysis.taskType}, slug=${analysis.slug}` +
             (analysis.ticketId ? `, ticket=${analysis.ticketId}` : "") +
@@ -78,7 +94,7 @@ export async function POST(request: Request) {
         return true;
       },
     },
-    // Phase B: Claude fills in README (may ask user for clarification)
+    // Phase C: Claude fills in README (may ask user for clarification)
     {
       kind: "function",
       label: "Fill in README",
@@ -100,12 +116,11 @@ export async function POST(request: Request) {
         return ctx.runChild("Fill README", prompt, { cwd: wsPath });
       },
     },
-    // Phase C: Detect task type and setup any additional repos from README
+    // Phase D: Detect task type and setup any additional repos from README
     {
       kind: "function",
       label: "Prepare for planning",
       fn: async (ctx) => {
-        // Re-read README after Claude filled it in
         const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
         const meta = parseReadmeMeta(readmeContent);
 
@@ -125,7 +140,6 @@ export async function POST(request: Request) {
           }
         }
 
-        // Check if this is a research task
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch) {
           ctx.emitStatus("Research/investigation task detected — skipping TODO planning");
@@ -142,7 +156,7 @@ export async function POST(request: Request) {
         return true;
       },
     },
-    // Phase D: Plan TODOs for each repo (parallel)
+    // Phase E: Plan TODOs for each repo (parallel)
     {
       kind: "function",
       label: "Plan TODO items",
@@ -179,7 +193,7 @@ export async function POST(request: Request) {
         return allSuccess;
       },
     },
-    // Phase E: Coordinate TODOs across repos (single, skip for single repo)
+    // Phase F: Coordinate TODOs across repos (single, skip for single repo)
     {
       kind: "function",
       label: "Coordinate TODOs",
@@ -219,7 +233,7 @@ export async function POST(request: Request) {
         return ctx.runChild("Coordinate TODOs", prompt, { cwd: wsPath });
       },
     },
-    // Phase F: Review TODOs (parallel, per repo)
+    // Phase G: Review TODOs (parallel, per repo)
     {
       kind: "function",
       label: "Review TODOs",
@@ -267,7 +281,7 @@ export async function POST(request: Request) {
         return allSuccess;
       },
     },
-    // Phase G: Commit workspace snapshot
+    // Phase H: Commit workspace snapshot
     {
       kind: "function",
       label: "Commit snapshot",
