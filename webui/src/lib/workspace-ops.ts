@@ -211,6 +211,11 @@ export function setupWorkspace(
 
   const wsPath = path.join(WORKSPACE_DIR, dirName);
 
+  // Remove stale directory from a previous failed init
+  if (fs.existsSync(wsPath)) {
+    fs.rmSync(wsPath, { recursive: true, force: true });
+  }
+
   // Create directories
   fs.mkdirSync(wsPath, { recursive: true });
   fs.mkdirSync(path.join(wsPath, "tmp"), { recursive: true });
