@@ -43,6 +43,7 @@ export function runClaude(
   options?: RunClaudeOptions
 ): ClaudeProcess {
   const handlers: ((event: OperationEvent) => void)[] = [];
+  const earlyEvents: OperationEvent[] = [];
   const abortController = new AbortController();
 
   // Pending AskUserQuestion answers: toolUseId -> resolve function
@@ -52,7 +53,11 @@ export function runClaude(
   >();
 
   const emit = (event: OperationEvent) => {
-    for (const h of handlers) h(event);
+    if (handlers.length === 0) {
+      earlyEvents.push(event);
+    } else {
+      for (const h of handlers) h(event);
+    }
   };
 
   const cwd = options?.cwd ?? AI_WORKSPACE_ROOT;
@@ -155,7 +160,14 @@ export function runClaude(
 
   return {
     id: operationId,
-    onEvent: (handler) => handlers.push(handler),
+    onEvent: (handler) => {
+      handlers.push(handler);
+      // Replay events that arrived before handler was registered
+      for (const event of earlyEvents) {
+        handler(event);
+      }
+      earlyEvents.length = 0;
+    },
     kill: () => abortController.abort(),
     submitAnswer: (toolUseId, answers) => {
       const resolve = pendingAnswers.get(toolUseId);

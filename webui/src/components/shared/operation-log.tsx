@@ -148,6 +148,8 @@ export function OperationLog({
     return entries.filter((e) => {
       // __phaseUpdate system entries are meta — hide them in filtered views
       if (e.kind === "system" && e.content.startsWith("__phaseUpdate:")) return false;
+      // Include pipeline-level entries (no phaseIndex) in all phase tabs
+      if (e.phaseIndex == null) return true;
       return e.phaseIndex === activePhaseTab;
     });
   }, [entries, activePhaseTab, livePhases]);

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { WORKSPACE_DIR, resolveWorkspaceName } from "@/lib/config";
-import { startOperation, startOperationGroup } from "@/lib/process-manager";
+import { startOperationPipeline } from "@/lib/process-manager";
 import { getReadme } from "@/lib/workspace";
 import { parseReadmeMeta } from "@/lib/readme-parser";
 import { listWorkspaceRepos } from "@/lib/workspace-ops";
@@ -48,9 +48,9 @@ export async function POST(request: Request) {
       reportPath,
     });
 
-    const operation = startOperation("execute", workspace, prompt, {
-      cwd: wsPath,
-    });
+    const operation = startOperationPipeline("execute", workspace, [
+      { kind: "single", label: "Research", prompt, options: { cwd: wsPath } },
+    ]);
     return NextResponse.json(operation);
   }
 
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
     };
   });
 
-  const operation = startOperationGroup("execute", workspace, children);
+  const operation = startOperationPipeline("execute", workspace, [
+    { kind: "group", children },
+  ]);
   return NextResponse.json(operation);
 }

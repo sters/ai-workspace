@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveWorkspaceName } from "@/lib/config";
-import { startOperationGroup } from "@/lib/process-manager";
+import { startOperationPipeline } from "@/lib/process-manager";
 import { getReadme } from "@/lib/workspace";
 import { parseReadmeMeta } from "@/lib/readme-parser";
 import {
@@ -64,6 +64,8 @@ export async function POST(request: Request) {
     };
   });
 
-  const operation = startOperationGroup("create-pr", workspace, children);
+  const operation = startOperationPipeline("create-pr", workspace, [
+    { kind: "group", children },
+  ]);
   return NextResponse.json(operation);
 }

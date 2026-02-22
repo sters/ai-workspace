@@ -93,6 +93,7 @@ function wireChild(
   phaseExtra?: { phaseIndex?: number; phaseLabel?: string },
 ): Promise<boolean> {
   managed.childProcesses.set(childId, process);
+  emitStatus(managed, "Initializing...", { childLabel, ...phaseExtra });
 
   return new Promise<boolean>((resolve) => {
     process.onEvent((event) => {
@@ -140,49 +141,7 @@ function emitPhaseUpdate(
 }
 
 // ---------------------------------------------------------------------------
-// startOperation — single Claude query
-// ---------------------------------------------------------------------------
-
-export function startOperation(
-  type: OperationType,
-  workspace: string,
-  prompt: string,
-  options?: RunClaudeOptions,
-): Operation {
-  const id = nextId("op");
-  const operation: Operation = {
-    id,
-    type,
-    workspace,
-    status: "running",
-    startedAt: new Date().toISOString(),
-  };
-
-  const claudeProcess = runClaude(id, prompt, options);
-  const managed: ManagedOperation = {
-    operation,
-    claudeProcess,
-    childProcesses: new Map(),
-    events: [],
-    listeners: new Set(),
-  };
-
-  claudeProcess.onEvent((event) => {
-    emitEvent(managed, event);
-    if (event.type === "complete") {
-      const data = JSON.parse(event.data);
-      operation.status = data.exitCode === 0 ? "completed" : "failed";
-      operation.completedAt = new Date().toISOString();
-    }
-  });
-
-  operations.set(id, managed);
-  emitStatus(managed, "Initializing...");
-  return operation;
-}
-
-// ---------------------------------------------------------------------------
-// startOperationGroup — parallel Claude queries
+// startOperationPipeline — sequential phases (the single entry point)
 // ---------------------------------------------------------------------------
 
 export interface GroupChild {
@@ -190,58 +149,6 @@ export interface GroupChild {
   prompt: string;
   options?: RunClaudeOptions;
 }
-
-export function startOperationGroup(
-  type: OperationType,
-  workspace: string,
-  children: GroupChild[],
-): Operation {
-  const id = nextId("grp");
-  const operation: Operation = {
-    id,
-    type,
-    workspace,
-    status: "running",
-    startedAt: new Date().toISOString(),
-    children: children.map((c, i) => ({
-      id: `${id}-child-${i}`,
-      label: c.label,
-      status: "running" as const,
-    })),
-  };
-
-  const managed: ManagedOperation = {
-    operation,
-    claudeProcess: null,
-    childProcesses: new Map(),
-    events: [],
-    listeners: new Set(),
-  };
-
-  operations.set(id, managed);
-  emitStatus(managed, `Starting ${children.length} parallel operations`);
-
-  const promises = children.map((child, i) => {
-    const childId = `${id}-child-${i}`;
-    const process = runClaude(childId, child.prompt, child.options);
-    return wireChild(managed, childId, child.label, process);
-  });
-
-  Promise.all(promises).then((results) => {
-    const allSuccess = results.every(Boolean);
-    emitStatus(
-      managed,
-      `All ${children.length} operations finished (${results.filter(Boolean).length}/${children.length} succeeded)`,
-    );
-    markComplete(managed, allSuccess);
-  });
-
-  return operation;
-}
-
-// ---------------------------------------------------------------------------
-// startOperationPipeline — sequential phases
-// ---------------------------------------------------------------------------
 
 export interface PipelinePhaseSingle {
   kind: "single";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { startOperation } from "@/lib/process-manager";
+import { startOperationPipeline } from "@/lib/process-manager";
 import { listWorkspaceRepos } from "@/lib/workspace-ops";
 import { WORKSPACE_DIR, resolveWorkspaceName } from "@/lib/config";
 import { buildUpdaterPrompt } from "@/lib/prompts";
@@ -53,6 +53,8 @@ export async function POST(request: Request) {
           .map((p, i) => `# Repo ${i + 1} of ${prompts.length}\n\n${p}`)
           .join("\n\n---\n\n");
 
-  const operation = startOperation("update-todo", workspace, prompt);
+  const operation = startOperationPipeline("update-todo", workspace, [
+    { kind: "single", label: "Update TODOs", prompt },
+  ]);
   return NextResponse.json(operation);
 }
