@@ -307,7 +307,10 @@ export function setupRepository(
   workspaceName: string,
   repositoryPathArg: string,
   baseBranchOverride?: string,
+  log?: (message: string) => void,
 ): SetupRepositoryResult {
+  const emit = log ?? (() => {});
+
   // Parse alias syntax (e.g. github.com/org/repo:dev)
   let actualRepoPath = repositoryPathArg;
   let repoAlias = "";
@@ -328,14 +331,17 @@ export function setupRepository(
 
   // Clone or fetch
   if (!fs.existsSync(repoAbsPath)) {
+    emit(`Repository not found locally, cloning ${actualRepoPath}...`);
     const parentDir = path.dirname(repoAbsPath);
     fs.mkdirSync(parentDir, { recursive: true });
     const repoUrl = `https://${actualRepoPath}.git`;
     exec(`git clone "${repoUrl}" "${repoAbsPath}"`);
+    emit("Clone complete.");
     try {
       exec(`git -C "${repoAbsPath}" remote set-head origin --auto`);
     } catch { /* non-critical */ }
   } else {
+    emit(`Repository found locally, fetching latest...`);
     exec(`git -C "${repoAbsPath}" fetch --all --prune`);
     try {
       exec(`git -C "${repoAbsPath}" remote set-head origin --auto`);
@@ -344,6 +350,7 @@ export function setupRepository(
 
   // Detect base branch
   const baseBranch = baseBranchOverride ?? detectBaseBranch(repoAbsPath);
+  emit(`Base branch: ${baseBranch}`);
 
   // Extract task info from workspace name for branch naming
   const parts = workspaceName.split("-");
@@ -384,17 +391,16 @@ export function setupRepository(
   // If the branch already exists, resolve the conflict
   try {
     exec(`git -C "${repoAbsPath}" rev-parse --verify "${branchName}"`);
-    // Branch exists — prune stale worktree refs first
+    emit(`Branch ${branchName} already exists, resolving...`);
     try { exec(`git -C "${repoAbsPath}" worktree prune`); } catch { /* ignore */ }
 
-    // Check if the branch is still used by an active worktree
     const worktreeList = exec(`git -C "${repoAbsPath}" worktree list --porcelain`);
     const isInUse = worktreeList
       .split("\n")
       .some((line) => line === `branch refs/heads/${branchName}`);
 
     if (isInUse) {
-      // Branch is actively used by another workspace — use a unique suffix
+      const origName = branchName;
       let suffix = 2;
       while (true) {
         const candidate = `${branchName}-${suffix}`;
@@ -406,17 +412,20 @@ export function setupRepository(
           break;
         }
       }
+      emit(`Branch ${origName} in use by another worktree, using ${branchName} instead.`);
     } else {
-      // Branch is a stale leftover — safe to delete and recreate
+      emit(`Branch is stale, deleting and recreating.`);
       exec(`git -C "${repoAbsPath}" branch -D "${branchName}"`);
     }
   } catch {
     // Branch doesn't exist — good
   }
 
+  emit(`Creating worktree: branch ${branchName} from origin/${baseBranch}`);
   exec(
     `git -C "${repoAbsPath}" worktree add -b "${branchName}" "${worktreePath}" "origin/${baseBranch}"`,
   );
+  emit(`Worktree ready at ${repoPathInput}`);
 
   return {
     repoPath: repoPathInput,

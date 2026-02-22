@@ -82,9 +82,8 @@ export async function POST(request: Request) {
           for (const repoPath of analysis.repositories) {
             ctx.emitStatus(`Setting up repository: ${repoPath}`);
             try {
-              const repoResult = setupRepository(wsName, repoPath);
+              const repoResult = setupRepository(wsName, repoPath, undefined, ctx.emitStatus);
               repoResults.push(repoResult);
-              ctx.emitStatus(`Repository ready: ${repoResult.repoName} (branch: ${repoResult.branchName})`);
             } catch (err) {
               ctx.emitResult(`Failed to setup repository ${repoPath}: ${err}`);
               return false;
@@ -137,7 +136,7 @@ export async function POST(request: Request) {
           if (!already) {
             ctx.emitStatus(`Setting up newly identified repository: ${metaRepo.path}`);
             try {
-              const repoResult = setupRepository(wsName, metaRepo.path, metaRepo.baseBranch);
+              const repoResult = setupRepository(wsName, metaRepo.path, metaRepo.baseBranch, ctx.emitStatus);
               repoResults.push(repoResult);
             } catch (err) {
               ctx.emitStatus(`Warning: Failed to setup ${metaRepo.path}: ${err}`);
