@@ -3,7 +3,7 @@ import { listWorkspaces } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  const workspaces = listWorkspaces();
+export async function GET() {
+  const workspaces = await listWorkspaces();
   return NextResponse.json(workspaces);
 }

@@ -8,6 +8,6 @@ export async function GET(
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const todos = getTodos(name);
+  const todos = await getTodos(name);
   return NextResponse.json(todos);
 }

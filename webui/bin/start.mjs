@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { execSync, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
+import { createInterface } from "node:readline";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,11 +13,33 @@ let root = process.argv[2] || process.env.AI_WORKSPACE_ROOT || process.cwd();
 root = resolve(root);
 
 const workspaceDir = resolve(root, "workspace");
-if (!existsSync(workspaceDir)) {
-  console.error(`Error: workspace/ directory not found at ${root}`);
-  console.error("Make sure you run this from the ai-workspace root directory,");
-  console.error("or pass the path as an argument: ai-workspace-ui /path/to/ai-workspace");
-  process.exit(1);
+const repositoriesDir = resolve(root, "repositories");
+
+const missingDirs = [];
+if (!existsSync(workspaceDir)) missingDirs.push(workspaceDir);
+if (!existsSync(repositoriesDir)) missingDirs.push(repositoriesDir);
+
+if (missingDirs.length > 0) {
+  console.log(`The following directories do not exist under ${root}:`);
+  for (const dir of missingDirs) {
+    console.log(`  - ${dir}`);
+  }
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await new Promise((resolve) => {
+    rl.question("Create them? [y/N] ", resolve);
+  });
+  rl.close();
+
+  if (answer.toLowerCase() !== "y") {
+    console.log("Aborted.");
+    process.exit(1);
+  }
+
+  for (const dir of missingDirs) {
+    mkdirSync(dir, { recursive: true });
+    console.log(`Created: ${dir}`);
+  }
 }
 
 console.log(`ai-workspace root: ${root}`);
@@ -29,12 +51,19 @@ const cmd = isDev ? "dev" : "start";
 // For production mode, build first if needed
 if (!isDev && !existsSync(resolve(packageDir, ".next"))) {
   console.log("Building...");
-  execSync("bun run build", { cwd: packageDir, stdio: "inherit" });
+  Bun.spawnSync(["bun", "run", "build"], {
+    cwd: packageDir,
+    stdout: "inherit",
+    stderr: "inherit",
+    stdin: "inherit",
+  });
 }
 
-const child = spawn("bun", ["run", cmd], {
+const child = Bun.spawn(["bun", "run", cmd], {
   cwd: packageDir,
-  stdio: "inherit",
+  stdout: "inherit",
+  stderr: "inherit",
+  stdin: "inherit",
   env: {
     ...process.env,
     AI_WORKSPACE_ROOT: root,
@@ -42,6 +71,6 @@ const child = spawn("bun", ["run", cmd], {
   },
 });
 
-child.on("exit", (code) => process.exit(code ?? 0));
-process.on("SIGINT", () => child.kill("SIGINT"));
-process.on("SIGTERM", () => child.kill("SIGTERM"));
+process.on("SIGINT", () => child.kill());
+process.on("SIGTERM", () => child.kill());
+await child.exited.then((code) => process.exit(code ?? 0));

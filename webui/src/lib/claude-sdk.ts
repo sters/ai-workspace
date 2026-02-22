@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { AI_WORKSPACE_ROOT } from "./config";
 import type { OperationEvent } from "@/types/operation";
@@ -6,13 +5,17 @@ import type { OperationEvent } from "@/types/operation";
 // Resolve the actual path to the claude CLI binary
 let cliPath: string;
 try {
-  const bin = execSync("which claude", { encoding: "utf-8" }).trim();
+  const whichResult = Bun.spawnSync(["which", "claude"]);
+  const bin = whichResult.success ? whichResult.stdout.toString().trim() : "";
+  if (!bin) throw new Error("claude not found");
   // Follow symlinks — try realpath first (works on macOS), fall back to readlink -f
   try {
-    cliPath = execSync(`realpath "${bin}"`, { encoding: "utf-8" }).trim();
+    const realpathResult = Bun.spawnSync(["realpath", bin]);
+    cliPath = realpathResult.success ? realpathResult.stdout.toString().trim() : bin;
   } catch {
     try {
-      cliPath = execSync(`readlink -f "${bin}"`, { encoding: "utf-8" }).trim();
+      const readlinkResult = Bun.spawnSync(["readlink", "-f", bin]);
+      cliPath = readlinkResult.success ? readlinkResult.stdout.toString().trim() : bin;
     } catch {
       cliPath = bin;
     }

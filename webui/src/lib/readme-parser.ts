@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { WorkspaceMeta } from "@/types/workspace";
 
@@ -6,8 +5,8 @@ import type { WorkspaceMeta } from "@/types/workspace";
  * Read README.md from a workspace path and parse its metadata.
  * Returns both the raw content and the parsed meta.
  */
-export function readWorkspaceReadme(wsPath: string): { content: string; meta: WorkspaceMeta } {
-  const content = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
+export async function readWorkspaceReadme(wsPath: string): Promise<{ content: string; meta: WorkspaceMeta }> {
+  const content = await Bun.file(path.join(wsPath, "README.md")).text();
   return { content, meta: parseReadmeMeta(content) };
 }
 

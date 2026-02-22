@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs";
 import path from "node:path";
 import { WORKSPACE_DIR, resolveWorkspaceName } from "@/lib/config";
 import { startOperationPipeline } from "@/lib/process-manager";
@@ -19,7 +18,7 @@ export async function POST(request: Request) {
   }
 
   const workspace = resolveWorkspaceName(rawWorkspace);
-  const readmeContent = getReadme(workspace) ?? "";
+  const readmeContent = (await getReadme(workspace)) ?? "";
   const meta = parseReadmeMeta(readmeContent);
   const repos = listWorkspaceRepos(workspace);
   const wsPath = path.join(WORKSPACE_DIR, workspace);
@@ -55,28 +54,29 @@ export async function POST(request: Request) {
   }
 
   // Feature/bugfix: launch one executor per repository
-  const children = repos.map((repo) => {
-    const todoFileName = `TODO-${repo.repoName}.md`;
-    const todoPath = path.join(wsPath, todoFileName);
-    const todoContent = fs.existsSync(todoPath)
-      ? fs.readFileSync(todoPath, "utf-8")
-      : "";
+  const children = await Promise.all(
+    repos.map(async (repo) => {
+      const todoFile = Bun.file(path.join(wsPath, `TODO-${repo.repoName}.md`));
+      const todoContent = (await todoFile.exists())
+        ? await todoFile.text()
+        : "";
 
-    const prompt = buildExecutorPrompt({
-      workspaceName: workspace,
-      repoPath: repo.repoPath,
-      repoName: repo.repoName,
-      readmeContent,
-      todoContent,
-      worktreePath: repo.worktreePath,
-    });
+      const prompt = buildExecutorPrompt({
+        workspaceName: workspace,
+        repoPath: repo.repoPath,
+        repoName: repo.repoName,
+        readmeContent,
+        todoContent,
+        worktreePath: repo.worktreePath,
+      });
 
-    return {
-      label: repo.repoName,
-      prompt,
-      options: { cwd: repo.worktreePath },
-    };
-  });
+      return {
+        label: repo.repoName,
+        prompt,
+        options: { cwd: repo.worktreePath },
+      };
+    })
+  );
 
   const operation = startOperationPipeline("execute", workspace, [
     { kind: "group", children },

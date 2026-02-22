@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ name: string; timestamp: string }> }
 ) {
   const { name, timestamp } = await params;
-  const detail = getReviewDetail(name, timestamp);
+  const detail = await getReviewDetail(name, timestamp);
   if (!detail) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

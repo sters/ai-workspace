@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { startOperationPipeline } from "@/lib/process-manager";
@@ -53,9 +52,9 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Setup workspace",
       fn: async (ctx) => {
-        const analysis = parseAnalysisResult(analysisPath, description);
+        const analysis = await parseAnalysisResult(analysisPath, description);
         // Clean up temp file
-        try { fs.unlinkSync(analysisPath); } catch { /* ignore */ }
+        try { await Bun.file(analysisPath).delete(); } catch { /* ignore */ }
 
         ctx.emitStatus(
           `Detected: type=${analysis.taskType}, slug=${analysis.slug}` +
@@ -66,7 +65,7 @@ export async function POST(request: Request) {
         );
 
         ctx.emitStatus("Creating workspace directory...");
-        const result = setupWorkspace(
+        const result = await setupWorkspace(
           analysis.taskType,
           description,
           analysis.ticketId || undefined,
@@ -102,7 +101,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Fill in README",
       fn: async (ctx) => {
-        const { content: readmeContent } = readWorkspaceReadme(wsPath);
+        const { content: readmeContent } = await readWorkspaceReadme(wsPath);
         const prompt = buildInitReadmePrompt({
           workspaceName: wsName,
           workspacePath: wsPath,
@@ -124,7 +123,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Prepare for planning",
       fn: async (ctx) => {
-        const { meta } = readWorkspaceReadme(wsPath);
+        const { meta } = await readWorkspaceReadme(wsPath);
 
         // If repos were added to README but not set up yet, set them up now
         for (const metaRepo of meta.repositories) {
@@ -144,13 +143,13 @@ export async function POST(request: Request) {
 
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch) {
-          commitWorkspaceSnapshot(wsName, "Setup complete (research task)");
+          await commitWorkspaceSnapshot(wsName, "Setup complete (research task)");
           ctx.emitResult("Research/investigation task — skipping TODO planning.");
           return true;
         }
 
         if (repoResults.length === 0) {
-          commitWorkspaceSnapshot(wsName, "Setup complete (no repos)");
+          await commitWorkspaceSnapshot(wsName, "Setup complete (no repos)");
           ctx.emitResult("No repositories configured — skipping TODO planning.");
           return true;
         }
@@ -164,7 +163,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Plan TODO items",
       fn: async (ctx) => {
-        const { content: readmeContent, meta } = readWorkspaceReadme(wsPath);
+        const { content: readmeContent, meta } = await readWorkspaceReadme(wsPath);
 
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
@@ -200,23 +199,24 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Coordinate TODOs",
       fn: async (ctx) => {
-        const { content: readmeContent, meta } = readWorkspaceReadme(wsPath);
+        const { content: readmeContent, meta } = await readWorkspaceReadme(wsPath);
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length <= 1) {
           ctx.emitResult("Skipped coordination (single repo or research task).");
           return true;
         }
 
-        const todoFiles = repoResults
-          .map((repo) => {
-            const todoPath = path.join(wsPath, `TODO-${repo.repoName}.md`);
-            if (!fs.existsSync(todoPath)) return null;
+        const todoFilesRaw = await Promise.all(
+          repoResults.map(async (repo) => {
+            const todoFile = Bun.file(path.join(wsPath, `TODO-${repo.repoName}.md`));
+            if (!(await todoFile.exists())) return null;
             return {
               repoName: repo.repoName,
-              content: fs.readFileSync(todoPath, "utf-8"),
+              content: await todoFile.text(),
             };
           })
-          .filter((f): f is { repoName: string; content: string } => f !== null);
+        );
+        const todoFiles = todoFilesRaw.filter((f): f is { repoName: string; content: string } => f !== null);
 
         if (todoFiles.length === 0) {
           ctx.emitResult("No TODO files found, skipping coordination.");
@@ -239,18 +239,18 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Review TODOs",
       fn: async (ctx) => {
-        const { content: readmeContent, meta } = readWorkspaceReadme(wsPath);
+        const { content: readmeContent, meta } = await readWorkspaceReadme(wsPath);
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
           ctx.emitResult("Skipped TODO review.");
           return true;
         }
 
-        const children = repoResults
-          .map((repo) => {
-            const todoPath = path.join(wsPath, `TODO-${repo.repoName}.md`);
-            if (!fs.existsSync(todoPath)) return null;
-            const todoContent = fs.readFileSync(todoPath, "utf-8");
+        const childrenRaw = await Promise.all(
+          repoResults.map(async (repo) => {
+            const todoFile = Bun.file(path.join(wsPath, `TODO-${repo.repoName}.md`));
+            if (!(await todoFile.exists())) return null;
+            const todoContent = await todoFile.text();
 
             return {
               label: `review-${repo.repoName}`,
@@ -264,7 +264,8 @@ export async function POST(request: Request) {
               options: { cwd: wsPath },
             };
           })
-          .filter((c): c is NonNullable<typeof c> => c !== null);
+        );
+        const children = childrenRaw.filter((c): c is NonNullable<typeof c> => c !== null);
 
         if (children.length === 0) {
           ctx.emitResult("No TODO files to review.");
@@ -287,7 +288,7 @@ export async function POST(request: Request) {
       label: "Commit snapshot",
       fn: async (ctx) => {
         ctx.emitStatus("Committing workspace snapshot...");
-        commitWorkspaceSnapshot(wsName, "Init complete: workspace setup and TODO planning");
+        await commitWorkspaceSnapshot(wsName, "Init complete: workspace setup and TODO planning");
         ctx.emitResult(`Workspace **${wsName}** initialization complete.`);
         return true;
       },
