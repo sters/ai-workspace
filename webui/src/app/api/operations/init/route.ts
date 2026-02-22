@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { WORKSPACE_DIR } from "@/lib/config";
 import { startOperationPipeline } from "@/lib/process-manager";
-import { parseReadmeMeta } from "@/lib/readme-parser";
+import { readWorkspaceReadme } from "@/lib/readme-parser";
 import {
   buildAnalysisPrompt,
   parseAnalysisResult,
@@ -103,7 +102,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Fill in README",
       fn: async (ctx) => {
-        const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
+        const { content: readmeContent } = readWorkspaceReadme(wsPath);
         const prompt = buildInitReadmePrompt({
           workspaceName: wsName,
           workspacePath: wsPath,
@@ -125,8 +124,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Prepare for planning",
       fn: async (ctx) => {
-        const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
-        const meta = parseReadmeMeta(readmeContent);
+        const { meta } = readWorkspaceReadme(wsPath);
 
         // If repos were added to README but not set up yet, set them up now
         for (const metaRepo of meta.repositories) {
@@ -166,8 +164,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Plan TODO items",
       fn: async (ctx) => {
-        const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
-        const meta = parseReadmeMeta(readmeContent);
+        const { content: readmeContent, meta } = readWorkspaceReadme(wsPath);
 
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
@@ -203,8 +200,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Coordinate TODOs",
       fn: async (ctx) => {
-        const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
-        const meta = parseReadmeMeta(readmeContent);
+        const { content: readmeContent, meta } = readWorkspaceReadme(wsPath);
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length <= 1) {
           ctx.emitResult("Skipped coordination (single repo or research task).");
@@ -243,8 +239,7 @@ export async function POST(request: Request) {
       kind: "function",
       label: "Review TODOs",
       fn: async (ctx) => {
-        const readmeContent = fs.readFileSync(path.join(wsPath, "README.md"), "utf-8");
-        const meta = parseReadmeMeta(readmeContent);
+        const { content: readmeContent, meta } = readWorkspaceReadme(wsPath);
         const isResearch = meta.taskType === "research" || meta.taskType === "investigation";
         if (isResearch || repoResults.length === 0) {
           ctx.emitResult("Skipped TODO review.");
