@@ -69,7 +69,6 @@ export async function generateSlugFromDescription(
     const process = runClaude(
       `slug-gen-${Date.now()}`,
       `Generate a short workspace directory name in English for this task. Use 2-5 lowercase words separated by hyphens. Reply with ONLY the slug, nothing else. No explanation, no quotes, no backticks.\n\nTask: ${description}`,
-      { maxTurns: 1 },
     );
 
     process.onEvent((event) => {
