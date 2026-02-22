@@ -263,23 +263,22 @@ function CollapsibleOperationLog({
         </div>
       )}
 
-      {/* Result entries — always visible outside the fold */}
-      {resultEntries.length > 0 && (
-        <div className="border-t p-2">
-          <div className="space-y-1.5">
-            {resultEntries.map((entry, i) => (
-              <div key={i} className="rounded-md bg-green-50 p-2 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
-                <MarkdownRenderer content={entry.kind === "result" ? entry.content : ""} />
-                {entry.kind === "result" && (entry.cost || entry.duration) && (
-                  <div className="mt-1 text-xs opacity-70">
-                    {[entry.cost, entry.duration].filter(Boolean).join(" | ")}
-                  </div>
-                )}
-              </div>
-            ))}
+      {/* Result — show only the last phase's result */}
+      {resultEntries.length > 0 && (() => {
+        const last = resultEntries[resultEntries.length - 1];
+        return (
+          <div className="border-t p-2">
+            <div className="rounded-md bg-green-50 p-2 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
+              <MarkdownRenderer content={last.kind === "result" ? last.content : ""} />
+              {last.kind === "result" && (last.cost || last.duration) && (
+                <div className="mt-1 text-xs opacity-70">
+                  {[last.cost, last.duration].filter(Boolean).join(" | ")}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
