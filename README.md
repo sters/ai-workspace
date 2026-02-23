@@ -2,6 +2,18 @@
 
 A multi-repository workspace manager for Claude Code. This tool provides Claude with skills and sub-agents to handle complex tasks across multiple repositories using git worktrees for isolation.
 
+## Web UI
+
+The web UI has been moved to [sters/ai-workspace-v2](https://github.com/sters/ai-workspace-v2).
+
+```bash
+# Start the web UI from this directory
+bunx github:sters/ai-workspace-v2 .
+
+# If you encounter issues, clear the Bun cache first
+bun pm cache rm
+```
+
 ## Prerequisites
 
 The following tools must be installed and available in your PATH:
