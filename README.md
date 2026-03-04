@@ -8,20 +8,25 @@ The web UI has been moved to [sters/ai-workspace-v2](https://github.com/sters/ai
 
 ```bash
 # Start the web UI from this directory
-bunx github:sters/ai-workspace-v2 .
+bunx github:sters/ai-workspace-v2@latest .
 
 # If you encounter issues, clear the Bun cache first
 bun pm cache rm
 ```
 
-## Prerequisites
+The web UI has its own prompt management system not depending on this repository's skills and agents.
+However, it can be effectively utilized as part of the initial setup for ai-workspace such as .claude rules.
+
+## Skill + Agent based approach
+
+### Prerequisites
 
 The following tools must be installed and available in your PATH:
 
 - **git** - For repository cloning, worktree management, and version control operations
 - **gh** (GitHub CLI) - For creating and managing pull requests
 
-### Installation
+#### Installation
 
 ```bash
 # macOS (Homebrew)
@@ -31,7 +36,7 @@ brew install git gh
 gh auth login
 ```
 
-## Usage
+### Usage
 
 1. Clone this repo
 2. Open with `claude` command (Claude Code CLI)
@@ -61,11 +66,11 @@ gh auth login
    /workspace-create-or-update-pr
    ```
 
-## How It Works
+### How It Works
 
 Tasks are executed in isolated directories (`./workspace/{task-name}-{date}/`) using git worktrees. Claude clones the target repository on first use to `./repositories/` and creates worktrees for each task.
 
-## Available Skills
+### Available Skills
 
 | Skill | Description |
 |-------|-------------|
@@ -84,7 +89,7 @@ Tasks are executed in isolated directories (`./workspace/{task-name}-{date}/`) u
 
 See [CLAUDE.md](./CLAUDE.md) for detailed documentation.
 
-## Available Agents
+### Available Agents
 
 Agents are specialized sub-processes that handle specific tasks autonomously. **You don't need to invoke agents directly** — skills automatically launch the appropriate agents for you.
 
@@ -100,7 +105,7 @@ Agents are specialized sub-processes that handle specific tasks autonomously. **
 | `workspace-collect-reviews` | Collects review results and creates summary | `/workspace-review-changes` |
 | `workspace-repo-create-or-update-pr` | Creates or updates pull request following repo's PR template | `/workspace-create-or-update-pr` |
 
-### Skills and Agents Relationship
+#### Skills and Agents Relationship
 
 ```
 /workspace-init
@@ -125,6 +130,6 @@ Agents are specialized sub-processes that handle specific tasks autonomously. **
   └─→ workspace-repo-create-or-update-pr (per repository, parallel)
 ```
 
-## Policies
+### Policies
 
 See [.claude/README.md](./.claude/README.md) for implementation policies for agents and skills.
