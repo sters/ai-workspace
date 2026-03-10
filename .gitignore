@@ -2,3 +2,17 @@
 bin
 workspace
 repositories
+
+.claude.json
+.claude/*
+!.claude/agents
+!.claude/scripts
+!.claude/skills
+!.claude/docker-prompt.md
+!.claude/README.md
+!.claude/.claude/settings.local.json.example
+.docker/shared-home/*
+!.docker/shared-home/bin
+!.docker/shared-home/.claude
+.docker/shared-home/.claude/*
+!.docker/shared-home/.claude/docker-prompt.md
