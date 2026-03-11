@@ -1,0 +1,19 @@
+services:
+  closed-claude:
+    build: .
+    image: ai-workspace:latest
+    container_name: ai-workspace
+    working_dir: /ai-workspace
+    volumes:
+      # Mount only the project root. Avoid running from a parent dir that contains secrets.
+      - .:/ai-workspace
+      # Host .docker/shared-home becomes container /home/dev (so ~/.claude.json, ~/.claude, ~/bin/ etc. are persisted)
+      - .docker/shared-home:/home/dev
+      - ~/.ssh:/home/dev/.ssh
+    # Optional: persist gcloud config (uncomment to use gcloud auth across runs)
+    # - ~/.config/gcloud:/home/dev/.config/gcloud
+    stdin_open: true
+    tty: true
+    # Load project CLAUDE.md (auto when run from /ai-workspace) + Docker-specific system prompt
+    # --dangerously-skip-permissions: skip confirmation prompts for tool use (Docker = isolated, use with care)
+    command: ["claude", "--append-system-prompt-file", "/home/dev/.claude/docker-prompt.md", "--dangerously-skip-permissions"]
