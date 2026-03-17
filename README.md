@@ -1,3 +1,10 @@
+# **DEPRECATED**
+
+This repo provides Skills and Agents to handle complex tasks across multiple repositories but it had the problem of lacking flexibility and being difficult to customize. For example, While there are parts where precise operations are performed using scripts, the central part requires control over behavior via prompts, which occasionally resulted in strange behavior.
+
+Developing a new tool from scratch that inherits the ideas from this repository: [sters/ai-workspace-v2](https://github.com/sters/ai-workspace-v2)
+
+
 # ai-workspace
 
 A multi-repository workspace manager for Claude Code. This tool provides Claude with skills and sub-agents to handle complex tasks across multiple repositories using git worktrees for isolation.
